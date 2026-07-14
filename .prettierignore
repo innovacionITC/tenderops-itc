@@ -1,0 +1,6 @@
+node_modules
+.next
+out
+src/db/schema
+AGENTS.md
+CLAUDE.md
