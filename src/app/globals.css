@@ -1,3 +1,5 @@
+
+@import "itc-frontend-base/style.css" layer(thirdparty);
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -115,6 +117,110 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+
+html:root {
+  --itc-btn-primary-bg: var(--primary);
+  --itc-btn-primary-bg-hover: color-mix(in oklch, var(--primary) 85%, black);
+  --itc-btn-primary-bg-active: color-mix(in oklch, var(--primary) 70%, black);
+  --itc-btn-primary-text: var(--primary-foreground);
+  --itc-btn-secondary-bg: var(--secondary);
+  --itc-btn-secondary-bg-hover: var(--accent);
+  --itc-btn-secondary-bg-active: var(--accent);
+  --itc-btn-secondary-text: var(--secondary-foreground);
+  --itc-btn-secondary-border: var(--border);
+  --itc-btn-tertiary-bg: var(--muted);
+  --itc-btn-tertiary-bg-hover: var(--accent);
+  --itc-btn-tertiary-bg-active: var(--accent);
+  --itc-btn-tertiary-text: var(--muted-foreground);
+  --itc-acc-pill-bg: var(--primary);
+  --itc-acc-icon-color: var(--primary);
+  --itc-acc-btn-hover-bg: var(--accent);
+  --itc-acc-btn-active-bg: var(--accent);
+  --itc-tab-primary: var(--primary);
+  --itc-tab-primary-hover: color-mix(in oklch, var(--primary) 85%, black);
+  --itc-tab-text-active: var(--primary);
+  --itc-font: var(--font-sans);
+}
+
+
+
+.itc-table-wrapper {
+  background-color: var(--card);
+  border-radius: var(--radius-2xl);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+.itc-table-toolbar {
+  border-bottom-color: var(--border);
+  padding: 1rem 1.5rem;
+  margin-bottom: 1rem;
+}
+.itc-table-search-input {
+  color: var(--foreground);
+  background-color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+}
+.itc-table-search-input::placeholder {
+  color: var(--muted-foreground);
+}
+.itc-table-search-icon {
+  color: var(--muted-foreground);
+}
+.itc-table thead th {
+  color: var(--foreground);
+  background-color: var(--card);
+  border-bottom-color: var(--border);
+}
+.itc-table tbody td {
+  color: var(--foreground);
+  border-bottom-color: var(--border);
+}
+.itc-table thead th:first-child,
+.itc-table tbody td:first-child {
+  padding-left: 1.5rem;
+}
+.itc-table thead th:last-child,
+.itc-table tbody td:last-child {
+  padding-right: 1.5rem;
+}
+.itc-table.bordered td {
+  border-color: var(--border);
+}
+.itc-table tbody tr.striped {
+  background-color: color-mix(in oklch, var(--muted) 50%, transparent);
+}
+.itc-table tbody tr.hoverable:hover {
+  background-color: color-mix(in oklch, var(--muted) 30%, transparent);
+}
+.itc-table-empty {
+  color: var(--muted-foreground);
+}
+.itc-table-pagination {
+  color: var(--muted-foreground);
+  background-color: var(--card);
+  border-top-color: var(--border);
+  padding: 1rem 1.5rem;
+}
+.itc-table-page-size select {
+  color: var(--foreground);
+  border-color: var(--input);
+  background-color: var(--background);
+}
+.itc-table-page-btn {
+  color: var(--muted-foreground);
+}
+.itc-table-page-ellipsis {
+  color: var(--muted-foreground);
+}
+.itc-table.responsive-cards tr {
+  background-color: var(--card);
+  border-color: var(--border);
+}
+.itc-table.responsive-cards td:before {
+  color: var(--foreground);
 }
 
 @layer base {
