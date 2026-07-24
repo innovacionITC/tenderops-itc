@@ -1,383 +1,295 @@
 import { relations } from "drizzle-orm/relations";
-import { usersInAuth, profiles, organizations, userRoles, companies, financialIndicators, financialIndicatorValues, requirementsMatrix, requirements, tenderopsProcesses, documentTemplates, crmOpportunities, calendarEvents, tasks, comments, auditLogs, integrationErrors, sharepointRepositories, globalFollowups, notifications, aiEvaluations, documents, generatedDocuments, knowledgeBaseItems, secopProcesses, monitoredEntities, secopWatchRuns, detectedProcesses, secopAlerts } from "./schema";
+import { usersInAuth, perfiles, rolesUsuario, procesos, eventosCalendario, tareas, registrosAuditoria, notificaciones, evaluacionesIa, procesosSecop, departamentos, ciudades, parametricaParametros, palabrasClave, modalidades, modalidadParametros, entidades, entidadesParametros, codigosUnspsc, unspscParametros, estadosSecop, estadoSecopParametros } from "./schema";
 
-export const profilesRelations = relations(profiles, ({one}) => ({
+export const perfilesRelations = relations(perfiles, ({one}) => ({
 	usersInAuth: one(usersInAuth, {
-		fields: [profiles.id],
+		fields: [perfiles.id],
 		references: [usersInAuth.id]
-	}),
-	organization: one(organizations, {
-		fields: [profiles.organizationId],
-		references: [organizations.id]
 	}),
 }));
 
 export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
-	profiles: many(profiles),
-	userRoles: many(userRoles),
-	financialIndicatorValues_createdBy: many(financialIndicatorValues, {
-		relationName: "financialIndicatorValues_createdBy_usersInAuth_id"
+	perfiles: many(perfiles),
+	rolesUsuarios: many(rolesUsuario),
+	eventosCalendarios: many(eventosCalendario),
+	registrosAuditorias: many(registrosAuditoria),
+	notificaciones: many(notificaciones),
+	evaluacionesIas: many(evaluacionesIa),
+	procesos_aprobadoPor: many(procesos, {
+		relationName: "procesos_aprobadoPor_usersInAuth_id"
 	}),
-	financialIndicatorValues_updatedBy: many(financialIndicatorValues, {
-		relationName: "financialIndicatorValues_updatedBy_usersInAuth_id"
+	procesos_usuarioResponsableId: many(procesos, {
+		relationName: "procesos_usuarioResponsableId_usersInAuth_id"
 	}),
-	requirements: many(requirements),
-	crmOpportunities: many(crmOpportunities),
-	calendarEvents: many(calendarEvents),
-	comments: many(comments),
-	auditLogs: many(auditLogs),
-	globalFollowups_followedBy: many(globalFollowups, {
-		relationName: "globalFollowups_followedBy_usersInAuth_id"
+	tareas_asignadoPor: many(tareas, {
+		relationName: "tareas_asignadoPor_usersInAuth_id"
 	}),
-	globalFollowups_unfollowedBy: many(globalFollowups, {
-		relationName: "globalFollowups_unfollowedBy_usersInAuth_id"
+	tareas_asignadoA: many(tareas, {
+		relationName: "tareas_asignadoA_usersInAuth_id"
 	}),
-	notifications: many(notifications),
-	aiEvaluations: many(aiEvaluations),
-	documents: many(documents),
-	generatedDocuments: many(generatedDocuments),
-	requirementsMatrices: many(requirementsMatrix),
-	tenderopsProcesses_approvedBy: many(tenderopsProcesses, {
-		relationName: "tenderopsProcesses_approvedBy_usersInAuth_id"
+	parametricaParametros_creadoPor: many(parametricaParametros, {
+		relationName: "parametricaParametros_creadoPor_usersInAuth_id"
 	}),
-	tenderopsProcesses_responsibleUserId: many(tenderopsProcesses, {
-		relationName: "tenderopsProcesses_responsibleUserId_usersInAuth_id"
+	parametricaParametros_modificadoPor: many(parametricaParametros, {
+		relationName: "parametricaParametros_modificadoPor_usersInAuth_id"
 	}),
-	tasks_assignedBy: many(tasks, {
-		relationName: "tasks_assignedBy_usersInAuth_id"
+	palabrasClaves_creadoPor: many(palabrasClave, {
+		relationName: "palabrasClave_creadoPor_usersInAuth_id"
 	}),
-	tasks_assignedTo: many(tasks, {
-		relationName: "tasks_assignedTo_usersInAuth_id"
+	palabrasClaves_modificadoPor: many(palabrasClave, {
+		relationName: "palabrasClave_modificadoPor_usersInAuth_id"
+	}),
+	modalidades_creadoPor: many(modalidades, {
+		relationName: "modalidades_creadoPor_usersInAuth_id"
+	}),
+	modalidades_modificadoPor: many(modalidades, {
+		relationName: "modalidades_modificadoPor_usersInAuth_id"
+	}),
+	entidades_creadoPor: many(entidades, {
+		relationName: "entidades_creadoPor_usersInAuth_id"
+	}),
+	entidades_modificadoPor: many(entidades, {
+		relationName: "entidades_modificadoPor_usersInAuth_id"
+	}),
+	estadosSecops_creadoPor: many(estadosSecop, {
+		relationName: "estadosSecop_creadoPor_usersInAuth_id"
+	}),
+	estadosSecops_modificadoPor: many(estadosSecop, {
+		relationName: "estadosSecop_modificadoPor_usersInAuth_id"
 	}),
 }));
 
-export const organizationsRelations = relations(organizations, ({many}) => ({
-	profiles: many(profiles),
-	companies: many(companies),
-}));
-
-export const userRolesRelations = relations(userRoles, ({one}) => ({
+export const rolesUsuarioRelations = relations(rolesUsuario, ({one}) => ({
 	usersInAuth: one(usersInAuth, {
-		fields: [userRoles.userId],
+		fields: [rolesUsuario.usuarioId],
 		references: [usersInAuth.id]
 	}),
 }));
 
-export const financialIndicatorsRelations = relations(financialIndicators, ({one, many}) => ({
-	company: one(companies, {
-		fields: [financialIndicators.companyId],
-		references: [companies.id]
+export const eventosCalendarioRelations = relations(eventosCalendario, ({one}) => ({
+	proceso: one(procesos, {
+		fields: [eventosCalendario.procesoId],
+		references: [procesos.id]
 	}),
-	financialIndicatorValues: many(financialIndicatorValues),
+	tarea: one(tareas, {
+		fields: [eventosCalendario.tareaId],
+		references: [tareas.id]
+	}),
+	usersInAuth: one(usersInAuth, {
+		fields: [eventosCalendario.usuarioId],
+		references: [usersInAuth.id]
+	}),
 }));
 
-export const companiesRelations = relations(companies, ({one, many}) => ({
-	financialIndicators: many(financialIndicators),
-	financialIndicatorValues: many(financialIndicatorValues),
-	documentTemplates: many(documentTemplates),
-	organization: one(organizations, {
-		fields: [companies.organizationId],
-		references: [organizations.id]
-	}),
-	knowledgeBaseItems: many(knowledgeBaseItems),
-}));
-
-export const financialIndicatorValuesRelations = relations(financialIndicatorValues, ({one}) => ({
-	company: one(companies, {
-		fields: [financialIndicatorValues.companyId],
-		references: [companies.id]
-	}),
-	usersInAuth_createdBy: one(usersInAuth, {
-		fields: [financialIndicatorValues.createdBy],
+export const procesosRelations = relations(procesos, ({one, many}) => ({
+	eventosCalendarios: many(eventosCalendario),
+	notificaciones: many(notificaciones),
+	evaluacionesIas: many(evaluacionesIa),
+	usersInAuth_aprobadoPor: one(usersInAuth, {
+		fields: [procesos.aprobadoPor],
 		references: [usersInAuth.id],
-		relationName: "financialIndicatorValues_createdBy_usersInAuth_id"
+		relationName: "procesos_aprobadoPor_usersInAuth_id"
 	}),
-	financialIndicator: one(financialIndicators, {
-		fields: [financialIndicatorValues.indicatorId],
-		references: [financialIndicators.id]
-	}),
-	usersInAuth_updatedBy: one(usersInAuth, {
-		fields: [financialIndicatorValues.updatedBy],
+	usersInAuth_usuarioResponsableId: one(usersInAuth, {
+		fields: [procesos.usuarioResponsableId],
 		references: [usersInAuth.id],
-		relationName: "financialIndicatorValues_updatedBy_usersInAuth_id"
+		relationName: "procesos_usuarioResponsableId_usersInAuth_id"
 	}),
+	procesosSecop: one(procesosSecop, {
+		fields: [procesos.procesoSecopId],
+		references: [procesosSecop.id]
+	}),
+	tareas: many(tareas),
 }));
 
-export const requirementsRelations = relations(requirements, ({one, many}) => ({
-	requirementsMatrix: one(requirementsMatrix, {
-		fields: [requirements.matrixId],
-		references: [requirementsMatrix.id]
-	}),
-	tenderopsProcess: one(tenderopsProcesses, {
-		fields: [requirements.processId],
-		references: [tenderopsProcesses.id]
-	}),
-	usersInAuth: one(usersInAuth, {
-		fields: [requirements.responsibleUserId],
-		references: [usersInAuth.id]
-	}),
-	comments: many(comments),
-	documents: many(documents),
-	tasks: many(tasks),
-}));
-
-export const requirementsMatrixRelations = relations(requirementsMatrix, ({one, many}) => ({
-	requirements: many(requirements),
-	tenderopsProcess: one(tenderopsProcesses, {
-		fields: [requirementsMatrix.processId],
-		references: [tenderopsProcesses.id]
-	}),
-	usersInAuth: one(usersInAuth, {
-		fields: [requirementsMatrix.validatedBy],
-		references: [usersInAuth.id]
-	}),
-}));
-
-export const tenderopsProcessesRelations = relations(tenderopsProcesses, ({one, many}) => ({
-	requirements: many(requirements),
-	crmOpportunities: many(crmOpportunities),
-	calendarEvents: many(calendarEvents),
-	comments: many(comments),
-	integrationErrors: many(integrationErrors),
-	sharepointRepositories: many(sharepointRepositories),
-	globalFollowups: many(globalFollowups),
-	notifications: many(notifications),
-	aiEvaluations: many(aiEvaluations),
-	documents: many(documents),
-	generatedDocuments: many(generatedDocuments),
-	requirementsMatrices: many(requirementsMatrix),
-	usersInAuth_approvedBy: one(usersInAuth, {
-		fields: [tenderopsProcesses.approvedBy],
+export const tareasRelations = relations(tareas, ({one, many}) => ({
+	eventosCalendarios: many(eventosCalendario),
+	notificaciones: many(notificaciones),
+	usersInAuth_asignadoPor: one(usersInAuth, {
+		fields: [tareas.asignadoPor],
 		references: [usersInAuth.id],
-		relationName: "tenderopsProcesses_approvedBy_usersInAuth_id"
+		relationName: "tareas_asignadoPor_usersInAuth_id"
 	}),
-	usersInAuth_responsibleUserId: one(usersInAuth, {
-		fields: [tenderopsProcesses.responsibleUserId],
+	usersInAuth_asignadoA: one(usersInAuth, {
+		fields: [tareas.asignadoA],
 		references: [usersInAuth.id],
-		relationName: "tenderopsProcesses_responsibleUserId_usersInAuth_id"
+		relationName: "tareas_asignadoA_usersInAuth_id"
 	}),
-	secopProcess: one(secopProcesses, {
-		fields: [tenderopsProcesses.secopProcessId],
-		references: [secopProcesses.id]
+	proceso: one(procesos, {
+		fields: [tareas.procesoId],
+		references: [procesos.id]
 	}),
-	tasks: many(tasks),
 }));
 
-export const documentTemplatesRelations = relations(documentTemplates, ({one, many}) => ({
-	company: one(companies, {
-		fields: [documentTemplates.companyId],
-		references: [companies.id]
-	}),
-	generatedDocuments: many(generatedDocuments),
-}));
-
-export const crmOpportunitiesRelations = relations(crmOpportunities, ({one, many}) => ({
+export const registrosAuditoriaRelations = relations(registrosAuditoria, ({one}) => ({
 	usersInAuth: one(usersInAuth, {
-		fields: [crmOpportunities.createdBy],
-		references: [usersInAuth.id]
-	}),
-	tenderopsProcess: one(tenderopsProcesses, {
-		fields: [crmOpportunities.processId],
-		references: [tenderopsProcesses.id]
-	}),
-	sharepointRepositories: many(sharepointRepositories),
-}));
-
-export const calendarEventsRelations = relations(calendarEvents, ({one}) => ({
-	tenderopsProcess: one(tenderopsProcesses, {
-		fields: [calendarEvents.processId],
-		references: [tenderopsProcesses.id]
-	}),
-	task: one(tasks, {
-		fields: [calendarEvents.taskId],
-		references: [tasks.id]
-	}),
-	usersInAuth: one(usersInAuth, {
-		fields: [calendarEvents.userId],
+		fields: [registrosAuditoria.usuarioId],
 		references: [usersInAuth.id]
 	}),
 }));
 
-export const tasksRelations = relations(tasks, ({one, many}) => ({
-	calendarEvents: many(calendarEvents),
-	comments: many(comments),
-	notifications: many(notifications),
-	usersInAuth_assignedBy: one(usersInAuth, {
-		fields: [tasks.assignedBy],
+export const notificacionesRelations = relations(notificaciones, ({one}) => ({
+	proceso: one(procesos, {
+		fields: [notificaciones.procesoId],
+		references: [procesos.id]
+	}),
+	tarea: one(tareas, {
+		fields: [notificaciones.tareaId],
+		references: [tareas.id]
+	}),
+	usersInAuth: one(usersInAuth, {
+		fields: [notificaciones.usuarioId],
+		references: [usersInAuth.id]
+	}),
+}));
+
+export const evaluacionesIaRelations = relations(evaluacionesIa, ({one}) => ({
+	usersInAuth: one(usersInAuth, {
+		fields: [evaluacionesIa.creadoPor],
+		references: [usersInAuth.id]
+	}),
+	proceso: one(procesos, {
+		fields: [evaluacionesIa.procesoId],
+		references: [procesos.id]
+	}),
+}));
+
+export const procesosSecopRelations = relations(procesosSecop, ({many}) => ({
+	procesos: many(procesos),
+}));
+
+export const ciudadesRelations = relations(ciudades, ({one}) => ({
+	departamento: one(departamentos, {
+		fields: [ciudades.departamentoId],
+		references: [departamentos.id]
+	}),
+}));
+
+export const departamentosRelations = relations(departamentos, ({many}) => ({
+	ciudades: many(ciudades),
+}));
+
+export const parametricaParametrosRelations = relations(parametricaParametros, ({one, many}) => ({
+	usersInAuth_creadoPor: one(usersInAuth, {
+		fields: [parametricaParametros.creadoPor],
 		references: [usersInAuth.id],
-		relationName: "tasks_assignedBy_usersInAuth_id"
+		relationName: "parametricaParametros_creadoPor_usersInAuth_id"
 	}),
-	usersInAuth_assignedTo: one(usersInAuth, {
-		fields: [tasks.assignedTo],
+	usersInAuth_modificadoPor: one(usersInAuth, {
+		fields: [parametricaParametros.modificadoPor],
 		references: [usersInAuth.id],
-		relationName: "tasks_assignedTo_usersInAuth_id"
+		relationName: "parametricaParametros_modificadoPor_usersInAuth_id"
 	}),
-	tenderopsProcess: one(tenderopsProcesses, {
-		fields: [tasks.processId],
-		references: [tenderopsProcesses.id]
-	}),
-	requirement: one(requirements, {
-		fields: [tasks.requirementId],
-		references: [requirements.id]
-	}),
+	palabrasClaves: many(palabrasClave),
+	modalidadParametros: many(modalidadParametros),
+	entidadesParametros: many(entidadesParametros),
+	unspscParametros: many(unspscParametros),
+	estadoSecopParametros: many(estadoSecopParametros),
 }));
 
-export const commentsRelations = relations(comments, ({one}) => ({
-	tenderopsProcess: one(tenderopsProcesses, {
-		fields: [comments.processId],
-		references: [tenderopsProcesses.id]
-	}),
-	requirement: one(requirements, {
-		fields: [comments.requirementId],
-		references: [requirements.id]
-	}),
-	task: one(tasks, {
-		fields: [comments.taskId],
-		references: [tasks.id]
-	}),
-	usersInAuth: one(usersInAuth, {
-		fields: [comments.userId],
-		references: [usersInAuth.id]
-	}),
-}));
-
-export const auditLogsRelations = relations(auditLogs, ({one}) => ({
-	usersInAuth: one(usersInAuth, {
-		fields: [auditLogs.userId],
-		references: [usersInAuth.id]
-	}),
-}));
-
-export const integrationErrorsRelations = relations(integrationErrors, ({one}) => ({
-	tenderopsProcess: one(tenderopsProcesses, {
-		fields: [integrationErrors.processId],
-		references: [tenderopsProcesses.id]
-	}),
-}));
-
-export const sharepointRepositoriesRelations = relations(sharepointRepositories, ({one}) => ({
-	crmOpportunity: one(crmOpportunities, {
-		fields: [sharepointRepositories.crmOpportunityId],
-		references: [crmOpportunities.id]
-	}),
-	tenderopsProcess: one(tenderopsProcesses, {
-		fields: [sharepointRepositories.processId],
-		references: [tenderopsProcesses.id]
-	}),
-}));
-
-export const globalFollowupsRelations = relations(globalFollowups, ({one}) => ({
-	usersInAuth_followedBy: one(usersInAuth, {
-		fields: [globalFollowups.followedBy],
+export const palabrasClaveRelations = relations(palabrasClave, ({one}) => ({
+	usersInAuth_creadoPor: one(usersInAuth, {
+		fields: [palabrasClave.creadoPor],
 		references: [usersInAuth.id],
-		relationName: "globalFollowups_followedBy_usersInAuth_id"
+		relationName: "palabrasClave_creadoPor_usersInAuth_id"
 	}),
-	tenderopsProcess: one(tenderopsProcesses, {
-		fields: [globalFollowups.processId],
-		references: [tenderopsProcesses.id]
-	}),
-	usersInAuth_unfollowedBy: one(usersInAuth, {
-		fields: [globalFollowups.unfollowedBy],
+	usersInAuth_modificadoPor: one(usersInAuth, {
+		fields: [palabrasClave.modificadoPor],
 		references: [usersInAuth.id],
-		relationName: "globalFollowups_unfollowedBy_usersInAuth_id"
+		relationName: "palabrasClave_modificadoPor_usersInAuth_id"
+	}),
+	parametricaParametro: one(parametricaParametros, {
+		fields: [palabrasClave.parametricaParametrosId],
+		references: [parametricaParametros.id]
 	}),
 }));
 
-export const notificationsRelations = relations(notifications, ({one}) => ({
-	tenderopsProcess: one(tenderopsProcesses, {
-		fields: [notifications.processId],
-		references: [tenderopsProcesses.id]
+export const modalidadParametrosRelations = relations(modalidadParametros, ({one}) => ({
+	modalidade: one(modalidades, {
+		fields: [modalidadParametros.modalidadId],
+		references: [modalidades.id]
 	}),
-	task: one(tasks, {
-		fields: [notifications.taskId],
-		references: [tasks.id]
-	}),
-	usersInAuth: one(usersInAuth, {
-		fields: [notifications.userId],
-		references: [usersInAuth.id]
+	parametricaParametro: one(parametricaParametros, {
+		fields: [modalidadParametros.parametricaParametrosId],
+		references: [parametricaParametros.id]
 	}),
 }));
 
-export const aiEvaluationsRelations = relations(aiEvaluations, ({one}) => ({
-	usersInAuth: one(usersInAuth, {
-		fields: [aiEvaluations.createdBy],
-		references: [usersInAuth.id]
+export const modalidadesRelations = relations(modalidades, ({one, many}) => ({
+	modalidadParametros: many(modalidadParametros),
+	usersInAuth_creadoPor: one(usersInAuth, {
+		fields: [modalidades.creadoPor],
+		references: [usersInAuth.id],
+		relationName: "modalidades_creadoPor_usersInAuth_id"
 	}),
-	tenderopsProcess: one(tenderopsProcesses, {
-		fields: [aiEvaluations.processId],
-		references: [tenderopsProcesses.id]
-	}),
-}));
-
-export const documentsRelations = relations(documents, ({one}) => ({
-	usersInAuth: one(usersInAuth, {
-		fields: [documents.createdBy],
-		references: [usersInAuth.id]
-	}),
-	tenderopsProcess: one(tenderopsProcesses, {
-		fields: [documents.processId],
-		references: [tenderopsProcesses.id]
-	}),
-	requirement: one(requirements, {
-		fields: [documents.requirementId],
-		references: [requirements.id]
+	usersInAuth_modificadoPor: one(usersInAuth, {
+		fields: [modalidades.modificadoPor],
+		references: [usersInAuth.id],
+		relationName: "modalidades_modificadoPor_usersInAuth_id"
 	}),
 }));
 
-export const generatedDocumentsRelations = relations(generatedDocuments, ({one}) => ({
-	usersInAuth: one(usersInAuth, {
-		fields: [generatedDocuments.createdBy],
-		references: [usersInAuth.id]
+export const entidadesParametrosRelations = relations(entidadesParametros, ({one}) => ({
+	entidade: one(entidades, {
+		fields: [entidadesParametros.entidadId],
+		references: [entidades.id]
 	}),
-	tenderopsProcess: one(tenderopsProcesses, {
-		fields: [generatedDocuments.processId],
-		references: [tenderopsProcesses.id]
-	}),
-	documentTemplate: one(documentTemplates, {
-		fields: [generatedDocuments.templateId],
-		references: [documentTemplates.id]
+	parametricaParametro: one(parametricaParametros, {
+		fields: [entidadesParametros.parametricaParametrosId],
+		references: [parametricaParametros.id]
 	}),
 }));
 
-export const knowledgeBaseItemsRelations = relations(knowledgeBaseItems, ({one}) => ({
-	company: one(companies, {
-		fields: [knowledgeBaseItems.companyId],
-		references: [companies.id]
+export const entidadesRelations = relations(entidades, ({one, many}) => ({
+	entidadesParametros: many(entidadesParametros),
+	usersInAuth_creadoPor: one(usersInAuth, {
+		fields: [entidades.creadoPor],
+		references: [usersInAuth.id],
+		relationName: "entidades_creadoPor_usersInAuth_id"
+	}),
+	usersInAuth_modificadoPor: one(usersInAuth, {
+		fields: [entidades.modificadoPor],
+		references: [usersInAuth.id],
+		relationName: "entidades_modificadoPor_usersInAuth_id"
 	}),
 }));
 
-export const secopProcessesRelations = relations(secopProcesses, ({many}) => ({
-	tenderopsProcesses: many(tenderopsProcesses),
-}));
-
-export const secopWatchRunsRelations = relations(secopWatchRuns, ({one}) => ({
-	monitoredEntity: one(monitoredEntities, {
-		fields: [secopWatchRuns.entityId],
-		references: [monitoredEntities.id]
+export const unspscParametrosRelations = relations(unspscParametros, ({one}) => ({
+	codigosUnspsc: one(codigosUnspsc, {
+		fields: [unspscParametros.codigoUnspscId],
+		references: [codigosUnspsc.id]
+	}),
+	parametricaParametro: one(parametricaParametros, {
+		fields: [unspscParametros.parametricaParametrosId],
+		references: [parametricaParametros.id]
 	}),
 }));
 
-export const monitoredEntitiesRelations = relations(monitoredEntities, ({many}) => ({
-	secopWatchRuns: many(secopWatchRuns),
-	secopAlerts: many(secopAlerts),
-	detectedProcesses: many(detectedProcesses),
+export const codigosUnspscRelations = relations(codigosUnspsc, ({many}) => ({
+	unspscParametros: many(unspscParametros),
 }));
 
-export const secopAlertsRelations = relations(secopAlerts, ({one}) => ({
-	detectedProcess: one(detectedProcesses, {
-		fields: [secopAlerts.detectedProcessId],
-		references: [detectedProcesses.id]
+export const estadoSecopParametrosRelations = relations(estadoSecopParametros, ({one}) => ({
+	estadosSecop: one(estadosSecop, {
+		fields: [estadoSecopParametros.estadoSecopId],
+		references: [estadosSecop.id]
 	}),
-	monitoredEntity: one(monitoredEntities, {
-		fields: [secopAlerts.entityId],
-		references: [monitoredEntities.id]
+	parametricaParametro: one(parametricaParametros, {
+		fields: [estadoSecopParametros.parametricaParametrosId],
+		references: [parametricaParametros.id]
 	}),
 }));
 
-export const detectedProcessesRelations = relations(detectedProcesses, ({one, many}) => ({
-	secopAlerts: many(secopAlerts),
-	monitoredEntity: one(monitoredEntities, {
-		fields: [detectedProcesses.entityId],
-		references: [monitoredEntities.id]
+export const estadosSecopRelations = relations(estadosSecop, ({one, many}) => ({
+	estadoSecopParametros: many(estadoSecopParametros),
+	usersInAuth_creadoPor: one(usersInAuth, {
+		fields: [estadosSecop.creadoPor],
+		references: [usersInAuth.id],
+		relationName: "estadosSecop_creadoPor_usersInAuth_id"
+	}),
+	usersInAuth_modificadoPor: one(usersInAuth, {
+		fields: [estadosSecop.modificadoPor],
+		references: [usersInAuth.id],
+		relationName: "estadosSecop_modificadoPor_usersInAuth_id"
 	}),
 }));

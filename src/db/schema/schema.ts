@@ -1,4 +1,4 @@
-import { pgTable, foreignKey, pgPolicy, uuid, text, timestamp, unique, numeric, boolean, integer, date, index, jsonb, pgEnum } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, pgPolicy, uuid, text, timestamp, unique, index, jsonb, numeric, date, boolean, varchar, integer, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
 import { usersInAuth as users } from "./auth-users"
 
@@ -7,868 +7,574 @@ export { usersInAuth } from "./auth-users"
 export const appRole = pgEnum("app_role", ['administrador', 'director', 'gestor', 'consultor', 'lectura'])
 
 
-export const profiles = pgTable("profiles", {
+export const perfiles = pgTable("perfiles", {
 	id: uuid().primaryKey().notNull(),
-	organizationId: uuid("organization_id"),
-	fullName: text("full_name"),
+	organizacionId: uuid("organizacion_id"),
+	nombreCompleto: text("nombre_completo"),
 	email: text(),
-	avatarUrl: text("avatar_url"),
-	status: text().default('activo').notNull(),
-	lastLoginAt: timestamp("last_login_at", { withTimezone: true, mode: 'string' }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	urlAvatar: text("url_avatar"),
+	estado: text().default('activo').notNull(),
+	fechaUltimoLogin: timestamp("fecha_ultimo_login", { withTimezone: true, mode: 'string' }),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	foreignKey({
 			columns: [table.id],
 			foreignColumns: [users.id],
 			name: "profiles_id_fkey"
 		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.organizationId],
-			foreignColumns: [organizations.id],
-			name: "profiles_organization_id_fkey"
-		}),
-	pgPolicy("profiles admin all", { as: "permissive", for: "all", to: ["authenticated"], using: sql`has_role(auth.uid(), 'administrador'::app_role)`, withCheck: sql`has_role(auth.uid(), 'administrador'::app_role)`  }),
-	pgPolicy("profiles read admin", { as: "permissive", for: "select", to: ["authenticated"] }),
+	pgPolicy("profiles update own", { as: "permissive", for: "update", to: ["authenticated"], using: sql`(id = auth.uid())` }),
+	pgPolicy("profiles admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
 	pgPolicy("profiles read own", { as: "permissive", for: "select", to: ["authenticated"] }),
+	pgPolicy("profiles read admin", { as: "permissive", for: "select", to: ["authenticated"] }),
 	pgPolicy("profiles read privileged", { as: "permissive", for: "select", to: ["authenticated"] }),
-	pgPolicy("profiles update own", { as: "permissive", for: "update", to: ["authenticated"] }),
 ]);
 
-export const userRoles = pgTable("user_roles", {
+export const rolesUsuario = pgTable("roles_usuario", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id").notNull(),
-	role: appRole().notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	usuarioId: uuid("usuario_id").notNull(),
+	rol: appRole().notNull(),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	foreignKey({
-			columns: [table.userId],
+			columns: [table.usuarioId],
 			foreignColumns: [users.id],
 			name: "user_roles_user_id_fkey"
 		}).onDelete("cascade"),
-	unique("user_roles_user_id_role_key").on(table.userId, table.role),
+	unique("user_roles_user_id_role_key").on(table.usuarioId, table.rol),
 	pgPolicy("user_roles admin manage", { as: "permissive", for: "all", to: ["authenticated"], using: sql`has_role(auth.uid(), 'administrador'::app_role)`, withCheck: sql`has_role(auth.uid(), 'administrador'::app_role)`  }),
-	pgPolicy("user_roles read admin", { as: "permissive", for: "select", to: ["authenticated"] }),
 	pgPolicy("user_roles read own", { as: "permissive", for: "select", to: ["authenticated"] }),
+	pgPolicy("user_roles read admin", { as: "permissive", for: "select", to: ["authenticated"] }),
 ]);
 
-export const financialIndicators = pgTable("financial_indicators", {
+export const eventosCalendario = pgTable("eventos_calendario", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	companyId: uuid("company_id"),
-	name: text().notNull(),
-	category: text(),
-	unit: text(),
-	description: text(),
-	minThreshold: numeric("min_threshold"),
-	maxThreshold: numeric("max_threshold"),
-	isActive: boolean("is_active").default(true).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	usuarioId: uuid("usuario_id").notNull(),
+	procesoId: uuid("proceso_id"),
+	tareaId: uuid("tarea_id"),
+	titulo: text().notNull(),
+	fechaInicio: timestamp("fecha_inicio", { withTimezone: true, mode: 'string' }).notNull(),
+	fechaFin: timestamp("fecha_fin", { withTimezone: true, mode: 'string' }),
+	tipoEvento: text("tipo_evento"),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
 	foreignKey({
-			columns: [table.companyId],
-			foreignColumns: [companies.id],
-			name: "financial_indicators_company_id_fkey"
-		}).onDelete("cascade"),
-	pgPolicy("fi admin", { as: "permissive", for: "all", to: ["authenticated"], using: sql`has_role(auth.uid(), 'administrador'::app_role)`, withCheck: sql`has_role(auth.uid(), 'administrador'::app_role)`  }),
-	pgPolicy("fi read", { as: "permissive", for: "select", to: ["authenticated"] }),
-]);
-
-export const financialIndicatorValues = pgTable("financial_indicator_values", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	indicatorId: uuid("indicator_id"),
-	companyId: uuid("company_id"),
-	periodType: text("period_type"),
-	year: integer(),
-	month: integer(),
-	quarter: integer(),
-	value: numeric(),
-	source: text(),
-	comment: text(),
-	status: text(),
-	createdBy: uuid("created_by"),
-	updatedBy: uuid("updated_by"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.companyId],
-			foreignColumns: [companies.id],
-			name: "financial_indicator_values_company_id_fkey"
-		}),
-	foreignKey({
-			columns: [table.createdBy],
-			foreignColumns: [users.id],
-			name: "financial_indicator_values_created_by_fkey"
-		}),
-	foreignKey({
-			columns: [table.indicatorId],
-			foreignColumns: [financialIndicators.id],
-			name: "financial_indicator_values_indicator_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.updatedBy],
-			foreignColumns: [users.id],
-			name: "financial_indicator_values_updated_by_fkey"
-		}),
-	pgPolicy("fiv admin", { as: "permissive", for: "all", to: ["authenticated"], using: sql`has_role(auth.uid(), 'administrador'::app_role)`, withCheck: sql`has_role(auth.uid(), 'administrador'::app_role)`  }),
-	pgPolicy("fiv read", { as: "permissive", for: "select", to: ["authenticated"] }),
-]);
-
-export const requirements = pgTable("requirements", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	matrixId: uuid("matrix_id"),
-	processId: uuid("process_id"),
-	requirementText: text("requirement_text").notNull(),
-	sourceDocument: text("source_document"),
-	sourceSection: text("source_section"),
-	requirementType: text("requirement_type"),
-	nature: text(),
-	responsibleUserId: uuid("responsible_user_id"),
-	dueDate: date("due_date"),
-	status: text().default('pendiente'),
-	supportDocumentId: uuid("support_document_id"),
-	riskLevel: text("risk_level"),
-	aiObservation: text("ai_observation"),
-	teamComment: text("team_comment"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.matrixId],
-			foreignColumns: [requirementsMatrix.id],
-			name: "requirements_matrix_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.processId],
-			foreignColumns: [tenderopsProcesses.id],
-			name: "requirements_process_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.responsibleUserId],
-			foreignColumns: [users.id],
-			name: "requirements_responsible_user_id_fkey"
-		}),
-	pgPolicy("req read", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
-	pgPolicy("req write", { as: "permissive", for: "all", to: ["authenticated"] }),
-]);
-
-export const documentTemplates = pgTable("document_templates", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	companyId: uuid("company_id"),
-	name: text().notNull(),
-	documentType: text("document_type"),
-	modality: text(),
-	templateUrl: text("template_url"),
-	isActive: boolean("is_active").default(true).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.companyId],
-			foreignColumns: [companies.id],
-			name: "document_templates_company_id_fkey"
-		}),
-	pgPolicy("dtpl admin", { as: "permissive", for: "all", to: ["authenticated"], using: sql`has_role(auth.uid(), 'administrador'::app_role)`, withCheck: sql`has_role(auth.uid(), 'administrador'::app_role)`  }),
-	pgPolicy("dtpl read", { as: "permissive", for: "select", to: ["authenticated"] }),
-]);
-
-export const crmOpportunities = pgTable("crm_opportunities", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	processId: uuid("process_id").notNull(),
-	crmRecordId: text("crm_record_id"),
-	crmUrl: text("crm_url"),
-	status: text().default('pendiente'),
-	modality: text(),
-	createdBy: uuid("created_by"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("idx_crm_process").using("btree", table.processId.asc().nullsLast().op("uuid_ops")),
-	index("idx_crm_status").using("btree", table.status.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.createdBy],
-			foreignColumns: [users.id],
-			name: "crm_opportunities_created_by_fkey"
-		}),
-	foreignKey({
-			columns: [table.processId],
-			foreignColumns: [tenderopsProcesses.id],
-			name: "crm_opportunities_process_id_fkey"
-		}).onDelete("cascade"),
-	unique("crm_opportunities_process_id_key").on(table.processId),
-	pgPolicy("crm read", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
-	pgPolicy("crm write", { as: "permissive", for: "all", to: ["authenticated"] }),
-]);
-
-export const calendarEvents = pgTable("calendar_events", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id").notNull(),
-	processId: uuid("process_id"),
-	taskId: uuid("task_id"),
-	title: text().notNull(),
-	startDate: timestamp("start_date", { withTimezone: true, mode: 'string' }).notNull(),
-	endDate: timestamp("end_date", { withTimezone: true, mode: 'string' }),
-	eventType: text("event_type"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.processId],
-			foreignColumns: [tenderopsProcesses.id],
+			columns: [table.procesoId],
+			foreignColumns: [procesos.id],
 			name: "calendar_events_process_id_fkey"
 		}),
 	foreignKey({
-			columns: [table.taskId],
-			foreignColumns: [tasks.id],
+			columns: [table.tareaId],
+			foreignColumns: [tareas.id],
 			name: "calendar_events_task_id_fkey"
 		}),
 	foreignKey({
-			columns: [table.userId],
+			columns: [table.usuarioId],
 			foreignColumns: [users.id],
 			name: "calendar_events_user_id_fkey"
 		}).onDelete("cascade"),
-	pgPolicy("cal own all", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(user_id = auth.uid())`, withCheck: sql`(user_id = auth.uid())`  }),
-	pgPolicy("cal own select", { as: "permissive", for: "select", to: ["authenticated"] }),
+	pgPolicy("cal own select", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(usuario_id = auth.uid())` }),
+	pgPolicy("cal own all", { as: "permissive", for: "all", to: ["authenticated"] }),
 ]);
 
-export const comments = pgTable("comments", {
+export const registrosAuditoria = pgTable("registros_auditoria", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	processId: uuid("process_id"),
-	requirementId: uuid("requirement_id"),
-	taskId: uuid("task_id"),
-	userId: uuid("user_id"),
-	comment: text().notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	usuarioId: uuid("usuario_id").notNull(),
+	accion: text().notNull(),
+	modulo: text(),
+	tipoEntidad: text("tipo_entidad"),
+	entidadId: uuid("entidad_id"),
+	metadatos: jsonb(),
+	resultado: text(),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
+	index("idx_audit_entity").using("btree", table.tipoEntidad.asc().nullsLast().op("text_ops"), table.entidadId.asc().nullsLast().op("text_ops")),
+	index("idx_audit_user").using("btree", table.usuarioId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
-			columns: [table.processId],
-			foreignColumns: [tenderopsProcesses.id],
-			name: "comments_process_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.requirementId],
-			foreignColumns: [requirements.id],
-			name: "comments_requirement_id_fkey"
-		}),
-	foreignKey({
-			columns: [table.taskId],
-			foreignColumns: [tasks.id],
-			name: "comments_task_id_fkey"
-		}),
-	foreignKey({
-			columns: [table.userId],
-			foreignColumns: [users.id],
-			name: "comments_user_id_fkey"
-		}),
-	pgPolicy("comments insert", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`(user_id = auth.uid())`  }),
-	pgPolicy("comments read", { as: "permissive", for: "select", to: ["authenticated"] }),
-	pgPolicy("comments update own", { as: "permissive", for: "update", to: ["authenticated"] }),
-]);
-
-export const auditLogs = pgTable("audit_logs", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id").notNull(),
-	action: text().notNull(),
-	module: text(),
-	entityType: text("entity_type"),
-	entityId: uuid("entity_id"),
-	metadata: jsonb(),
-	result: text(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("idx_audit_entity").using("btree", table.entityType.asc().nullsLast().op("text_ops"), table.entityId.asc().nullsLast().op("text_ops")),
-	index("idx_audit_user").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
-	foreignKey({
-			columns: [table.userId],
+			columns: [table.usuarioId],
 			foreignColumns: [users.id],
 			name: "audit_logs_user_id_fkey"
 		}),
-	pgPolicy("audit insert own", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`((user_id IS NOT NULL) AND (user_id = auth.uid()))`  }),
+	pgPolicy("audit insert own", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`((usuario_id IS NOT NULL) AND (usuario_id = auth.uid()))`  }),
 	pgPolicy("audit privileged read", { as: "permissive", for: "select", to: ["authenticated"] }),
 ]);
 
-export const integrationErrors = pgTable("integration_errors", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	serviceName: text("service_name").notNull(),
-	processId: uuid("process_id"),
-	errorMessage: text("error_message"),
-	status: text().default('abierto'),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	resolvedAt: timestamp("resolved_at", { withTimezone: true, mode: 'string' }),
-}, (table) => [
-	foreignKey({
-			columns: [table.processId],
-			foreignColumns: [tenderopsProcesses.id],
-			name: "integration_errors_process_id_fkey"
-		}),
-	pgPolicy("ierr admin", { as: "permissive", for: "all", to: ["authenticated"], using: sql`has_role(auth.uid(), 'administrador'::app_role)`, withCheck: sql`has_role(auth.uid(), 'administrador'::app_role)`  }),
-]);
-
-export const secopProcesses = pgTable("secop_processes", {
+export const procesosSecop = pgTable("procesos_secop", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	secopId: text("secop_id").notNull(),
-	title: text().notNull(),
-	entityName: text("entity_name"),
-	description: text(),
-	modality: text(),
-	status: text(),
-	estimatedValue: numeric("estimated_value"),
-	publishDate: date("publish_date"),
-	closingDate: timestamp("closing_date", { withTimezone: true, mode: 'string' }),
+	titulo: text().notNull(),
+	nombreEntidad: text("nombre_entidad"),
+	descripcion: text(),
+	modalidad: text(),
+	estado: text(),
+	valorEstimado: numeric("valor_estimado"),
+	fechaPublicacion: date("fecha_publicacion"),
+	fechaCierre: timestamp("fecha_cierre", { withTimezone: true, mode: 'string' }),
 	sector: text(),
-	category: text(),
-	location: text(),
-	secopUrl: text("secop_url"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	createdBy: uuid("created_by"),
+	categoria: text(),
+	ubicacion: text(),
+	urlSecop: text("url_secop"),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	creadoPor: uuid("creado_por"),
 }, (table) => [
-	index("idx_secop_closing").using("btree", table.closingDate.asc().nullsLast().op("timestamptz_ops")),
-	index("idx_secop_status").using("btree", table.status.asc().nullsLast().op("text_ops")),
+	index("idx_secop_closing").using("btree", table.fechaCierre.asc().nullsLast().op("timestamptz_ops")),
+	index("idx_secop_status").using("btree", table.estado.asc().nullsLast().op("text_ops")),
 	unique("secop_processes_secop_id_key").on(table.secopId),
 	pgPolicy("secop read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
 	pgPolicy("secop write", { as: "permissive", for: "all", to: ["authenticated"] }),
 ]);
 
-export const sharepointRepositories = pgTable("sharepoint_repositories", {
+export const notificaciones = pgTable("notificaciones", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	processId: uuid("process_id"),
-	crmOpportunityId: uuid("crm_opportunity_id"),
-	siteUrl: text("site_url"),
-	libraryName: text("library_name"),
-	folderUrl: text("folder_url"),
-	source: text(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	createdBy: uuid("created_by"),
-	status: text().default('activo'),
+	usuarioId: uuid("usuario_id").notNull(),
+	procesoId: uuid("proceso_id"),
+	tareaId: uuid("tarea_id"),
+	titulo: text().notNull(),
+	mensaje: text(),
+	tipo: text(),
+	leido: boolean().default(false).notNull(),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	index("idx_sp_process").using("btree", table.processId.asc().nullsLast().op("uuid_ops")),
+	index("idx_notif_user_unread").using("btree", table.usuarioId.asc().nullsLast().op("bool_ops"), table.leido.asc().nullsLast().op("bool_ops")),
 	foreignKey({
-			columns: [table.crmOpportunityId],
-			foreignColumns: [crmOpportunities.id],
-			name: "sharepoint_repositories_crm_opportunity_id_fkey"
-		}),
-	foreignKey({
-			columns: [table.processId],
-			foreignColumns: [tenderopsProcesses.id],
-			name: "sharepoint_repositories_process_id_fkey"
-		}).onDelete("cascade"),
-	pgPolicy("sp read", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
-	pgPolicy("sp write", { as: "permissive", for: "all", to: ["authenticated"] }),
-]);
-
-export const globalFollowups = pgTable("global_followups", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	processId: uuid("process_id").notNull(),
-	followedBy: uuid("followed_by"),
-	followedAt: timestamp("followed_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	isActive: boolean("is_active").default(true).notNull(),
-	unfollowedBy: uuid("unfollowed_by"),
-	unfollowedAt: timestamp("unfollowed_at", { withTimezone: true, mode: 'string' }),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.followedBy],
-			foreignColumns: [users.id],
-			name: "global_followups_followed_by_fkey"
-		}),
-	foreignKey({
-			columns: [table.processId],
-			foreignColumns: [tenderopsProcesses.id],
-			name: "global_followups_process_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.unfollowedBy],
-			foreignColumns: [users.id],
-			name: "global_followups_unfollowed_by_fkey"
-		}),
-	pgPolicy("follow read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
-	pgPolicy("follow write", { as: "permissive", for: "all", to: ["authenticated"] }),
-]);
-
-export const notifications = pgTable("notifications", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id").notNull(),
-	processId: uuid("process_id"),
-	taskId: uuid("task_id"),
-	title: text().notNull(),
-	message: text(),
-	type: text(),
-	isRead: boolean("is_read").default(false).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("idx_notif_user_unread").using("btree", table.userId.asc().nullsLast().op("bool_ops"), table.isRead.asc().nullsLast().op("bool_ops")),
-	foreignKey({
-			columns: [table.processId],
-			foreignColumns: [tenderopsProcesses.id],
+			columns: [table.procesoId],
+			foreignColumns: [procesos.id],
 			name: "notifications_process_id_fkey"
 		}),
 	foreignKey({
-			columns: [table.taskId],
-			foreignColumns: [tasks.id],
+			columns: [table.tareaId],
+			foreignColumns: [tareas.id],
 			name: "notifications_task_id_fkey"
 		}),
 	foreignKey({
-			columns: [table.userId],
+			columns: [table.usuarioId],
 			foreignColumns: [users.id],
 			name: "notifications_user_id_fkey"
 		}).onDelete("cascade"),
-	pgPolicy("notif create", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`((user_id = auth.uid()) OR has_any_role(auth.uid(), ARRAY['administrador'::app_role, 'director'::app_role, 'gestor'::app_role]))`  }),
-	pgPolicy("notif own select", { as: "permissive", for: "select", to: ["authenticated"] }),
+	pgPolicy("notif own select", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(usuario_id = auth.uid())` }),
 	pgPolicy("notif own update", { as: "permissive", for: "update", to: ["authenticated"] }),
+	pgPolicy("notif create", { as: "permissive", for: "insert", to: ["authenticated"] }),
 ]);
 
-export const aiEvaluations = pgTable("ai_evaluations", {
+export const evaluacionesIa = pgTable("evaluaciones_ia", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	processId: uuid("process_id").notNull(),
-	summary: text(),
-	opportunityLevel: text("opportunity_level"),
-	riskLevel: text("risk_level"),
-	complexityLevel: text("complexity_level"),
+	procesoId: uuid("proceso_id").notNull(),
+	resumen: text(),
+	nivelOportunidad: text("nivel_oportunidad"),
+	nivelRiesgo: text("nivel_riesgo"),
+	nivelComplejidad: text("nivel_complejidad"),
 	fitIntelecto: text("fit_intelecto"),
 	fitXrm: text("fit_xrm"),
-	criticalRequirements: jsonb("critical_requirements"),
-	alerts: jsonb(),
-	recommendation: text(),
-	justification: text(),
-	suggestedModality: text("suggested_modality"),
-	createdBy: uuid("created_by"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	status: text().default('borrador'),
+	requisitosCriticos: jsonb("requisitos_criticos"),
+	alertas: jsonb(),
+	recomendacion: text(),
+	justificacion: text(),
+	modalidadSugerida: text("modalidad_sugerida"),
+	creadoPor: uuid("creado_por"),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	estado: text().default('borrador'),
 }, (table) => [
 	foreignKey({
-			columns: [table.createdBy],
+			columns: [table.creadoPor],
 			foreignColumns: [users.id],
 			name: "ai_evaluations_created_by_fkey"
 		}),
 	foreignKey({
-			columns: [table.processId],
-			foreignColumns: [tenderopsProcesses.id],
+			columns: [table.procesoId],
+			foreignColumns: [procesos.id],
 			name: "ai_evaluations_process_id_fkey"
 		}).onDelete("cascade"),
 	pgPolicy("aieval read", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
 	pgPolicy("aieval write", { as: "permissive", for: "all", to: ["authenticated"] }),
 ]);
 
-export const documents = pgTable("documents", {
+export const procesos = pgTable("procesos", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	processId: uuid("process_id"),
-	requirementId: uuid("requirement_id"),
-	taskId: uuid("task_id"),
-	documentType: text("document_type"),
-	fileName: text("file_name"),
-	source: text(),
-	sourceUrl: text("source_url"),
-	sharepointUrl: text("sharepoint_url"),
-	driveItemId: text("drive_item_id"),
-	status: text(),
-	createdBy: uuid("created_by"),
-	uploadedAt: timestamp("uploaded_at", { withTimezone: true, mode: 'string' }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	procesoSecopId: uuid("proceso_secop_id"),
+	estadoInterno: text("estado_interno").default('detectado').notNull(),
+	prioridad: text().default('media'),
+	usuarioResponsableId: uuid("usuario_responsable_id"),
+	esRelevante: boolean("es_relevante"),
+	estadoDecision: text("estado_decision").default('pendiente'),
+	modalidadParticipacion: text("modalidad_participacion"),
+	aprobadoPor: uuid("aprobado_por"),
+	fechaAprobacion: timestamp("fecha_aprobacion", { withTimezone: true, mode: 'string' }),
+	notasDecision: text("notas_decision"),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	creadoPor: uuid("creado_por"),
 }, (table) => [
+	index("idx_topp_responsible").using("btree", table.usuarioResponsableId.asc().nullsLast().op("uuid_ops")),
+	index("idx_topp_secop").using("btree", table.procesoSecopId.asc().nullsLast().op("uuid_ops")),
+	index("idx_topp_status").using("btree", table.estadoInterno.asc().nullsLast().op("text_ops")),
 	foreignKey({
-			columns: [table.createdBy],
-			foreignColumns: [users.id],
-			name: "documents_created_by_fkey"
-		}),
-	foreignKey({
-			columns: [table.processId],
-			foreignColumns: [tenderopsProcesses.id],
-			name: "documents_process_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.requirementId],
-			foreignColumns: [requirements.id],
-			name: "documents_requirement_id_fkey"
-		}),
-	pgPolicy("docs read", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
-	pgPolicy("docs write", { as: "permissive", for: "all", to: ["authenticated"] }),
-]);
-
-export const generatedDocuments = pgTable("generated_documents", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	processId: uuid("process_id"),
-	templateId: uuid("template_id"),
-	documentName: text("document_name"),
-	generatedByAi: boolean("generated_by_ai").default(true),
-	status: text(),
-	sharepointUrl: text("sharepoint_url"),
-	createdBy: uuid("created_by"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.createdBy],
-			foreignColumns: [users.id],
-			name: "generated_documents_created_by_fkey"
-		}),
-	foreignKey({
-			columns: [table.processId],
-			foreignColumns: [tenderopsProcesses.id],
-			name: "generated_documents_process_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.templateId],
-			foreignColumns: [documentTemplates.id],
-			name: "generated_documents_template_id_fkey"
-		}),
-	pgPolicy("gdocs read", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
-	pgPolicy("gdocs write", { as: "permissive", for: "all", to: ["authenticated"] }),
-]);
-
-export const companies = pgTable("companies", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	organizationId: uuid("organization_id"),
-	name: text().notNull(),
-	code: text(),
-	type: text(),
-	nit: text(),
-	isActive: boolean("is_active").default(true).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	createdBy: uuid("created_by"),
-}, (table) => [
-	foreignKey({
-			columns: [table.organizationId],
-			foreignColumns: [organizations.id],
-			name: "companies_organization_id_fkey"
-		}).onDelete("cascade"),
-	pgPolicy("companies admin manage", { as: "permissive", for: "all", to: ["authenticated"], using: sql`has_role(auth.uid(), 'administrador'::app_role)`, withCheck: sql`has_role(auth.uid(), 'administrador'::app_role)`  }),
-	pgPolicy("companies read auth", { as: "permissive", for: "select", to: ["authenticated"] }),
-]);
-
-export const organizations = pgTable("organizations", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	name: text().notNull(),
-	domain: text(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	createdBy: uuid("created_by"),
-}, (table) => [
-	pgPolicy("orgs admin manage", { as: "permissive", for: "all", to: ["authenticated"], using: sql`has_role(auth.uid(), 'administrador'::app_role)`, withCheck: sql`has_role(auth.uid(), 'administrador'::app_role)`  }),
-	pgPolicy("orgs read auth", { as: "permissive", for: "select", to: ["authenticated"] }),
-]);
-
-export const knowledgeBaseItems = pgTable("knowledge_base_items", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	companyId: uuid("company_id"),
-	title: text().notNull(),
-	type: text(),
-	description: text(),
-	documentUrl: text("document_url"),
-	tags: text().array(),
-	isActive: boolean("is_active").default(true).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	createdBy: uuid("created_by"),
-	status: text().default('publicado'),
-}, (table) => [
-	foreignKey({
-			columns: [table.companyId],
-			foreignColumns: [companies.id],
-			name: "knowledge_base_items_company_id_fkey"
-		}),
-	pgPolicy("kb admin", { as: "permissive", for: "all", to: ["authenticated"], using: sql`has_role(auth.uid(), 'administrador'::app_role)`, withCheck: sql`has_role(auth.uid(), 'administrador'::app_role)`  }),
-	pgPolicy("kb read", { as: "permissive", for: "select", to: ["authenticated"] }),
-]);
-
-export const requirementsMatrix = pgTable("requirements_matrix", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	processId: uuid("process_id").notNull(),
-	generatedByAi: boolean("generated_by_ai").default(true),
-	status: text().default('borrador'),
-	validatedBy: uuid("validated_by"),
-	validatedAt: timestamp("validated_at", { withTimezone: true, mode: 'string' }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	createdBy: uuid("created_by"),
-}, (table) => [
-	foreignKey({
-			columns: [table.processId],
-			foreignColumns: [tenderopsProcesses.id],
-			name: "requirements_matrix_process_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.validatedBy],
-			foreignColumns: [users.id],
-			name: "requirements_matrix_validated_by_fkey"
-		}),
-	pgPolicy("rm read", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
-	pgPolicy("rm write", { as: "permissive", for: "all", to: ["authenticated"] }),
-]);
-
-export const tenderopsProcesses = pgTable("tenderops_processes", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	secopProcessId: uuid("secop_process_id"),
-	internalStatus: text("internal_status").default('detectado').notNull(),
-	priority: text().default('media'),
-	responsibleUserId: uuid("responsible_user_id"),
-	isRelevant: boolean("is_relevant"),
-	decisionStatus: text("decision_status").default('pendiente'),
-	participationModality: text("participation_modality"),
-	approvedBy: uuid("approved_by"),
-	approvedAt: timestamp("approved_at", { withTimezone: true, mode: 'string' }),
-	decisionNotes: text("decision_notes"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	createdBy: uuid("created_by"),
-}, (table) => [
-	index("idx_topp_responsible").using("btree", table.responsibleUserId.asc().nullsLast().op("uuid_ops")),
-	index("idx_topp_secop").using("btree", table.secopProcessId.asc().nullsLast().op("uuid_ops")),
-	index("idx_topp_status").using("btree", table.internalStatus.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.approvedBy],
+			columns: [table.aprobadoPor],
 			foreignColumns: [users.id],
 			name: "tenderops_processes_approved_by_fkey"
 		}),
 	foreignKey({
-			columns: [table.responsibleUserId],
+			columns: [table.usuarioResponsableId],
 			foreignColumns: [users.id],
 			name: "tenderops_processes_responsible_user_id_fkey"
 		}),
 	foreignKey({
-			columns: [table.secopProcessId],
-			foreignColumns: [secopProcesses.id],
+			columns: [table.procesoSecopId],
+			foreignColumns: [procesosSecop.id],
 			name: "tenderops_processes_secop_process_id_fkey"
 		}).onDelete("cascade"),
 	pgPolicy("topp read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
 	pgPolicy("topp write", { as: "permissive", for: "all", to: ["authenticated"] }),
 ]);
 
-export const notes = pgTable("notes", {
+export const credencialesApi = pgTable("credenciales_api", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	processId: uuid("process_id"),
-	crmOpportunityId: uuid("crm_opportunity_id"),
-	taskId: uuid("task_id"),
-	userId: uuid("user_id").notNull(),
-	content: text().notNull(),
-	visibility: text().default('equipo').notNull(),
-	status: text().default('activa').notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	clave: text().notNull(),
+	valor: text(),
+	descripcion: text(),
+	modificadoPor: uuid("modificado_por"),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	index("idx_notes_crm").using("btree", table.crmOpportunityId.asc().nullsLast().op("uuid_ops")),
-	index("idx_notes_process").using("btree", table.processId.asc().nullsLast().op("uuid_ops")),
-	index("idx_notes_task").using("btree", table.taskId.asc().nullsLast().op("uuid_ops")),
-	index("idx_notes_user").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
-	pgPolicy("notes own all", { as: "permissive", for: "all", to: ["authenticated"], using: sql`(user_id = auth.uid())`, withCheck: sql`(user_id = auth.uid())`  }),
-	pgPolicy("notes team read", { as: "permissive", for: "select", to: ["authenticated"] }),
-]);
-
-export const appSettings = pgTable("app_settings", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	key: text().notNull(),
-	value: jsonb(),
-	description: text(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	unique("app_settings_key_key").on(table.key),
-	pgPolicy("settings admin write", { as: "permissive", for: "all", to: ["authenticated"], using: sql`has_role(auth.uid(), 'administrador'::app_role)`, withCheck: sql`has_role(auth.uid(), 'administrador'::app_role)`  }),
-	pgPolicy("settings read", { as: "permissive", for: "select", to: ["authenticated"] }),
-]);
-
-export const apiCredentials = pgTable("api_credentials", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	key: text().notNull(),
-	value: text(),
-	description: text(),
-	updatedBy: uuid("updated_by"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	unique("api_credentials_key_key").on(table.key),
+	unique("api_credentials_key_key").on(table.clave),
 	pgPolicy("api_credentials admin all", { as: "permissive", for: "all", to: ["authenticated"], using: sql`has_role(auth.uid(), 'administrador'::app_role)`, withCheck: sql`has_role(auth.uid(), 'administrador'::app_role)`  }),
 ]);
 
-export const monitoredEntities = pgTable("monitored_entities", {
+export const seguimientosProceso = pgTable("seguimientos_proceso", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	name: text().notNull(),
-	alias: text(),
-	nit: text(),
-	department: text(),
-	city: text(),
-	keywords: text().array().default([""]).notNull(),
-	unspsc: text().array().default([""]).notNull(),
-	modalities: text().array().default([""]).notNull(),
-	minValue: numeric("min_value"),
-	isActive: boolean("is_active").default(true).notNull(),
-	lastRunAt: timestamp("last_run_at", { withTimezone: true, mode: 'string' }),
-	lastNewCount: integer("last_new_count").default(0).notNull(),
-	createdBy: uuid("created_by"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	usuarioId: uuid("usuario_id").notNull(),
+	procesoId: uuid("proceso_id").notNull(),
+	activo: boolean().default(true).notNull(),
+	notificarCambios: boolean("notificar_cambios").default(true).notNull(),
+	fechaSeguimiento: timestamp("fecha_seguimiento", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaDejarSeguimiento: timestamp("fecha_dejar_seguimiento", { withTimezone: true, mode: 'string' }),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	razonDejarSeguimiento: text("razon_dejar_seguimiento"),
 }, (table) => [
-	pgPolicy("me read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
-	pgPolicy("me write", { as: "permissive", for: "all", to: ["authenticated"] }),
-]);
-
-export const secopWatchRuns = pgTable("secop_watch_runs", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	entityId: uuid("entity_id"),
-	startedAt: timestamp("started_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	finishedAt: timestamp("finished_at", { withTimezone: true, mode: 'string' }),
-	status: text().default('running').notNull(),
-	newCount: integer("new_count").default(0).notNull(),
-	updatedCount: integer("updated_count").default(0).notNull(),
-	errorMessage: text("error_message"),
-}, (table) => [
-	foreignKey({
-			columns: [table.entityId],
-			foreignColumns: [monitoredEntities.id],
-			name: "secop_watch_runs_entity_id_fkey"
-		}).onDelete("set null"),
-	pgPolicy("swr read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
-]);
-
-export const secopAlerts = pgTable("secop_alerts", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	detectedProcessId: uuid("detected_process_id"),
-	entityId: uuid("entity_id"),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	readBy: uuid("read_by").array().default([""]).notNull(),
-}, (table) => [
-	foreignKey({
-			columns: [table.detectedProcessId],
-			foreignColumns: [detectedProcesses.id],
-			name: "secop_alerts_detected_process_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.entityId],
-			foreignColumns: [monitoredEntities.id],
-			name: "secop_alerts_entity_id_fkey"
-		}).onDelete("set null"),
-	pgPolicy("sa read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
-	pgPolicy("sa update privileged", { as: "permissive", for: "update", to: ["authenticated"] }),
-]);
-
-export const userProcessFollowups = pgTable("user_process_followups", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id").notNull(),
-	processId: uuid("process_id").notNull(),
-	isActive: boolean("is_active").default(true).notNull(),
-	notifyOnChange: boolean("notify_on_change").default(true).notNull(),
-	followedAt: timestamp("followed_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	unfollowedAt: timestamp("unfollowed_at", { withTimezone: true, mode: 'string' }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	unfollowReason: text("unfollow_reason"),
-}, (table) => [
-	index("idx_upf_active").using("btree", table.isActive.asc().nullsLast().op("bool_ops")),
-	index("idx_upf_process").using("btree", table.processId.asc().nullsLast().op("uuid_ops")),
-	index("idx_upf_user").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
-	unique("user_process_followups_user_id_process_id_key").on(table.userId, table.processId),
-	pgPolicy("upf admin read", { as: "permissive", for: "select", to: ["authenticated"], using: sql`has_role(auth.uid(), 'administrador'::app_role)` }),
-	pgPolicy("upf own delete", { as: "permissive", for: "delete", to: ["authenticated"] }),
+	index("idx_upf_active").using("btree", table.activo.asc().nullsLast().op("bool_ops")),
+	index("idx_upf_process").using("btree", table.procesoId.asc().nullsLast().op("uuid_ops")),
+	index("idx_upf_user").using("btree", table.usuarioId.asc().nullsLast().op("uuid_ops")),
+	unique("user_process_followups_user_id_process_id_key").on(table.usuarioId, table.procesoId),
+	pgPolicy("upf own select", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(usuario_id = auth.uid())` }),
 	pgPolicy("upf own insert", { as: "permissive", for: "insert", to: ["authenticated"] }),
-	pgPolicy("upf own select", { as: "permissive", for: "select", to: ["authenticated"] }),
 	pgPolicy("upf own update", { as: "permissive", for: "update", to: ["authenticated"] }),
+	pgPolicy("upf own delete", { as: "permissive", for: "delete", to: ["authenticated"] }),
+	pgPolicy("upf admin read", { as: "permissive", for: "select", to: ["authenticated"] }),
 	pgPolicy("upf staff read", { as: "permissive", for: "select", to: ["authenticated"] }),
 ]);
 
-export const tasks = pgTable("tasks", {
+export const tareas = pgTable("tareas", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	processId: uuid("process_id"),
-	requirementId: uuid("requirement_id"),
-	title: text().notNull(),
-	description: text(),
-	assignedTo: uuid("assigned_to"),
-	assignedBy: uuid("assigned_by"),
-	priority: text().default('media'),
-	status: text().default('pendiente'),
-	dueDate: timestamp("due_date", { withTimezone: true, mode: 'string' }),
-	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	completedBy: uuid("completed_by"),
+	procesoId: uuid("proceso_id"),
+	requisitoId: uuid("requisito_id"),
+	titulo: text().notNull(),
+	descripcion: text(),
+	asignadoA: uuid("asignado_a"),
+	asignadoPor: uuid("asignado_por"),
+	prioridad: text().default('media'),
+	estado: text().default('pendiente'),
+	fechaVencimiento: timestamp("fecha_vencimiento", { withTimezone: true, mode: 'string' }),
+	fechaCompletado: timestamp("fecha_completado", { withTimezone: true, mode: 'string' }),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	completadoPor: uuid("completado_por"),
 }, (table) => [
 	foreignKey({
-			columns: [table.assignedBy],
+			columns: [table.asignadoPor],
 			foreignColumns: [users.id],
 			name: "tasks_assigned_by_fkey"
 		}),
 	foreignKey({
-			columns: [table.assignedTo],
+			columns: [table.asignadoA],
 			foreignColumns: [users.id],
 			name: "tasks_assigned_to_fkey"
 		}),
 	foreignKey({
-			columns: [table.processId],
-			foreignColumns: [tenderopsProcesses.id],
+			columns: [table.procesoId],
+			foreignColumns: [procesos.id],
 			name: "tasks_process_id_fkey"
 		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.requirementId],
-			foreignColumns: [requirements.id],
-			name: "tasks_requirement_id_fkey"
-		}),
-	pgPolicy("tasks manage", { as: "permissive", for: "all", to: ["authenticated"], using: sql`has_any_role(auth.uid(), ARRAY['administrador'::app_role, 'director'::app_role, 'gestor'::app_role])`, withCheck: sql`has_any_role(auth.uid(), ARRAY['administrador'::app_role, 'director'::app_role, 'gestor'::app_role])`  }),
+	pgPolicy("tasks read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
 	pgPolicy("tasks own update", { as: "permissive", for: "update", to: ["authenticated"] }),
-	pgPolicy("tasks read auth", { as: "permissive", for: "select", to: ["authenticated"] }),
+	pgPolicy("tasks manage", { as: "permissive", for: "all", to: ["authenticated"] }),
 ]);
 
-export const detectedProcesses = pgTable("detected_processes", {
+export const procesosDetectados = pgTable("procesos_detectados", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	secopId: text("secop_id").notNull(),
-	entityId: uuid("entity_id"),
+	entidadId: uuid("entidad_id"),
 	dataset: text().default('secop_ii').notNull(),
-	title: text(),
-	entityName: text("entity_name"),
+	titulo: text(),
+	nombreEntidad: text("nombre_entidad"),
 	objeto: text(),
 	modalidad: text(),
 	estado: text(),
 	valor: numeric(),
 	fechaPublicacion: timestamp("fecha_publicacion", { withTimezone: true, mode: 'string' }),
 	fechaCierre: timestamp("fecha_cierre", { withTimezone: true, mode: 'string' }),
-	secopUrl: text("secop_url"),
-	isNew: boolean("is_new").default(true).notNull(),
-	promotedToFollowup: boolean("promoted_to_followup").default(false).notNull(),
-	firstSeenAt: timestamp("first_seen_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	lastSeenAt: timestamp("last_seen_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	raw: jsonb(),
-	discarded: boolean().default(false).notNull(),
-	discardedAt: timestamp("discarded_at", { withTimezone: true, mode: 'string' }),
-	discardedBy: uuid("discarded_by"),
-	discardReason: text("discard_reason"),
+	urlSecop: text("url_secop"),
+	esNuevo: boolean("es_nuevo").default(true).notNull(),
+	promovidoASeguimiento: boolean("promovido_a_seguimiento").default(false).notNull(),
+	fechaPrimeraDeteccion: timestamp("fecha_primera_deteccion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaUltimaDeteccion: timestamp("fecha_ultima_deteccion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	datosOriginales: jsonb("datos_originales"),
+	descartado: boolean().default(false).notNull(),
+	fechaDescarte: timestamp("fecha_descarte", { withTimezone: true, mode: 'string' }),
+	descartadoPor: uuid("descartado_por"),
+	razonDescarte: text("razon_descarte"),
 }, (table) => [
-	index("detected_processes_discarded_idx").using("btree", table.discarded.asc().nullsLast().op("bool_ops")),
-	index("idx_detected_entity").using("btree", table.entityId.asc().nullsLast().op("uuid_ops")),
-	index("idx_detected_is_new").using("btree", table.isNew.asc().nullsLast().op("bool_ops")).where(sql`(is_new = true)`),
-	foreignKey({
-			columns: [table.entityId],
-			foreignColumns: [monitoredEntities.id],
-			name: "detected_processes_entity_id_fkey"
-		}).onDelete("set null"),
+	index("detected_processes_discarded_idx").using("btree", table.descartado.asc().nullsLast().op("bool_ops")),
+	index("idx_detected_entity").using("btree", table.entidadId.asc().nullsLast().op("uuid_ops")),
+	index("idx_detected_is_new").using("btree", table.esNuevo.asc().nullsLast().op("bool_ops")).where(sql`(es_nuevo = true)`),
 	unique("detected_processes_secop_id_key").on(table.secopId),
 	pgPolicy("dp read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
 	pgPolicy("dp update privileged", { as: "permissive", for: "update", to: ["authenticated"] }),
 ]);
 
-export const secopApiCalls = pgTable("secop_api_calls", {
+export const departamentos = pgTable("departamentos", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	userId: uuid("user_id"),
-	action: text().default('api.secop.query').notNull(),
-	dataset: text().notNull(),
-	endpoint: text().notNull(),
-	soql: text().notNull(),
-	requestParams: jsonb("request_params").default({}).notNull(),
-	entityType: text("entity_type"),
-	entityId: text("entity_id"),
-	result: text().default('ok').notNull(),
-	status: integer(),
-	durationMs: integer("duration_ms"),
-	rowCount: integer("row_count"),
-	responsePreview: jsonb("response_preview"),
-	errorMessage: text("error_message"),
-	metadata: jsonb().default({}).notNull(),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	nombre: varchar().notNull(),
 }, (table) => [
-	index("idx_secop_api_calls_action").using("btree", table.action.asc().nullsLast().op("text_ops")),
-	index("idx_secop_api_calls_created_at").using("btree", table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
-	index("idx_secop_api_calls_dataset").using("btree", table.dataset.asc().nullsLast().op("text_ops")),
-	index("idx_secop_api_calls_result").using("btree", table.result.asc().nullsLast().op("text_ops")),
-	index("idx_secop_api_calls_user").using("btree", table.userId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")),
-	pgPolicy("Admins and auditors can view all secop api calls", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(has_role(auth.uid(), 'administrador'::app_role) OR has_role(auth.uid(), 'director'::app_role))` }),
-	pgPolicy("Users can view their own secop api calls", { as: "permissive", for: "select", to: ["authenticated"] }),
+	unique("departamentos_nombre_key").on(table.nombre),
+	pgPolicy("dep read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("dep admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);
+
+export const ciudades = pgTable("ciudades", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	nombre: varchar().notNull(),
+	departamentoId: uuid("departamento_id"),
+}, (table) => [
+	foreignKey({
+			columns: [table.departamentoId],
+			foreignColumns: [departamentos.id],
+			name: "ciudades_departamento_id_fkey"
+		}).onDelete("cascade"),
+	unique("ciudades_departamento_id_nombre_key").on(table.nombre, table.departamentoId),
+	pgPolicy("ciu read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("ciu admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);
+
+export const parametricaParametros = pgTable("parametrica_parametros", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	habilitado: boolean().default(true).notNull(),
+	datasetSecopI: boolean("dataset_secop_i").default(false).notNull(),
+	datasetSecopIi: boolean("dataset_secop_ii").default(true).notNull(),
+	diasHaciaAtras: integer("dias_hacia_atras").notNull(),
+	intervalosCronMin: integer("intervalos_cron_min").notNull(),
+	maxResultadosConsulta: integer("max_resultados_consulta").notNull(),
+	valorMinimo: numeric("valor_minimo"),
+	valorMaximo: numeric("valor_maximo"),
+	creadoPor: uuid("creado_por"),
+	modificadoPor: uuid("modificado_por"),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.creadoPor],
+			foreignColumns: [users.id],
+			name: "parametrica_parametros_creado_por_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.modificadoPor],
+			foreignColumns: [users.id],
+			name: "parametrica_parametros_modificado_por_fkey"
+		}).onDelete("set null"),
+	pgPolicy("pp read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("pp admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);
+
+export const palabrasClave = pgTable("palabras_clave", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	parametricaParametrosId: uuid("parametrica_parametros_id"),
+	palabraClave: varchar("palabra_clave").notNull(),
+	estado: boolean().default(true),
+	creadoPor: uuid("creado_por"),
+	modificadoPor: uuid("modificado_por"),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.creadoPor],
+			foreignColumns: [users.id],
+			name: "palabras_clave_creado_por_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.modificadoPor],
+			foreignColumns: [users.id],
+			name: "palabras_clave_modificado_por_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.parametricaParametrosId],
+			foreignColumns: [parametricaParametros.id],
+			name: "palabras_clave_parametrica_parametros_id_fkey"
+		}).onDelete("cascade"),
+	unique("palabras_clave_parametrica_parametros_id_palabra_clave_key").on(table.parametricaParametrosId, table.palabraClave),
+	pgPolicy("pc read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("pc admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);
+
+export const modalidadParametros = pgTable("modalidad_parametros", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	parametricaParametrosId: uuid("parametrica_parametros_id"),
+	modalidadId: uuid("modalidad_id"),
+}, (table) => [
+	foreignKey({
+			columns: [table.modalidadId],
+			foreignColumns: [modalidades.id],
+			name: "modalidad_parametros_modalidad_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.parametricaParametrosId],
+			foreignColumns: [parametricaParametros.id],
+			name: "modalidad_parametros_parametrica_parametros_id_fkey"
+		}).onDelete("cascade"),
+	unique("modalidad_parametros_pp_id_modalidad_id_key").on(table.parametricaParametrosId, table.modalidadId),
+	pgPolicy("mp read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("mp admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);
+
+export const modalidades = pgTable("modalidades", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	descripcion: varchar(),
+	codigo: varchar(),
+	estado: boolean().default(true),
+	creadoPor: uuid("creado_por"),
+	modificadoPor: uuid("modificado_por"),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.creadoPor],
+			foreignColumns: [users.id],
+			name: "modalidades_creado_por_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.modificadoPor],
+			foreignColumns: [users.id],
+			name: "modalidades_modificado_por_fkey"
+		}).onDelete("set null"),
+	unique("modalidades_codigo_key").on(table.codigo),
+	pgPolicy("mod read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("mod admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);
+
+export const entidadesParametros = pgTable("entidades_parametros", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	parametricaParametrosId: uuid("parametrica_parametros_id"),
+	entidadId: uuid("entidad_id"),
+}, (table) => [
+	foreignKey({
+			columns: [table.entidadId],
+			foreignColumns: [entidades.id],
+			name: "entidades_parametros_entidad_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.parametricaParametrosId],
+			foreignColumns: [parametricaParametros.id],
+			name: "entidades_parametros_parametrica_parametros_id_fkey"
+		}).onDelete("cascade"),
+	unique("entidades_parametros_pp_id_entidad_id_key").on(table.parametricaParametrosId, table.entidadId),
+	pgPolicy("ep read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("ep admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);
+
+export const entidades = pgTable("entidades", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	nombre: varchar().notNull(),
+	estado: boolean().default(true),
+	creadoPor: uuid("creado_por"),
+	modificadoPor: uuid("modificado_por"),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.creadoPor],
+			foreignColumns: [users.id],
+			name: "entidades_creado_por_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.modificadoPor],
+			foreignColumns: [users.id],
+			name: "entidades_modificado_por_fkey"
+		}).onDelete("set null"),
+	unique("entidades_nombre_key").on(table.nombre),
+	pgPolicy("ent read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("ent admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);
+
+export const unspscParametros = pgTable("unspsc_parametros", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	parametricaParametrosId: uuid("parametrica_parametros_id"),
+	codigoUnspscId: uuid("codigo_unspsc_id"),
+}, (table) => [
+	foreignKey({
+			columns: [table.codigoUnspscId],
+			foreignColumns: [codigosUnspsc.id],
+			name: "unspsc_parametros_codigo_unspsc_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.parametricaParametrosId],
+			foreignColumns: [parametricaParametros.id],
+			name: "unspsc_parametros_parametrica_parametros_id_fkey"
+		}).onDelete("cascade"),
+	unique("unspsc_parametros_pp_id_codigo_unspsc_id_key").on(table.parametricaParametrosId, table.codigoUnspscId),
+	pgPolicy("up read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("up admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);
+
+export const codigosUnspsc = pgTable("codigos_unspsc", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	codigo: varchar().notNull(),
+	descripcion: varchar(),
+}, (table) => [
+	unique("codigos_unspsc_codigo_key").on(table.codigo),
+	pgPolicy("cu read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("cu admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);
+
+export const estadoSecopParametros = pgTable("estado_secop_parametros", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	parametricaParametrosId: uuid("parametrica_parametros_id"),
+	estadoSecopId: uuid("estado_secop_id"),
+}, (table) => [
+	foreignKey({
+			columns: [table.estadoSecopId],
+			foreignColumns: [estadosSecop.id],
+			name: "estado_secop_parametros_estado_secop_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.parametricaParametrosId],
+			foreignColumns: [parametricaParametros.id],
+			name: "estado_secop_parametros_parametrica_parametros_id_fkey"
+		}).onDelete("cascade"),
+	unique("estado_secop_parametros_pp_id_estado_secop_id_key").on(table.parametricaParametrosId, table.estadoSecopId),
+	pgPolicy("esp read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("esp admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);
+
+export const estadosSecop = pgTable("estados_secop", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	nombre: varchar().notNull(),
+	estado: boolean().default(true),
+	creadoPor: uuid("creado_por"),
+	modificadoPor: uuid("modificado_por"),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.creadoPor],
+			foreignColumns: [users.id],
+			name: "estados_secop_creado_por_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.modificadoPor],
+			foreignColumns: [users.id],
+			name: "estados_secop_modificado_por_fkey"
+		}).onDelete("set null"),
+	unique("estados_secop_nombre_key").on(table.nombre),
+	pgPolicy("es read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("es admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
 ]);

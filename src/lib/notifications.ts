@@ -3,7 +3,7 @@
 import { z } from "zod";
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "@/db";
-import { notifications } from "@/db/schema/schema";
+import { notificaciones } from "@/db/schema/schema";
 import { requireAuth } from "@/lib/auth/session";
 import { recordAudit } from "@/lib/audit";
 
@@ -11,16 +11,16 @@ export async function listNotifications() {
   const { userId } = await requireAuth();
   return db
     .select({
-      id: notifications.id,
-      title: notifications.title,
-      message: notifications.message,
-      type: notifications.type,
-      isRead: notifications.isRead,
-      createdAt: notifications.createdAt,
+      id: notificaciones.id,
+      title: notificaciones.titulo,
+      message: notificaciones.mensaje,
+      type: notificaciones.tipo,
+      isRead: notificaciones.leido,
+      createdAt: notificaciones.fechaCreacion,
     })
-    .from(notifications)
-    .where(eq(notifications.userId, userId))
-    .orderBy(desc(notifications.createdAt))
+    .from(notificaciones)
+    .where(eq(notificaciones.usuarioId, userId))
+    .orderBy(desc(notificaciones.fechaCreacion))
     .limit(50);
 }
 
@@ -29,9 +29,9 @@ export async function markNotificationRead(id: string) {
   const notificationId = z.uuid().parse(id);
 
   await db
-    .update(notifications)
-    .set({ isRead: true })
-    .where(and(eq(notifications.id, notificationId), eq(notifications.userId, userId)));
+    .update(notificaciones)
+    .set({ leido: true })
+    .where(and(eq(notificaciones.id, notificationId), eq(notificaciones.usuarioId, userId)));
 
   await recordAudit(userId, {
     action: "notification.mark_read",
@@ -46,9 +46,9 @@ export async function markAllNotificationsRead() {
   const { userId } = await requireAuth();
 
   await db
-    .update(notifications)
-    .set({ isRead: true })
-    .where(and(eq(notifications.userId, userId), eq(notifications.isRead, false)));
+    .update(notificaciones)
+    .set({ leido: true })
+    .where(and(eq(notificaciones.usuarioId, userId), eq(notificaciones.leido, false)));
 
   await recordAudit(userId, { action: "notification.mark_all_read", module: "notificaciones" });
   return { ok: true };

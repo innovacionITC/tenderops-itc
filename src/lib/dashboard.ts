@@ -2,12 +2,12 @@ import "server-only";
 import { and, count, eq, gte, inArray, lt, lte, ne, notInArray } from "drizzle-orm";
 import { db } from "@/db";
 import {
-  aiEvaluations,
-  detectedProcesses,
-  secopProcesses,
-  tasks,
-  tenderopsProcesses,
-  userProcessFollowups,
+  evaluacionesIa,
+  procesosDetectados,
+  procesosSecop,
+  tareas,
+  procesos,
+  seguimientosProceso,
 } from "@/db/schema/schema";
 
 const TERMINAL_STATUSES = ["presentado", "descartado", "no_adjudicado", "adjudicado"] as const;
@@ -18,9 +18,9 @@ export async function getDashboard() {
   const in7DaysIso = new Date(now.getTime() + 7 * 86_400_000).toISOString();
 
   const activeFollows = await db
-    .select({ processId: userProcessFollowups.processId })
-    .from(userProcessFollowups)
-    .where(eq(userProcessFollowups.isActive, true));
+    .select({ processId: seguimientosProceso.procesoId })
+    .from(seguimientosProceso)
+    .where(eq(seguimientosProceso.activo, true));
   const followedIds = Array.from(new Set(activeFollows.map((f) => f.processId)));
 
   const [
@@ -29,16 +29,16 @@ export async function getDashboard() {
     [{ value: pendingTasksCount }],
     [{ value: overdueCount }],
   ] = await Promise.all([
-    db.select({ value: count() }).from(detectedProcesses),
+    db.select({ value: count() }).from(procesosDetectados),
     db
       .select({ value: count() })
-      .from(aiEvaluations)
-      .where(inArray(aiEvaluations.status, ["borrador", "en_proceso"])),
-    db.select({ value: count() }).from(tasks).where(eq(tasks.status, "pendiente")),
+      .from(evaluacionesIa)
+      .where(inArray(evaluacionesIa.estado, ["borrador", "en_proceso"])),
+    db.select({ value: count() }).from(tareas).where(eq(tareas.estado, "pendiente")),
     db
       .select({ value: count() })
-      .from(tasks)
-      .where(and(lt(tasks.dueDate, nowIso), ne(tasks.status, "completada"))),
+      .from(tareas)
+      .where(and(lt(tareas.fechaVencimiento, nowIso), ne(tareas.estado, "completada"))),
   ]);
 
   let upcoming: Array<{
@@ -59,58 +59,59 @@ export async function getDashboard() {
 
   if (followedIds.length > 0) {
     const [upcomingRows, presentedRows, [{ value: upcoming7Count }]] = await Promise.all([
-      db.query.tenderopsProcesses.findMany({
+      db.query.procesos.findMany({
         where: and(
-          inArray(tenderopsProcesses.id, followedIds),
-          notInArray(tenderopsProcesses.internalStatus, [...TERMINAL_STATUSES]),
+          inArray(procesos.id, followedIds),
+          notInArray(procesos.estadoInterno, [...TERMINAL_STATUSES]),
         ),
-        with: { secopProcess: true },
+        with: { procesosSecop: true },
         limit: 10,
       }),
-      db.query.tenderopsProcesses.findMany({
+      db.query.procesos.findMany({
         where: and(
-          inArray(tenderopsProcesses.id, followedIds),
-          eq(tenderopsProcesses.internalStatus, "presentado"),
+          inArray(procesos.id, followedIds),
+          eq(procesos.estadoInterno, "presentado"),
         ),
-        with: { secopProcess: true },
-        orderBy: (t, { desc }) => [desc(t.updatedAt)],
+        with: { procesosSecop: true },
+        orderBy: (t, { desc }) => [desc(t.fechaModificacion)],
         limit: 10,
       }),
       db
         .select({ value: count() })
-        .from(tenderopsProcesses)
-        .innerJoin(secopProcesses, eq(tenderopsProcesses.secopProcessId, secopProcesses.id))
+        .from(procesos)
+        .innerJoin(procesosSecop, eq(procesos.procesoSecopId, procesosSecop.id))
         .where(
           and(
-            inArray(tenderopsProcesses.id, followedIds),
-            notInArray(tenderopsProcesses.internalStatus, [...TERMINAL_STATUSES]),
-            gte(secopProcesses.closingDate, nowIso),
-            lte(secopProcesses.closingDate, in7DaysIso),
+            inArray(procesos.id, followedIds),
+            notInArray(procesos.estadoInterno, [...TERMINAL_STATUSES]),
+            gte(procesosSecop.fechaCierre, nowIso),
+            lte(procesosSecop.fechaCierre, in7DaysIso),
           ),
         ),
     ]);
 
     upcoming = upcomingRows
       .filter(
-        (p) => p.secopProcess && p.secopProcess.closingDate && p.secopProcess.closingDate >= nowIso,
+        (p) =>
+          p.procesosSecop && p.procesosSecop.fechaCierre && p.procesosSecop.fechaCierre >= nowIso,
       )
       .sort((a, b) =>
-        (a.secopProcess!.closingDate ?? "").localeCompare(b.secopProcess!.closingDate ?? ""),
+        (a.procesosSecop!.fechaCierre ?? "").localeCompare(b.procesosSecop!.fechaCierre ?? ""),
       )
       .map((p) => ({
         id: p.id,
-        secopTitle: p.secopProcess?.title ?? null,
-        entityName: p.secopProcess?.entityName ?? null,
-        closingDate: p.secopProcess?.closingDate ?? null,
+        secopTitle: p.procesosSecop?.titulo ?? null,
+        entityName: p.procesosSecop?.nombreEntidad ?? null,
+        closingDate: p.procesosSecop?.fechaCierre ?? null,
       }));
 
     presented = presentedRows.map((p) => ({
       id: p.id,
-      secopTitle: p.secopProcess?.title ?? null,
-      secopId: p.secopProcess?.secopId ?? null,
-      entityName: p.secopProcess?.entityName ?? null,
-      estimatedValue: p.secopProcess?.estimatedValue ?? null,
-      updatedAt: p.updatedAt,
+      secopTitle: p.procesosSecop?.titulo ?? null,
+      secopId: p.procesosSecop?.secopId ?? null,
+      entityName: p.procesosSecop?.nombreEntidad ?? null,
+      estimatedValue: p.procesosSecop?.valorEstimado ?? null,
+      updatedAt: p.fechaModificacion,
     }));
     upcoming7 = upcoming7Count;
   }

@@ -1,7 +1,7 @@
 import "server-only";
 import { asc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { profiles, secopProcesses, tasks, tenderopsProcesses } from "@/db/schema/schema";
+import { perfiles, procesosSecop, tareas, procesos } from "@/db/schema/schema";
 
 export type TaskRow = {
   id: string;
@@ -18,16 +18,16 @@ export type TaskRow = {
 export async function listTasks(): Promise<TaskRow[]> {
   const rows = await db
     .select({
-      id: tasks.id,
-      title: tasks.title,
-      processId: tasks.processId,
-      assignedTo: tasks.assignedTo,
-      priority: tasks.priority,
-      status: tasks.status,
-      dueDate: tasks.dueDate,
+      id: tareas.id,
+      title: tareas.titulo,
+      processId: tareas.procesoId,
+      assignedTo: tareas.asignadoA,
+      priority: tareas.prioridad,
+      status: tareas.estado,
+      dueDate: tareas.fechaVencimiento,
     })
-    .from(tasks)
-    .orderBy(asc(tasks.dueDate));
+    .from(tareas)
+    .orderBy(asc(tareas.fechaVencimiento));
 
   const processIds = Array.from(new Set(rows.map((t) => t.processId).filter((id) => id !== null)));
   const userIds = Array.from(new Set(rows.map((t) => t.assignedTo).filter((id) => id !== null)));
@@ -35,16 +35,16 @@ export async function listTasks(): Promise<TaskRow[]> {
   const [processTitles, assignees] = await Promise.all([
     processIds.length
       ? db
-          .select({ id: tenderopsProcesses.id, title: secopProcesses.title })
-          .from(tenderopsProcesses)
-          .innerJoin(secopProcesses, eq(tenderopsProcesses.secopProcessId, secopProcesses.id))
-          .where(inArray(tenderopsProcesses.id, processIds))
+          .select({ id: procesos.id, title: procesosSecop.titulo })
+          .from(procesos)
+          .innerJoin(procesosSecop, eq(procesos.procesoSecopId, procesosSecop.id))
+          .where(inArray(procesos.id, processIds))
       : Promise.resolve([]),
     userIds.length
       ? db
-          .select({ id: profiles.id, fullName: profiles.fullName, email: profiles.email })
-          .from(profiles)
-          .where(inArray(profiles.id, userIds))
+          .select({ id: perfiles.id, fullName: perfiles.nombreCompleto, email: perfiles.email })
+          .from(perfiles)
+          .where(inArray(perfiles.id, userIds))
       : Promise.resolve([]),
   ]);
 

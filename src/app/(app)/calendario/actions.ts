@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { tasks } from "@/db/schema/schema";
+import { tareas } from "@/db/schema/schema";
 import { requireAuth } from "@/lib/auth/session";
 import { hasAnyRole } from "@/lib/auth/roles";
 import { recordAudit } from "@/lib/audit";
@@ -14,9 +14,9 @@ export async function completeTask(taskId: string) {
   const id = z.uuid().parse(taskId);
 
   const [task] = await db
-    .select({ id: tasks.id, assignedTo: tasks.assignedTo, status: tasks.status })
-    .from(tasks)
-    .where(eq(tasks.id, id))
+    .select({ id: tareas.id, assignedTo: tareas.asignadoA, status: tareas.estado })
+    .from(tareas)
+    .where(eq(tareas.id, id))
     .limit(1);
 
   if (!task) throw new Error("Tarea no encontrada");
@@ -32,9 +32,9 @@ export async function completeTask(taskId: string) {
 
   const now = new Date().toISOString();
   await db
-    .update(tasks)
-    .set({ status: "completada", completedAt: now, completedBy: userId })
-    .where(eq(tasks.id, id));
+    .update(tareas)
+    .set({ estado: "completada", fechaCompletado: now, completadoPor: userId })
+    .where(eq(tareas.id, id));
 
   await recordAudit(userId, {
     action: "task.complete",

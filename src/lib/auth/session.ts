@@ -3,7 +3,7 @@ import { cache } from "react";
 import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { userRoles } from "@/db/schema/schema";
+import { perfiles, rolesUsuario } from "@/db/schema/schema";
 import { createClient } from "@/lib/supabase/server";
 import { hasAnyRole, type AppRole } from "./roles";
 
@@ -23,13 +23,18 @@ export const getAuthContext = cache(async (): Promise<AuthContext | null> => {
 
   if (!user) return null;
 
-  const [roleRow] = await db
-    .select({ role: userRoles.role })
-    .from(userRoles)
-    .where(eq(userRoles.userId, user.id))
+  const [row] = await db
+    .select({ role: rolesUsuario.rol, estado: perfiles.estado })
+    .from(perfiles)
+    .leftJoin(rolesUsuario, eq(rolesUsuario.usuarioId, perfiles.id))
+    .where(eq(perfiles.id, user.id))
     .limit(1);
 
-  return { userId: user.id, email: user.email ?? null, role: roleRow?.role ?? "lectura" };
+  // A profile that exists but isn't "activo" means the account was
+  // deactivated in Administración — treat it as no session.
+  if (row && row.estado !== "activo") return null;
+
+  return { userId: user.id, email: user.email ?? null, role: row?.role ?? "lectura" };
 });
 
 /**

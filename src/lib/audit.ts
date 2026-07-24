@@ -1,6 +1,6 @@
 import "server-only";
 import { db } from "@/db";
-import { auditLogs } from "@/db/schema/schema";
+import { registrosAuditoria } from "@/db/schema/schema";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -21,14 +21,14 @@ export async function recordAudit(
     const raw = params.entityId ?? null;
     const isUuid = typeof raw === "string" && UUID_RE.test(raw);
 
-    await db.insert(auditLogs).values({
-      userId,
-      action: params.action,
-      module: params.module ?? null,
-      entityType: params.entityType ?? null,
-      entityId: isUuid ? raw : null,
-      result: params.result ?? "ok",
-      metadata: {
+    await db.insert(registrosAuditoria).values({
+      usuarioId: userId,
+      accion: params.action,
+      modulo: params.module ?? null,
+      tipoEntidad: params.entityType ?? null,
+      entidadId: isUuid ? raw : null,
+      resultado: params.result ?? "ok",
+      metadatos: {
         ...(params.metadata ?? {}),
         ...(!isUuid && raw ? { entity_id_raw: raw } : {}),
       },

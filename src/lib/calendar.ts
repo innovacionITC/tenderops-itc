@@ -1,7 +1,7 @@
 import "server-only";
 import { and, asc, eq, gte, isNotNull, lte, ne } from "drizzle-orm";
 import { db } from "@/db";
-import { calendarEvents, secopProcesses, tasks } from "@/db/schema/schema";
+import { eventosCalendario, procesosSecop, tareas } from "@/db/schema/schema";
 
 export type CalendarItem = {
   id: string;
@@ -20,45 +20,51 @@ export async function listCalendar(userId: string): Promise<CalendarItem[]> {
   const [events, dueTasks, closingProcesses] = await Promise.all([
     db
       .select({
-        id: calendarEvents.id,
-        title: calendarEvents.title,
-        startDate: calendarEvents.startDate,
-        endDate: calendarEvents.endDate,
-        eventType: calendarEvents.eventType,
-        processId: calendarEvents.processId,
+        id: eventosCalendario.id,
+        title: eventosCalendario.titulo,
+        startDate: eventosCalendario.fechaInicio,
+        endDate: eventosCalendario.fechaFin,
+        eventType: eventosCalendario.tipoEvento,
+        processId: eventosCalendario.procesoId,
       })
-      .from(calendarEvents)
-      .where(and(eq(calendarEvents.userId, userId), gte(calendarEvents.startDate, nowIso)))
-      .orderBy(asc(calendarEvents.startDate)),
+      .from(eventosCalendario)
+      .where(
+        and(eq(eventosCalendario.usuarioId, userId), gte(eventosCalendario.fechaInicio, nowIso)),
+      )
+      .orderBy(asc(eventosCalendario.fechaInicio)),
     db
       .select({
-        id: tasks.id,
-        title: tasks.title,
-        dueDate: tasks.dueDate,
-        processId: tasks.processId,
+        id: tareas.id,
+        title: tareas.titulo,
+        dueDate: tareas.fechaVencimiento,
+        processId: tareas.procesoId,
       })
-      .from(tasks)
+      .from(tareas)
       .where(
-        and(isNotNull(tasks.dueDate), ne(tasks.status, "completada"), gte(tasks.dueDate, nowIso)),
+        and(
+          isNotNull(tareas.fechaVencimiento),
+          ne(tareas.estado, "completada"),
+          gte(tareas.fechaVencimiento, nowIso),
+        ),
       )
-      .orderBy(asc(tasks.dueDate))
+      .orderBy(asc(tareas.fechaVencimiento))
       .limit(50),
     db
       .select({
-        id: secopProcesses.id,
-        title: secopProcesses.title,
-        closingDate: secopProcesses.closingDate,
+        id: procesosSecop.id,
+        title: procesosSecop.titulo,
+        closingDate: procesosSecop.fechaCierre,
       })
-      .from(secopProcesses)
+      .from(procesosSecop)
       .where(
         and(
-          eq(secopProcesses.status, "publicado"),
-          isNotNull(secopProcesses.closingDate),
-          gte(secopProcesses.closingDate, nowIso),
-          lte(secopProcesses.closingDate, horizonIso),
+          eq(procesosSecop.estado, "publicado"),
+          isNotNull(procesosSecop.fechaCierre),
+          gte(procesosSecop.fechaCierre, nowIso),
+          lte(procesosSecop.fechaCierre, horizonIso),
         ),
       )
-      .orderBy(asc(secopProcesses.closingDate))
+      .orderBy(asc(procesosSecop.fechaCierre))
       .limit(50),
   ]);
 
