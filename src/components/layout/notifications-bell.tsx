@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AlertTriangle, Bell, Check, CheckCircle2, Info } from "lucide-react";
 import { toast } from "sonner";
+import { Spinner } from "@/components/ui/spinner";
 import {
   listNotifications,
   markAllNotificationsRead,
@@ -96,7 +97,7 @@ export function NotificationsBell() {
               disabled={unread === 0 || isPending}
               className="inline-flex items-center gap-1 text-xs text-primary hover:underline disabled:no-underline disabled:opacity-40"
             >
-              <Check className="h-3 w-3" /> Marcar todas
+              {isPending ? <Spinner className="h-3 w-3" /> : <Check className="h-3 w-3" />} Marcar todas
             </button>
           </div>
           <div className="max-h-96 divide-y overflow-y-auto">

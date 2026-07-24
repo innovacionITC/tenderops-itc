@@ -2,9 +2,10 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { formatDate } from "@/lib/format";
 import type { CalendarItem } from "@/lib/calendar";
@@ -250,7 +251,7 @@ export function CalendarView({
                             onClick={() => handleComplete(t.id)}
                           >
                             {isPending && closingId === t.id ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
+                              <Spinner className="h-3 w-3" />
                             ) : (
                               <>
                                 <Check className="mr-1 h-3 w-3" /> Cerrar
