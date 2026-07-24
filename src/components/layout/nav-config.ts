@@ -55,7 +55,6 @@ export const menuGroups: { title: string; items: MenuItem[] }[] = [
         icon: Settings,
         label: "Administración",
         adminOnly: true,
-        comingSoon: true,
       },
     ],
   },
