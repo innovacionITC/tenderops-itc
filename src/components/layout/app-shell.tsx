@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LogOut, Menu, X } from "lucide-react";
+import { useMemo } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
+import { LogOut } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { roleLabels } from "@/lib/format";
 import type { AppRole } from "@/lib/auth/roles";
+import { ItcMenu, type MenuItem as ItcMenuItem } from "@/components/itc";
 import { isMenuItemVisible, menuGroups } from "./nav-config";
 import { NotificationsBell } from "./notifications-bell";
 
@@ -20,119 +21,95 @@ export function AppShell({
   role: AppRole | null;
 }) {
   const pathname = usePathname();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const router = useRouter();
+  const { resolvedTheme } = useTheme();
 
-  // Close the mobile menu on navigation. Adjusting state during render
-  // (rather than in a useEffect) avoids the extra render-then-effect pass —
-  // see https://react.dev/learn/you-might-not-need-an-effect.
-  const [lastPathname, setLastPathname] = useState(pathname);
-  if (pathname !== lastPathname) {
-    setLastPathname(pathname);
-    setMobileOpen(false);
-  }
+  const { items, expandedGroupIds } = useMemo(() => {
+    const expandedGroupIds: string[] = [];
+    const items: ItcMenuItem[] = [];
+
+    for (const group of menuGroups) {
+      const visible = group.items.filter((item) => isMenuItemVisible(item, role));
+      if (visible.length === 0) continue;
+
+      const groupId = `group-${group.title}`;
+      expandedGroupIds.push(groupId);
+      items.push({
+        id: groupId,
+        label: group.title,
+        children: visible.map((item) => {
+          const active = pathname === item.href || pathname.startsWith(item.href + "/");
+          return {
+            id: item.href,
+            label: item.label,
+            disabled: item.comingSoon,
+            icon: (
+              <item.icon className="h-4 w-4" {...(active ? { "data-nav-active": true } : {})} />
+            ),
+            badge: item.comingSoon ? (
+              <span className="rounded bg-sidebar-foreground/10 px-1.5 py-0.5 text-[9px] uppercase">
+                Pronto
+              </span>
+            ) : undefined,
+          };
+        }),
+      });
+    }
+
+    return { items, expandedGroupIds };
+  }, [pathname, role]);
+
+  const handleItemClick = (item: ItcMenuItem) => {
+    if (item.children) return; // grupo: ItcMenu ya maneja el expand/collapse
+    router.push(item.id); // id === href para los ítems hoja, ver items arriba
+  };
 
   const handleLogout = async () => {
     await createClient().auth.signOut();
     window.location.assign("/login");
   };
 
-  const sidebarContent = (
-    <>
-      <div className="flex items-center justify-between border-b px-5 py-5">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-sidebar-primary to-sky-500 font-bold text-sidebar-primary-foreground shadow-sm">
-            T
-          </div>
-          <div>
-            <div className="leading-tight font-semibold text-sidebar-foreground">TenderOps</div>
-            <div className="text-[10px] tracking-wider text-sidebar-foreground/60 uppercase">
-              Intelecto · xRM
-            </div>
-          </div>
-        </div>
-        <button
-          onClick={() => setMobileOpen(false)}
-          className="text-sidebar-foreground/70 hover:text-sidebar-foreground lg:hidden"
-        >
-          <X className="h-5 w-5" />
-        </button>
-      </div>
-      <nav className="flex-1 overflow-y-auto py-3">
-        {menuGroups.map((group) => {
-          const visible = group.items.filter((item) => isMenuItemVisible(item, role));
-          if (visible.length === 0) return null;
-          return (
-            <div key={group.title} className="mb-4">
-              <div className="mb-1 px-5 text-[10px] font-semibold tracking-wider text-sidebar-foreground/40 uppercase">
-                {group.title}
-              </div>
-              {visible.map((item) => {
-                const active = pathname === item.href || pathname.startsWith(item.href + "/");
-                if (item.comingSoon) {
-                  return (
-                    <div
-                      key={item.href}
-                      className="mx-3 flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/40"
-                      title="Próximamente"
-                    >
-                      <item.icon className="h-4 w-4 flex-shrink-0" />
-                      <span className="truncate">{item.label}</span>
-                      <span className="ml-auto rounded bg-sidebar-foreground/10 px-1.5 py-0.5 text-[9px] uppercase">
-                        Pronto
-                      </span>
-                    </div>
-                  );
-                }
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`mx-3 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
-                      active
-                        ? "bg-sidebar-primary font-medium text-sidebar-primary-foreground"
-                        : "text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
-                    }`}
-                  >
-                    <item.icon className="h-4 w-4 flex-shrink-0" />
-                    <span className="truncate">{item.label}</span>
-                  </Link>
-                );
-              })}
-            </div>
-          );
-        })}
-      </nav>
-      <div className="border-t p-3 text-[11px] text-sidebar-foreground/60">
-        Fase 1 · Base Next.js
-      </div>
-    </>
-  );
-
   return (
-    <div className="flex min-h-screen bg-background">
-      <aside className="sticky top-0 hidden h-screen w-64 flex-shrink-0 flex-col self-start border-r bg-sidebar text-sidebar-foreground lg:flex">
-        {sidebarContent}
-      </aside>
-
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
-          <aside className="relative flex w-72 max-w-[85vw] flex-col border-r bg-sidebar text-sidebar-foreground shadow-xl">
-            {sidebarContent}
-          </aside>
-        </div>
-      )}
+    <div className="flex min-h-screen flex-col bg-background lg:flex-row">
+      <ItcMenu
+        className="app-sidebar-menu"
+        variant="sidebar"
+        items={items}
+        width="16rem"
+        responsive
+        breakpoint="lg"
+        showHamburger
+        closeOnSelect
+        bordered
+        showIcons
+        iconPosition="left"
+        allowNested
+        expandMode="multiple"
+        defaultExpanded={expandedGroupIds}
+        theme={resolvedTheme === "dark" ? "dark" : "light"}
+        onItemClick={handleItemClick}
+        ariaLabel="Navegación principal"
+        logo={
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-sky-400 to-blue-600 font-bold text-white shadow-sm">
+              T
+            </div>
+            <div>
+              <div className="leading-tight font-semibold text-sidebar-foreground">TenderOps</div>
+              <div className="text-[10px] tracking-wider text-sidebar-foreground/60 uppercase">
+                Intelecto · xRM
+              </div>
+            </div>
+          </div>
+        }
+        footer={
+          <div className="text-[11px] text-sidebar-foreground/60">Fase 1 · Base Next.js</div>
+        }
+      />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b bg-background/80 px-4 backdrop-blur sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
-            <button
-              onClick={() => setMobileOpen(true)}
-              className="text-muted-foreground hover:text-foreground lg:hidden"
-              aria-label="Abrir menú"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
             <div className="hidden truncate text-sm text-muted-foreground sm:block">
               Organización: <span className="font-medium text-foreground">Intelecto</span>
             </div>

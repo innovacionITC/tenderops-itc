@@ -1,5 +1,5 @@
 
-@import "itc-frontend-base/style.css" layer(thirdparty);
+@import "itc-frontend-base/style.css";
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -75,14 +75,14 @@
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #0f1b33;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #0ea5e9;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1b2a4d;
+  --sidebar-accent-foreground: #f1f5f9;
+  --sidebar-border: rgb(255 255 255 / 8%);
+  --sidebar-ring: #38bdf8;
 }
 
 .dark {
@@ -109,14 +109,14 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: #0f1b33;
+  --sidebar-foreground: #f1f5f9;
+  --sidebar-primary: #0ea5e9;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1b2a4d;
+  --sidebar-accent-foreground: #f1f5f9;
+  --sidebar-border: rgb(255 255 255 / 8%);
+  --sidebar-ring: #38bdf8;
 }
 
 
@@ -146,81 +146,75 @@ html:root {
 
 
 
-.itc-table-wrapper {
-  background-color: var(--card);
-  border-radius: var(--radius-2xl);
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+.app-sidebar-menu.itc-menu-wrapper {
+  background-color: var(--sidebar);
+  color: var(--sidebar-foreground);
+  border-color: var(--sidebar-border);
+  flex-shrink: 0;
 }
-.itc-table-toolbar {
-  border-bottom-color: var(--border);
-  padding: 1rem 1.5rem;
-  margin-bottom: 1rem;
+@media (min-width: 64rem) {
+  .app-sidebar-menu.itc-menu-wrapper {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    padding-bottom: 2.5rem;
+  }
+
+  .app-sidebar-menu .itc-menu-footer {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
 }
-.itc-table-search-input {
-  color: var(--foreground);
-  background-color: var(--muted);
-  border: 1px solid var(--border);
-  border-radius: 9999px;
-  padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+
+
+
+
+
+@media (min-width: 64rem) and (min-height: 900px) {
+  .app-sidebar-menu.itc-menu-wrapper {
+    padding-bottom: 3rem;
+  }
+  .app-sidebar-menu .itc-menu-header {
+    padding: 1.25rem;
+  }
+  .app-sidebar-menu .itc-menu-list {
+    padding-block: 0.5rem;
+  }
+  .app-sidebar-menu .itc-menu-item {
+    margin-bottom: 0.25rem;
+  }
+  .app-sidebar-menu .itc-menu-button {
+    padding-block: 0.9rem;
+  }
+  .app-sidebar-menu .itc-menu-button[aria-expanded] {
+    margin-top: 1rem;
+    padding-block: 0.4rem;
+  }
 }
-.itc-table-search-input::placeholder {
-  color: var(--muted-foreground);
+.app-sidebar-menu .itc-menu-button[aria-expanded]:hover {
+  background-color: transparent;
+  color: color-mix(in oklch, var(--sidebar-foreground) 85%, transparent);
 }
-.itc-table-search-icon {
-  color: var(--muted-foreground);
+.app-sidebar-menu .itc-menu-button[aria-expanded] .itc-menu-label {
+  font-size: 0.6875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.5;
 }
-.itc-table thead th {
-  color: var(--foreground);
-  background-color: var(--card);
-  border-bottom-color: var(--border);
+.app-sidebar-menu .itc-menu-button[aria-expanded] .itc-menu-icon {
+  opacity: 0.5;
 }
-.itc-table tbody td {
-  color: var(--foreground);
-  border-bottom-color: var(--border);
+/* Ítem activo: ver data-nav-active en app-shell.tsx */
+.app-sidebar-menu .itc-menu-button:has(svg[data-nav-active]) {
+  background-color: var(--sidebar-primary);
+  color: var(--sidebar-primary-foreground);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 25%);
 }
-.itc-table thead th:first-child,
-.itc-table tbody td:first-child {
-  padding-left: 1.5rem;
-}
-.itc-table thead th:last-child,
-.itc-table tbody td:last-child {
-  padding-right: 1.5rem;
-}
-.itc-table.bordered td {
-  border-color: var(--border);
-}
-.itc-table tbody tr.striped {
-  background-color: color-mix(in oklch, var(--muted) 50%, transparent);
-}
-.itc-table tbody tr.hoverable:hover {
-  background-color: color-mix(in oklch, var(--muted) 30%, transparent);
-}
-.itc-table-empty {
-  color: var(--muted-foreground);
-}
-.itc-table-pagination {
-  color: var(--muted-foreground);
-  background-color: var(--card);
-  border-top-color: var(--border);
-  padding: 1rem 1.5rem;
-}
-.itc-table-page-size select {
-  color: var(--foreground);
-  border-color: var(--input);
-  background-color: var(--background);
-}
-.itc-table-page-btn {
-  color: var(--muted-foreground);
-}
-.itc-table-page-ellipsis {
-  color: var(--muted-foreground);
-}
-.itc-table.responsive-cards tr {
-  background-color: var(--card);
-  border-color: var(--border);
-}
-.itc-table.responsive-cards td:before {
-  color: var(--foreground);
+.app-sidebar-menu .itc-menu-button:has(svg[data-nav-active]) .itc-menu-label {
+  color: var(--sidebar-primary-foreground);
+  font-weight: 500;
 }
 
 @layer base {

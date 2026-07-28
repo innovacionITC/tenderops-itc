@@ -16,7 +16,7 @@ export {
   ItcForm,
   ItcBanner,
   ItcCarousel,
-
+  ItcMenu,
   ItcDateRangePicker,
 } from "itc-frontend-base";
 
@@ -38,14 +38,27 @@ export type {
   AccessibilityToolbarPosition,
   AccessibilityButtonConfig,
   SocialLink,
+  MenuProps,
+  MenuItem,
 } from "itc-frontend-base";
 
-// Nota: "Menu" existe compilado dentro del paquete pero el punto de entrada raíz
-// de itc-frontend-base@1.1.3 no lo re-exporta (su package.json "exports" solo
-// define "." y "./style.css"), así que ItcMenu no es importable todavía.
-// "Header" y "Footer" tampoco existen en esta versión pese a estar listados como
-// disponibles. Hay que pedirle al equipo de la librería que los publique/expongan.
+// Nota: "Header" y "Footer" figuran como disponibles en la librería pero no
+// existen todavía en esta versión. Hay que pedirle al equipo de la librería
+// que los publique/exponga.
 //
 // "DateRangePickerProps" tampoco se re-exporta desde la raíz (el index.d.ts del
 // paquete solo re-exporta el componente, no su archivo de tipos), así que no hay
 // forma de importar ese tipo hoy; usa los props de ItcDateRangePicker por inferencia.
+//
+// ItcMenu no tiene forma de marcar el ítem activo (sin prop selected/activeId,
+// sin comparar contra la ruta actual, y `label` es `string` plano — no se puede
+// estilizar por ítem). El resaltado de la ruta activa en app-shell.tsx se logra
+// marcando el ícono del ítem activo con `data-nav-active` y apuntándole con
+// `:has()` desde CSS global (ver .app-sidebar-menu en globals.css). Si una
+// futura versión cambia el marcado interno (clases itc-menu-*, aria-expanded),
+// ese CSS puede dejar de aplicar silenciosamente.
+//
+// Tampoco hay que pasarle `path` a los items: el componente renderiza un <a
+// href> real sin preventDefault, lo que dispara una navegación de página
+// completa además de llamar a onItemClick. La navegación se maneja solo por
+// onItemClick + router.push.
