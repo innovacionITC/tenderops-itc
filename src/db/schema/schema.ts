@@ -336,7 +336,23 @@ export const procesosDetectados = pgTable("procesos_detectados", {
 export const departamentos = pgTable("departamentos", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	nombre: varchar().notNull(),
+	estado: boolean().default(true),
+	creadoPor: uuid("creado_por"),
+	modificadoPor: uuid("modificado_por"),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
+	index("idx_departamentos_nombre_trgm").using("gin", sql`immutable_unaccent(lower((nombre)::text)) gin_trgm_ops`),
+	foreignKey({
+			columns: [table.creadoPor],
+			foreignColumns: [users.id],
+			name: "departamentos_creado_por_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.modificadoPor],
+			foreignColumns: [users.id],
+			name: "departamentos_modificado_por_fkey"
+		}).onDelete("set null"),
 	unique("departamentos_nombre_key").on(table.nombre),
 	pgPolicy("dep read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
 	pgPolicy("dep admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
@@ -346,15 +362,72 @@ export const ciudades = pgTable("ciudades", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	nombre: varchar().notNull(),
 	departamentoId: uuid("departamento_id"),
+	estado: boolean().default(true),
+	creadoPor: uuid("creado_por"),
+	modificadoPor: uuid("modificado_por"),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
+	index("idx_ciudades_departamento").using("btree", table.departamentoId.asc().nullsLast().op("uuid_ops")),
+	index("idx_ciudades_nombre_trgm").using("gin", sql`immutable_unaccent(lower((nombre)::text)) gin_trgm_ops`),
 	foreignKey({
 			columns: [table.departamentoId],
 			foreignColumns: [departamentos.id],
 			name: "ciudades_departamento_id_fkey"
 		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.creadoPor],
+			foreignColumns: [users.id],
+			name: "ciudades_creado_por_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.modificadoPor],
+			foreignColumns: [users.id],
+			name: "ciudades_modificado_por_fkey"
+		}).onDelete("set null"),
 	unique("ciudades_departamento_id_nombre_key").on(table.nombre, table.departamentoId),
 	pgPolicy("ciu read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
 	pgPolicy("ciu admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);
+
+export const departamentoParametros = pgTable("departamento_parametros", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	parametricaParametrosId: uuid("parametrica_parametros_id"),
+	departamentoId: uuid("departamento_id"),
+}, (table) => [
+	foreignKey({
+			columns: [table.departamentoId],
+			foreignColumns: [departamentos.id],
+			name: "departamento_parametros_departamento_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.parametricaParametrosId],
+			foreignColumns: [parametricaParametros.id],
+			name: "departamento_parametros_parametrica_parametros_id_fkey"
+		}).onDelete("cascade"),
+	unique("departamento_parametros_pp_id_departamento_id_key").on(table.parametricaParametrosId, table.departamentoId),
+	pgPolicy("depp read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("depp admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);
+
+export const ciudadParametros = pgTable("ciudad_parametros", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	parametricaParametrosId: uuid("parametrica_parametros_id"),
+	ciudadId: uuid("ciudad_id"),
+}, (table) => [
+	foreignKey({
+			columns: [table.ciudadId],
+			foreignColumns: [ciudades.id],
+			name: "ciudad_parametros_ciudad_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.parametricaParametrosId],
+			foreignColumns: [parametricaParametros.id],
+			name: "ciudad_parametros_parametrica_parametros_id_fkey"
+		}).onDelete("cascade"),
+	unique("ciudad_parametros_pp_id_ciudad_id_key").on(table.parametricaParametrosId, table.ciudadId),
+	pgPolicy("cp read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("cp admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
 ]);
 
 export const parametricaParametros = pgTable("parametrica_parametros", {

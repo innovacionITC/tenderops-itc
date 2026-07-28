@@ -13,9 +13,11 @@ import { Spinner } from "@/components/ui/spinner";
 import { StatusBadge } from "@/components/layout/status-badge";
 import Link from "next/link";
 import type { ParametricaConfig, CatalogItem } from "@/lib/parametrica";
+import { CIUDAD_SEARCH_LIMIT } from "@/lib/parametrica-shared";
 import type { UnspscRow } from "@/lib/unspsc";
 import { CatalogPicker, type PickerItem } from "./catalog-picker";
-import { quickAddEstadoSecop, saveParametricaConfig } from "./actions";
+import { AsyncCatalogPicker } from "./async-catalog-picker";
+import { quickAddEstadoSecop, saveParametricaConfig, searchCiudadesParametrica } from "./actions";
 
 function toPickerItems(items: CatalogItem[]): PickerItem[] {
   return items.map((i) => ({ id: i.id, label: i.label }));
@@ -24,6 +26,7 @@ function toPickerItems(items: CatalogItem[]): PickerItem[] {
 export function ParametricaForm({
   config,
   catalogs,
+  ciudadesSeleccionadas,
 }: {
   config: ParametricaConfig | null;
   catalogs: {
@@ -32,7 +35,10 @@ export function ParametricaForm({
     estadosSecop: CatalogItem[];
     unspscCodes: UnspscRow[];
     nits: CatalogItem[];
+    departamentos: CatalogItem[];
   };
+  /** Etiquetas de las ciudades ya guardadas: hidratan el picker asíncrono. */
+  ciudadesSeleccionadas: CatalogItem[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -59,12 +65,23 @@ export function ParametricaForm({
     label: c.descripcion ? `${c.codigo} — ${c.descripcion}` : c.codigo,
   }));
   const nitItems = toPickerItems(catalogs.nits);
+  const departamentoItems = toPickerItems(catalogs.departamentos);
 
   const [modalidadIds, setModalidadIds] = useState(new Set(config?.modalidadIds ?? []));
   const [entidadIds, setEntidadIds] = useState(new Set(config?.entidadIds ?? []));
   const [estadoSecopIds, setEstadoSecopIds] = useState(new Set(config?.estadoSecopIds ?? []));
   const [unspscIds, setUnspscIds] = useState(new Set<string>());
   const [nitIds, setNitIds] = useState(new Set(config?.nitIds ?? []));
+  const [departamentoIds, setDepartamentoIds] = useState(new Set(config?.departamentoIds ?? []));
+  // Ciudades guarda items completos (id + label): el catálogo no está en el
+  // cliente, así que el label de cada selección debe conservarse aquí.
+  const [ciudades, setCiudades] = useState<PickerItem[]>(toPickerItems(ciudadesSeleccionadas));
+
+  const toggleCiudad = (item: PickerItem) => {
+    setCiudades((prev) =>
+      prev.some((c) => c.id === item.id) ? prev.filter((c) => c.id !== item.id) : [...prev, item],
+    );
+  };
 
   const toggle = (set: Set<string>, setter: (s: Set<string>) => void, id: string) => {
     const next = new Set(set);
@@ -98,6 +115,8 @@ export function ParametricaForm({
           estadoSecopIds: Array.from(estadoSecopIds),
           unspscIds: Array.from(unspscIds),
           nitIds: Array.from(nitIds),
+          departamentoIds: Array.from(departamentoIds),
+          ciudadIds: ciudades.map((c) => c.id),
         });
         toast.success("Configuración guardada");
         router.refresh();
@@ -221,7 +240,7 @@ export function ParametricaForm({
         <CardHeader>
           <CardTitle>Filtros de catálogo</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           <CatalogPicker
             title="Modalidades"
             items={modalidadItems}
@@ -285,6 +304,28 @@ export function ParametricaForm({
                 </Link>
               </p>
             }
+          />
+          <CatalogPicker
+            title="Departamentos"
+            items={departamentoItems}
+            selectedIds={departamentoIds}
+            onToggle={(id) => toggle(departamentoIds, setDepartamentoIds, id)}
+            emptyHint={
+              <p className="p-2 text-xs text-muted-foreground">
+                Sin departamentos.{" "}
+                <Link href="/admin/departamentos" className="text-primary hover:underline">
+                  Ir a Departamentos →
+                </Link>
+              </p>
+            }
+          />
+          <AsyncCatalogPicker
+            title="Ciudades"
+            selected={ciudades}
+            onToggle={toggleCiudad}
+            search={searchCiudadesParametrica}
+            placeholder="Buscar ciudad…"
+            resultLimit={CIUDAD_SEARCH_LIMIT}
           />
         </CardContent>
       </Card>

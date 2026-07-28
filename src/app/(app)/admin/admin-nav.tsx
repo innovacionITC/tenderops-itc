@@ -7,7 +7,12 @@ const TABS = [
   { href: "/admin/usuarios", label: "Usuarios" },
   { href: "/admin/parametrica", label: "Paramétrica" },
   { href: "/admin/credenciales", label: "Credenciales" },
+  { href: "/admin/entidades", label: "Entidades" },
+  { href: "/admin/modalidades", label: "Modalidades" },
+  { href: "/admin/nits", label: "NITs" },
   { href: "/admin/unspsc", label: "Códigos UNSPSC" },
+  { href: "/admin/departamentos", label: "Departamentos" },
+  { href: "/admin/ciudades", label: "Ciudades" },
 ];
 
 export function AdminNav() {

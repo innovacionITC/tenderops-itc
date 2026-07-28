@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { usersInAuth, perfiles, rolesUsuario, procesos, eventosCalendario, tareas, registrosAuditoria, notificaciones, evaluacionesIa, procesosSecop, departamentos, ciudades, parametricaParametros, palabrasClave, modalidades, modalidadParametros, entidades, entidadesParametros, codigosUnspsc, unspscParametros, estadosSecop, estadoSecopParametros, nits, nitParametros } from "./schema";
+import { usersInAuth, perfiles, rolesUsuario, procesos, eventosCalendario, tareas, registrosAuditoria, notificaciones, evaluacionesIa, procesosSecop, departamentos, ciudades, departamentoParametros, ciudadParametros, parametricaParametros, palabrasClave, modalidades, modalidadParametros, entidades, entidadesParametros, codigosUnspsc, unspscParametros, estadosSecop, estadoSecopParametros, nits, nitParametros } from "./schema";
 
 export const perfilesRelations = relations(perfiles, ({one}) => ({
 	usersInAuth: one(usersInAuth, {
@@ -62,6 +62,18 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	}),
 	nits_modificadoPor: many(nits, {
 		relationName: "nits_modificadoPor_usersInAuth_id"
+	}),
+	departamentos_creadoPor: many(departamentos, {
+		relationName: "departamentos_creadoPor_usersInAuth_id"
+	}),
+	departamentos_modificadoPor: many(departamentos, {
+		relationName: "departamentos_modificadoPor_usersInAuth_id"
+	}),
+	ciudades_creadoPor: many(ciudades, {
+		relationName: "ciudades_creadoPor_usersInAuth_id"
+	}),
+	ciudades_modificadoPor: many(ciudades, {
+		relationName: "ciudades_modificadoPor_usersInAuth_id"
 	}),
 }));
 
@@ -164,15 +176,59 @@ export const procesosSecopRelations = relations(procesosSecop, ({many}) => ({
 	procesos: many(procesos),
 }));
 
-export const ciudadesRelations = relations(ciudades, ({one}) => ({
+export const ciudadesRelations = relations(ciudades, ({one, many}) => ({
 	departamento: one(departamentos, {
 		fields: [ciudades.departamentoId],
 		references: [departamentos.id]
 	}),
+	usersInAuth_creadoPor: one(usersInAuth, {
+		fields: [ciudades.creadoPor],
+		references: [usersInAuth.id],
+		relationName: "ciudades_creadoPor_usersInAuth_id"
+	}),
+	usersInAuth_modificadoPor: one(usersInAuth, {
+		fields: [ciudades.modificadoPor],
+		references: [usersInAuth.id],
+		relationName: "ciudades_modificadoPor_usersInAuth_id"
+	}),
+	ciudadParametros: many(ciudadParametros),
 }));
 
-export const departamentosRelations = relations(departamentos, ({many}) => ({
+export const departamentosRelations = relations(departamentos, ({one, many}) => ({
 	ciudades: many(ciudades),
+	usersInAuth_creadoPor: one(usersInAuth, {
+		fields: [departamentos.creadoPor],
+		references: [usersInAuth.id],
+		relationName: "departamentos_creadoPor_usersInAuth_id"
+	}),
+	usersInAuth_modificadoPor: one(usersInAuth, {
+		fields: [departamentos.modificadoPor],
+		references: [usersInAuth.id],
+		relationName: "departamentos_modificadoPor_usersInAuth_id"
+	}),
+	departamentoParametros: many(departamentoParametros),
+}));
+
+export const departamentoParametrosRelations = relations(departamentoParametros, ({one}) => ({
+	departamento: one(departamentos, {
+		fields: [departamentoParametros.departamentoId],
+		references: [departamentos.id]
+	}),
+	parametricaParametro: one(parametricaParametros, {
+		fields: [departamentoParametros.parametricaParametrosId],
+		references: [parametricaParametros.id]
+	}),
+}));
+
+export const ciudadParametrosRelations = relations(ciudadParametros, ({one}) => ({
+	ciudad: one(ciudades, {
+		fields: [ciudadParametros.ciudadId],
+		references: [ciudades.id]
+	}),
+	parametricaParametro: one(parametricaParametros, {
+		fields: [ciudadParametros.parametricaParametrosId],
+		references: [parametricaParametros.id]
+	}),
 }));
 
 export const parametricaParametrosRelations = relations(parametricaParametros, ({one, many}) => ({
@@ -192,6 +248,8 @@ export const parametricaParametrosRelations = relations(parametricaParametros, (
 	unspscParametros: many(unspscParametros),
 	estadoSecopParametros: many(estadoSecopParametros),
 	nitParametros: many(nitParametros),
+	departamentoParametros: many(departamentoParametros),
+	ciudadParametros: many(ciudadParametros),
 }));
 
 export const palabrasClaveRelations = relations(palabrasClave, ({one}) => ({
