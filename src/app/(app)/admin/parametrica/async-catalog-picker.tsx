@@ -2,9 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { ItcInput } from "@/components/itc";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Spinner } from "@/components/ui/spinner";
 import type { PickerItem } from "./catalog-picker";
 
 const SEARCH_DEBOUNCE_MS = 300;
@@ -85,16 +84,13 @@ export function AsyncCatalogPicker({
         <span className="text-sm font-medium">{title}</span>
         <span className="text-xs text-muted-foreground">{selected.length} seleccionados</span>
       </div>
-      <div className="relative mb-2">
-        <Input
-          placeholder={placeholder}
-          value={query}
-          onChange={(e) => handleQueryChange(e.target.value)}
-        />
-        {isSearching && (
-          <Spinner className="absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
-        )}
-      </div>
+      <ItcInput
+        placeholder={placeholder}
+        value={query}
+        onChange={(e) => handleQueryChange(e.target.value)}
+        loading={isSearching}
+        className="mb-2"
+      />
       <div className="max-h-64 space-y-1 overflow-y-auto">
         {selected.map((item) => (
           <label

@@ -3,9 +3,8 @@
 import { useMemo, useState, useTransition } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
+import { ItcButton, ItcInput } from "@/components/itc";
 import { Spinner } from "@/components/ui/spinner";
 
 export type PickerItem = { id: string; label: string };
@@ -59,7 +58,7 @@ export function CatalogPicker({
         <span className="text-sm font-medium">{title}</span>
         <span className="text-xs text-muted-foreground">{selectedIds.size} seleccionados</span>
       </div>
-      <Input
+      <ItcInput
         placeholder="Filtrar…"
         value={filter}
         onChange={(e) => setFilter(e.target.value)}
@@ -79,13 +78,11 @@ export function CatalogPicker({
           </label>
         ))}
         {filtered.length === 0 &&
-          (emptyHint ?? (
-            <p className="p-2 text-xs text-muted-foreground">Sin resultados.</p>
-          ))}
+          (emptyHint ?? <p className="p-2 text-xs text-muted-foreground">Sin resultados.</p>)}
       </div>
       {onQuickAdd && (
         <div className="mt-2 flex gap-1.5 border-t pt-2">
-          <Input
+          <ItcInput
             placeholder="Agregar nuevo…"
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
@@ -96,15 +93,14 @@ export function CatalogPicker({
               }
             }}
           />
-          <Button
+          <ItcButton
             type="button"
-            variant="outline"
-            size="sm"
+            variant="secondary"
             disabled={isPending || !newLabel.trim()}
             onClick={handleQuickAdd}
           >
             {isPending ? <Spinner className="h-3.5 w-3.5" /> : <Plus className="h-3.5 w-3.5" />}
-          </Button>
+          </ItcButton>
         </div>
       )}
     </div>

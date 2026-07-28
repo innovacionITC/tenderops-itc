@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
+import { ItcButton, ItcInput } from "@/components/itc";
 import { Spinner } from "@/components/ui/spinner";
 import { StatusBadge } from "@/components/layout/status-badge";
 import Link from "next/link";
@@ -150,7 +149,7 @@ export function ParametricaForm({
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
             <div>
               <Label className="mb-1.5">Días hacia atrás</Label>
-              <Input
+              <ItcInput
                 type="number"
                 min={1}
                 value={diasHaciaAtras}
@@ -159,7 +158,7 @@ export function ParametricaForm({
             </div>
             <div>
               <Label className="mb-1.5">Intervalo cron (min)</Label>
-              <Input
+              <ItcInput
                 type="number"
                 min={1}
                 value={intervalosCronMin}
@@ -168,7 +167,7 @@ export function ParametricaForm({
             </div>
             <div>
               <Label className="mb-1.5">Máx. resultados</Label>
-              <Input
+              <ItcInput
                 type="number"
                 min={1}
                 value={maxResultadosConsulta}
@@ -177,7 +176,7 @@ export function ParametricaForm({
             </div>
             <div>
               <Label className="mb-1.5">Valor mínimo</Label>
-              <Input
+              <ItcInput
                 type="number"
                 value={valorMinimo}
                 onChange={(e) => setValorMinimo(e.target.value)}
@@ -185,7 +184,7 @@ export function ParametricaForm({
             </div>
             <div>
               <Label className="mb-1.5">Valor máximo</Label>
-              <Input
+              <ItcInput
                 type="number"
                 value={valorMaximo}
                 onChange={(e) => setValorMaximo(e.target.value)}
@@ -201,7 +200,7 @@ export function ParametricaForm({
         </CardHeader>
         <CardContent>
           <div className="mb-3 flex gap-1.5">
-            <Input
+            <ItcInput
               placeholder="Agregar palabra clave…"
               value={newKeyword}
               onChange={(e) => setNewKeyword(e.target.value)}
@@ -212,9 +211,9 @@ export function ParametricaForm({
                 }
               }}
             />
-            <Button type="button" variant="outline" onClick={addKeyword}>
+            <ItcButton type="button" variant="secondary" onClick={addKeyword}>
               Agregar
-            </Button>
+            </ItcButton>
           </div>
           <div className="flex flex-wrap gap-1.5">
             {keywords.map((kw) => (
@@ -331,10 +330,10 @@ export function ParametricaForm({
       </Card>
 
       <div className="flex justify-end">
-        <Button onClick={handleSave} disabled={isPending}>
+        <ItcButton onClick={handleSave} disabled={isPending}>
           {isPending && <Spinner className="size-3.5" />}
           {isPending ? "Guardando…" : "Guardar cambios"}
-        </Button>
+        </ItcButton>
       </div>
     </div>
   );

@@ -4,19 +4,9 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { ItcTable, type TableColumn } from "@/components/itc";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ItcTable, type TableColumn, ItcButton, ItcInput, ItcModal } from "@/components/itc";
 import { Label } from "@/components/ui/label";
-import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { formatDateTime } from "@/lib/format";
 import type { CredentialRow } from "@/lib/credentials";
@@ -49,6 +39,10 @@ export function CredentialsTable({ rows }: { rows: CredentialRow[] }) {
   };
 
   const handleSave = () => {
+    if (!clave.trim()) {
+      toast.error("La clave es obligatoria");
+      return;
+    }
     startTransition(async () => {
       try {
         if (dialog?.mode === "create") {
@@ -112,12 +106,12 @@ export function CredentialsTable({ rows }: { rows: CredentialRow[] }) {
       align: "right",
       render: (r) => (
         <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon-sm" onClick={() => openEdit(r)}>
+          <ItcButton onClick={() => openEdit(r)} className="p-1.5 hover:bg-muted rounded">
             <Pencil className="h-3.5 w-3.5" />
-          </Button>
-          <Button variant="ghost" size="icon-sm" onClick={() => setDeleteTarget(r)}>
+          </ItcButton>
+          <ItcButton onClick={() => setDeleteTarget(r)} className="p-1.5 hover:bg-muted rounded">
             <Trash2 className="h-3.5 w-3.5" />
-          </Button>
+          </ItcButton>
         </div>
       ),
     },
@@ -126,9 +120,9 @@ export function CredentialsTable({ rows }: { rows: CredentialRow[] }) {
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button onClick={openCreate}>
+        <ItcButton onClick={openCreate}>
           <Plus className="h-4 w-4" /> Nueva credencial
-        </Button>
+        </ItcButton>
       </div>
 
       {rows.length === 0 ? (
@@ -139,19 +133,18 @@ export function CredentialsTable({ rows }: { rows: CredentialRow[] }) {
         <ItcTable data={rows} columns={columns} rowKey={(r) => r.id} striped hoverable stickyHeader />
       )}
 
-      <Dialog open={dialog !== null} onOpenChange={(open) => !open && setDialog(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {dialog?.mode === "create" ? "Nueva credencial" : "Editar credencial"}
-            </DialogTitle>
-          </DialogHeader>
+      <ItcModal
+        open={dialog !== null}
+        onClose={() => setDialog(null)}
+        onConfirm={handleSave}
+        title={dialog?.mode === "create" ? "Nueva credencial" : "Editar credencial"}
+        content={
           <div className="space-y-3">
             <div>
               <Label className="mb-1.5">Clave</Label>
-              <Input
+              <ItcInput
                 value={clave}
-                onChange={(e) => setClave(e.target.value.toUpperCase())}
+                onChange={(e: any) => setClave(e.target.value.toUpperCase())}
                 disabled={dialog?.mode === "edit"}
                 placeholder="POWERBI_EMBED_URL"
               />
@@ -162,49 +155,34 @@ export function CredentialsTable({ rows }: { rows: CredentialRow[] }) {
                 value={valor}
                 onChange={(e) => setValor(e.target.value)}
                 placeholder={
-                  dialog?.mode === "edit"
-                    ? "(sin cambios — deja en blanco para no modificar)"
-                    : ""
+                  dialog?.mode === "edit" ? "(sin cambios — deja en blanco para no modificar)" : ""
                 }
               />
             </div>
             <div>
               <Label className="mb-1.5">Descripción</Label>
-              <Input value={descripcion} onChange={(e) => setDescripcion(e.target.value)} />
+              <ItcInput value={descripcion} onChange={(e: any) => setDescripcion(e.target.value)} />
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDialog(null)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSave} disabled={isPending || !clave}>
-              {isPending && <Spinner className="size-3.5" />}
-              Guardar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        }
+        variant="form"
+        disabled={isPending}
+      />
 
-      <Dialog open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>¿Eliminar credencial?</DialogTitle>
-          </DialogHeader>
+      <ItcModal
+        open={deleteTarget !== null}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDelete}
+        title="¿Eliminar credencial?"
+        content={
           <p className="text-sm text-muted-foreground">
-            Se eliminará <span className="font-mono">{deleteTarget?.clave}</span>. Las
-            integraciones que la usan dejarán de funcionar.
+            Se eliminará <span className="font-mono">{deleteTarget?.clave}</span>. Las integraciones
+            que la usan dejarán de funcionar.
           </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
-              Cancelar
-            </Button>
-            <Button variant="destructive" onClick={handleDelete} disabled={isPending}>
-              {isPending && <Spinner className="size-3.5" />}
-              Eliminar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        }
+        variant="confirm"
+        disabled={isPending}
+      />
     </div>
   );
 }
