@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { usersInAuth, perfiles, rolesUsuario, procesos, eventosCalendario, tareas, registrosAuditoria, notificaciones, evaluacionesIa, procesosSecop, departamentos, ciudades, parametricaParametros, palabrasClave, modalidades, modalidadParametros, entidades, entidadesParametros, codigosUnspsc, unspscParametros, estadosSecop, estadoSecopParametros } from "./schema";
+import { usersInAuth, perfiles, rolesUsuario, procesos, eventosCalendario, tareas, registrosAuditoria, notificaciones, evaluacionesIa, procesosSecop, departamentos, ciudades, parametricaParametros, palabrasClave, modalidades, modalidadParametros, entidades, entidadesParametros, codigosUnspsc, unspscParametros, estadosSecop, estadoSecopParametros, nits, nitParametros } from "./schema";
 
 export const perfilesRelations = relations(perfiles, ({one}) => ({
 	usersInAuth: one(usersInAuth, {
@@ -56,6 +56,12 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	}),
 	estadosSecops_modificadoPor: many(estadosSecop, {
 		relationName: "estadosSecop_modificadoPor_usersInAuth_id"
+	}),
+	nits_creadoPor: many(nits, {
+		relationName: "nits_creadoPor_usersInAuth_id"
+	}),
+	nits_modificadoPor: many(nits, {
+		relationName: "nits_modificadoPor_usersInAuth_id"
 	}),
 }));
 
@@ -185,6 +191,7 @@ export const parametricaParametrosRelations = relations(parametricaParametros, (
 	entidadesParametros: many(entidadesParametros),
 	unspscParametros: many(unspscParametros),
 	estadoSecopParametros: many(estadoSecopParametros),
+	nitParametros: many(nitParametros),
 }));
 
 export const palabrasClaveRelations = relations(palabrasClave, ({one}) => ({
@@ -291,5 +298,30 @@ export const estadosSecopRelations = relations(estadosSecop, ({one, many}) => ({
 		fields: [estadosSecop.modificadoPor],
 		references: [usersInAuth.id],
 		relationName: "estadosSecop_modificadoPor_usersInAuth_id"
+	}),
+}));
+
+export const nitsRelations = relations(nits, ({one, many}) => ({
+	usersInAuth_creadoPor: one(usersInAuth, {
+		fields: [nits.creadoPor],
+		references: [usersInAuth.id],
+		relationName: "nits_creadoPor_usersInAuth_id"
+	}),
+	usersInAuth_modificadoPor: one(usersInAuth, {
+		fields: [nits.modificadoPor],
+		references: [usersInAuth.id],
+		relationName: "nits_modificadoPor_usersInAuth_id"
+	}),
+	nitParametros: many(nitParametros),
+}));
+
+export const nitParametrosRelations = relations(nitParametros, ({one}) => ({
+	nit: one(nits, {
+		fields: [nitParametros.nitId],
+		references: [nits.id]
+	}),
+	parametricaParametro: one(parametricaParametros, {
+		fields: [nitParametros.parametricaParametrosId],
+		references: [parametricaParametros.id]
 	}),
 }));

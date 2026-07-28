@@ -578,3 +578,48 @@ export const estadosSecop = pgTable("estados_secop", {
 	pgPolicy("es read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
 	pgPolicy("es admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
 ]);
+
+export const nits = pgTable("nits", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	nit: varchar().notNull(),
+	descripcion: varchar(),
+	estado: boolean().default(true),
+	creadoPor: uuid("creado_por"),
+	modificadoPor: uuid("modificado_por"),
+	fechaCreacion: timestamp("fecha_creacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	fechaModificacion: timestamp("fecha_modificacion", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	foreignKey({
+			columns: [table.creadoPor],
+			foreignColumns: [users.id],
+			name: "nits_creado_por_fkey"
+		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.modificadoPor],
+			foreignColumns: [users.id],
+			name: "nits_modificado_por_fkey"
+		}).onDelete("set null"),
+	unique("nits_nit_key").on(table.nit),
+	pgPolicy("nit read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("nit admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);
+
+export const nitParametros = pgTable("nit_parametros", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	parametricaParametrosId: uuid("parametrica_parametros_id"),
+	nitId: uuid("nit_id"),
+}, (table) => [
+	foreignKey({
+			columns: [table.nitId],
+			foreignColumns: [nits.id],
+			name: "nit_parametros_nit_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.parametricaParametrosId],
+			foreignColumns: [parametricaParametros.id],
+			name: "nit_parametros_parametrica_parametros_id_fkey"
+		}).onDelete("cascade"),
+	unique("nit_parametros_pp_id_nit_id_key").on(table.parametricaParametrosId, table.nitId),
+	pgPolicy("np read auth", { as: "permissive", for: "select", to: ["authenticated"], using: sql`true` }),
+	pgPolicy("np admin all", { as: "permissive", for: "all", to: ["authenticated"] }),
+]);

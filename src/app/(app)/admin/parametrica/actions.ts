@@ -8,12 +8,11 @@ import {
   parametricaParametros,
   palabrasClave,
   modalidadParametros,
-  modalidades,
   entidadesParametros,
-  entidades,
   estadoSecopParametros,
   estadosSecop,
   unspscParametros,
+  nitParametros,
 } from "@/db/schema/schema";
 import { requireAuth } from "@/lib/auth/session";
 import { recordAudit } from "@/lib/audit";
@@ -33,6 +32,7 @@ const saveSchema = z
     entidadIds: z.array(z.uuid()),
     estadoSecopIds: z.array(z.uuid()),
     unspscIds: z.array(z.uuid()),
+    nitIds: z.array(z.uuid()),
   })
   .refine(
     (v) => v.valorMinimo == null || v.valorMaximo == null || v.valorMinimo <= v.valorMaximo,
@@ -129,6 +129,13 @@ export async function saveParametricaConfig(input: z.infer<typeof saveSchema>) {
         .values(data.unspscIds.map((codigoUnspscId) => ({ parametricaParametrosId: id, codigoUnspscId })));
     }
 
+    await tx.delete(nitParametros).where(eq(nitParametros.parametricaParametrosId, id));
+    if (data.nitIds.length > 0) {
+      await tx
+        .insert(nitParametros)
+        .values(data.nitIds.map((nitId) => ({ parametricaParametrosId: id, nitId })));
+    }
+
     return { id, wasCreated };
   });
 
@@ -144,64 +151,12 @@ export async function saveParametricaConfig(input: z.infer<typeof saveSchema>) {
       entidadCount: data.entidadIds.length,
       estadoSecopCount: data.estadoSecopIds.length,
       unspscCount: data.unspscIds.length,
+      nitCount: data.nitIds.length,
     },
   });
 
   revalidatePath("/admin/parametrica");
   return { ok: true };
-}
-
-export async function quickAddModalidad(input: { descripcion: string; codigo?: string }) {
-  const auth = await requireAuth(["administrador"]);
-  const descripcion = z.string().trim().min(1).parse(input.descripcion);
-  const codigo = input.codigo?.trim() || null;
-
-  try {
-    const [created] = await db
-      .insert(modalidades)
-      .values({ descripcion, codigo, creadoPor: auth.userId, modificadoPor: auth.userId })
-      .returning({ id: modalidades.id });
-
-    await recordAudit(auth.userId, {
-      action: "modalidad.create",
-      module: "parametrica",
-      entityType: "modalidad",
-      entityId: created.id,
-      metadata: { descripcion },
-    });
-
-    revalidatePath("/admin/parametrica");
-    return { id: created.id, label: descripcion };
-  } catch (e) {
-    if (isUniqueViolation(e)) throw new Error("Ya existe esa modalidad.");
-    throw e;
-  }
-}
-
-export async function quickAddEntidad(input: { nombre: string }) {
-  const auth = await requireAuth(["administrador"]);
-  const nombre = z.string().trim().min(1).parse(input.nombre);
-
-  try {
-    const [created] = await db
-      .insert(entidades)
-      .values({ nombre, creadoPor: auth.userId, modificadoPor: auth.userId })
-      .returning({ id: entidades.id });
-
-    await recordAudit(auth.userId, {
-      action: "entidad.create",
-      module: "parametrica",
-      entityType: "entidad",
-      entityId: created.id,
-      metadata: { nombre },
-    });
-
-    revalidatePath("/admin/parametrica");
-    return { id: created.id, label: nombre };
-  } catch (e) {
-    if (isUniqueViolation(e)) throw new Error("Ya existe esa entidad.");
-    throw e;
-  }
 }
 
 export async function quickAddEstadoSecop(input: { nombre: string }) {

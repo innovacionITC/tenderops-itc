@@ -62,3 +62,9 @@ export type {
 // href> real sin preventDefault, lo que dispara una navegación de página
 // completa además de llamar a onItemClick. La navegación se maneja solo por
 // onItemClick + router.push.
+//
+// En ItcModal, `disabled` bloquea TODO el modal, no solo el botón de
+// confirmar: deshabilita la X y Cancelar, e impide cerrar por ESC o backdrop
+// (su handler interno de cierre hace `disabled || persistent || loading ||
+// onClose()`). No usar `disabled` para validación de formularios — validar
+// dentro del onConfirm — y pasarlo solo mientras hay una operación en curso.

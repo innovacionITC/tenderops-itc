@@ -15,7 +15,7 @@ import Link from "next/link";
 import type { ParametricaConfig, CatalogItem } from "@/lib/parametrica";
 import type { UnspscRow } from "@/lib/unspsc";
 import { CatalogPicker, type PickerItem } from "./catalog-picker";
-import { quickAddEntidad, quickAddEstadoSecop, quickAddModalidad, saveParametricaConfig } from "./actions";
+import { quickAddEstadoSecop, saveParametricaConfig } from "./actions";
 
 function toPickerItems(items: CatalogItem[]): PickerItem[] {
   return items.map((i) => ({ id: i.id, label: i.label }));
@@ -31,6 +31,7 @@ export function ParametricaForm({
     entidades: CatalogItem[];
     estadosSecop: CatalogItem[];
     unspscCodes: UnspscRow[];
+    nits: CatalogItem[];
   };
 }) {
   const router = useRouter();
@@ -50,18 +51,20 @@ export function ParametricaForm({
   const [keywords, setKeywords] = useState<string[]>(config?.palabrasClave ?? []);
   const [newKeyword, setNewKeyword] = useState("");
 
-  const [modalidadItems, setModalidadItems] = useState(toPickerItems(catalogs.modalidades));
-  const [entidadItems, setEntidadItems] = useState(toPickerItems(catalogs.entidades));
+  const modalidadItems = toPickerItems(catalogs.modalidades);
+  const entidadItems = toPickerItems(catalogs.entidades);
   const [estadoItems, setEstadoItems] = useState(toPickerItems(catalogs.estadosSecop));
   const unspscItems: PickerItem[] = catalogs.unspscCodes.map((c) => ({
     id: c.id,
     label: c.descripcion ? `${c.codigo} — ${c.descripcion}` : c.codigo,
   }));
+  const nitItems = toPickerItems(catalogs.nits);
 
   const [modalidadIds, setModalidadIds] = useState(new Set(config?.modalidadIds ?? []));
   const [entidadIds, setEntidadIds] = useState(new Set(config?.entidadIds ?? []));
   const [estadoSecopIds, setEstadoSecopIds] = useState(new Set(config?.estadoSecopIds ?? []));
   const [unspscIds, setUnspscIds] = useState(new Set<string>());
+  const [nitIds, setNitIds] = useState(new Set(config?.nitIds ?? []));
 
   const toggle = (set: Set<string>, setter: (s: Set<string>) => void, id: string) => {
     const next = new Set(set);
@@ -94,6 +97,7 @@ export function ParametricaForm({
           entidadIds: Array.from(entidadIds),
           estadoSecopIds: Array.from(estadoSecopIds),
           unspscIds: Array.from(unspscIds),
+          nitIds: Array.from(nitIds),
         });
         toast.success("Configuración guardada");
         router.refresh();
@@ -217,25 +221,34 @@ export function ParametricaForm({
         <CardHeader>
           <CardTitle>Filtros de catálogo</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <CatalogPicker
             title="Modalidades"
             items={modalidadItems}
             selectedIds={modalidadIds}
             onToggle={(id) => toggle(modalidadIds, setModalidadIds, id)}
-            onQuickAdd={async (label) => {
-              const created = await quickAddModalidad({ descripcion: label });
-              return created;
-            }}
-            onItemCreated={(item) => setModalidadItems((prev) => [...prev, item])}
+            emptyHint={
+              <p className="p-2 text-xs text-muted-foreground">
+                Sin modalidades.{" "}
+                <Link href="/admin/modalidades" className="text-primary hover:underline">
+                  Ir a Modalidades →
+                </Link>
+              </p>
+            }
           />
           <CatalogPicker
             title="Entidades"
             items={entidadItems}
             selectedIds={entidadIds}
             onToggle={(id) => toggle(entidadIds, setEntidadIds, id)}
-            onQuickAdd={async (label) => quickAddEntidad({ nombre: label })}
-            onItemCreated={(item) => setEntidadItems((prev) => [...prev, item])}
+            emptyHint={
+              <p className="p-2 text-xs text-muted-foreground">
+                Sin entidades.{" "}
+                <Link href="/admin/entidades" className="text-primary hover:underline">
+                  Ir a Entidades →
+                </Link>
+              </p>
+            }
           />
           <CatalogPicker
             title="Estados SECOP"
@@ -255,6 +268,20 @@ export function ParametricaForm({
                 Sin códigos.{" "}
                 <Link href="/admin/unspsc" className="text-primary hover:underline">
                   Ir a Códigos UNSPSC →
+                </Link>
+              </p>
+            }
+          />
+          <CatalogPicker
+            title="NITs"
+            items={nitItems}
+            selectedIds={nitIds}
+            onToggle={(id) => toggle(nitIds, setNitIds, id)}
+            emptyHint={
+              <p className="p-2 text-xs text-muted-foreground">
+                Sin NITs.{" "}
+                <Link href="/admin/nits" className="text-primary hover:underline">
+                  Ir a NITs →
                 </Link>
               </p>
             }
