@@ -39,6 +39,7 @@ export function LoginForm() {
               type="email"
               autoComplete="email"
               required
+              defaultValue={state?.email}
               className="pl-9"
             />
           </div>
