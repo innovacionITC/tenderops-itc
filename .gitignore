@@ -20,6 +20,8 @@
 # production
 /build
 
+/.claude
+
 # misc
 .DS_Store
 *.pem
@@ -40,3 +42,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+plan-backend-dotnet.md
+/docs
