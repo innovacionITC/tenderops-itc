@@ -9,7 +9,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -167,7 +167,14 @@ html:root {
     left: 0;
   }
 }
-
+.app-sidebar-menu .itc-menu-header {
+  border-bottom: 1px solid var(--sidebar-border);
+  padding: 0.875rem 1.25rem;
+}
+.app-sidebar-menu .itc-menu-hamburger {
+  color: var(--sidebar-foreground);
+  border-radius: var(--radius-md);
+}
 
 
 
