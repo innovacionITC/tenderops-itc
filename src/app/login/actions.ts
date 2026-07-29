@@ -1,9 +1,24 @@
 "use server";
 
-import { headers } from "next/headers";
+import { createHash, randomBytes } from "node:crypto";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { serverEnv } from "@/env.server";
+import {
+  ApiError,
+  apiFetch,
+  clearSessionTokens,
+  persistSessionTokens,
+  toSessionTokens,
+} from "@/lib/api/client";
+import {
+  ENTRA_STATE_COOKIE,
+  ENTRA_VERIFIER_COOKIE,
+  REFRESH_TOKEN_COOKIE,
+  sessionCookieOptions,
+} from "@/lib/api/cookies";
+import type { ApiSchemas } from "@/lib/api/types";
 
 const loginSchema = z.object({
   email: z.email({ error: "Correo inválido." }),
@@ -15,19 +30,12 @@ export interface LoginState {
   email?: string;
 }
 
-// Supabase's AuthError.message is always English; map the stable `code`
-// (see https://supabase.com/docs/guides/auth/debugging/error-codes) to
-// Spanish copy instead of surfacing it as-is.
-const AUTH_ERROR_MESSAGES: Record<string, string> = {
-  invalid_credentials: "Correo o contraseña incorrectos.",
-  email_not_confirmed: "Debes confirmar tu correo antes de iniciar sesión.",
-  user_banned: "Tu cuenta está bloqueada. Contacta al administrador.",
-  over_request_rate_limit: "Demasiados intentos. Intenta de nuevo en unos minutos.",
-  over_email_send_rate_limit: "Demasiados intentos. Intenta de nuevo en unos minutos.",
-};
-
-function translateAuthError(code: string | undefined): string {
-  return (code && AUTH_ERROR_MESSAGES[code]) ?? "No se pudo iniciar sesión. Intenta de nuevo.";
+// La API responde ProblemDetails con `detail` ya en español (AuthErrors usa
+// los mismos códigos estables que usaba Supabase). El detail es el mensaje;
+// esto cubre solo los casos donde no llega ninguno.
+function loginErrorMessage(e: ApiError): string {
+  if (e.status === 429) return "Demasiados intentos. Intenta de nuevo en unos minutos.";
+  return e.detail ?? "No se pudo iniciar sesión. Intenta de nuevo.";
 }
 
 export async function login(
@@ -41,33 +49,81 @@ export async function login(
     return { error: parsed.error.issues[0]?.message ?? "Datos inválidos.", email };
   }
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword(parsed.data);
-
-  if (error) {
-    return { error: translateAuthError(error.code), email };
+  let tokens: ApiSchemas["TokensResponse"];
+  try {
+    tokens = await apiFetch<ApiSchemas["TokensResponse"]>("/auth/login", {
+      method: "POST",
+      body: { email: parsed.data.email, password: parsed.data.password },
+    });
+  } catch (e) {
+    if (e instanceof ApiError) {
+      return { error: loginErrorMessage(e), email };
+    }
+    // API inalcanzable (fetch falló antes de tener respuesta).
+    return { error: "No se pudo iniciar sesión. Intenta de nuevo.", email };
   }
 
+  await persistSessionTokens(toSessionTokens(tokens));
   redirect("/dashboard");
 }
 
+export async function logout() {
+  const cookieStore = await cookies();
+  const refreshToken = cookieStore.get(REFRESH_TOKEN_COOKIE)?.value;
+
+  if (refreshToken) {
+    // Best-effort: revoca la familia de refresh tokens en la API. Si la API
+    // no responde, las cookies se borran igual y la sesión local muere.
+    try {
+      await apiFetch<void>("/auth/logout", { method: "POST", body: { refreshToken } });
+    } catch {
+      // nada que hacer: el refresh expirará solo en la API
+    }
+  }
+
+  await clearSessionTokens();
+  redirect("/login");
+}
+
+// ── SSO con Microsoft Entra ID ──────────────────────────────────────────────
+// El BFF hace el authorization code flow con PKCE directamente contra Entra
+// (ya no pasa por Supabase). El callback (/auth/callback) intercambia el code
+// por un id_token y se lo postea a la API (POST /auth/sso/entra).
+
+const OAUTH_COOKIE_MAX_AGE = 10 * 60;
+
+function base64url(buffer: Buffer): string {
+  return buffer.toString("base64url");
+}
+
 export async function signInWithAzure() {
-  const supabase = await createClient();
-  const origin = (await headers()).get("origin");
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "azure",
-    options: {
-      redirectTo: `${origin}/auth/callback`,
-      scopes: "email openid profile",
-    },
-  });
-
-  if (error || !data.url) {
+  const { MICROSOFT_TENANT_ID, MICROSOFT_CLIENT_ID } = serverEnv;
+  if (!MICROSOFT_TENANT_ID || !MICROSOFT_CLIENT_ID) {
     redirect(
-      `/login?error=${encodeURIComponent(error?.message ?? "No se pudo iniciar sesión con Microsoft.")}`,
+      `/login?error=${encodeURIComponent("El inicio de sesión con Microsoft no está configurado.")}`,
     );
   }
 
-  redirect(data.url);
+  const origin = (await headers()).get("origin");
+  const codeVerifier = base64url(randomBytes(32));
+  const codeChallenge = base64url(createHash("sha256").update(codeVerifier).digest());
+  const state = base64url(randomBytes(16));
+
+  const cookieStore = await cookies();
+  cookieStore.set(ENTRA_VERIFIER_COOKIE, codeVerifier, sessionCookieOptions(OAUTH_COOKIE_MAX_AGE));
+  cookieStore.set(ENTRA_STATE_COOKIE, state, sessionCookieOptions(OAUTH_COOKIE_MAX_AGE));
+
+  const authorizeUrl = new URL(
+    `https://login.microsoftonline.com/${MICROSOFT_TENANT_ID}/oauth2/v2.0/authorize`,
+  );
+  authorizeUrl.searchParams.set("client_id", MICROSOFT_CLIENT_ID);
+  authorizeUrl.searchParams.set("response_type", "code");
+  authorizeUrl.searchParams.set("redirect_uri", `${origin}/auth/callback`);
+  authorizeUrl.searchParams.set("response_mode", "query");
+  authorizeUrl.searchParams.set("scope", "openid profile email");
+  authorizeUrl.searchParams.set("state", state);
+  authorizeUrl.searchParams.set("code_challenge", codeChallenge);
+  authorizeUrl.searchParams.set("code_challenge_method", "S256");
+
+  redirect(authorizeUrl.toString());
 }

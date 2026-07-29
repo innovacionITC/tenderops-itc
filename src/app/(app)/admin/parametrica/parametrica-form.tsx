@@ -69,7 +69,7 @@ export function ParametricaForm({
   const [modalidadIds, setModalidadIds] = useState(new Set(config?.modalidadIds ?? []));
   const [entidadIds, setEntidadIds] = useState(new Set(config?.entidadIds ?? []));
   const [estadoSecopIds, setEstadoSecopIds] = useState(new Set(config?.estadoSecopIds ?? []));
-  const [unspscIds, setUnspscIds] = useState(new Set<string>());
+  const [unspscIds, setUnspscIds] = useState(new Set(config?.unspscIds ?? []));
   const [nitIds, setNitIds] = useState(new Set(config?.nitIds ?? []));
   const [departamentoIds, setDepartamentoIds] = useState(new Set(config?.departamentoIds ?? []));
   // Ciudades guarda items completos (id + label): el catálogo no está en el
@@ -248,7 +248,7 @@ export function ParametricaForm({
             emptyHint={
               <p className="p-2 text-xs text-muted-foreground">
                 Sin modalidades.{" "}
-                <Link href="/admin/modalidades" className="text-primary hover:underline">
+                <Link href="/admin/parametricas" className="text-primary hover:underline">
                   Ir a Modalidades →
                 </Link>
               </p>
@@ -262,7 +262,7 @@ export function ParametricaForm({
             emptyHint={
               <p className="p-2 text-xs text-muted-foreground">
                 Sin entidades.{" "}
-                <Link href="/admin/entidades" className="text-primary hover:underline">
+                <Link href="/admin/parametricas" className="text-primary hover:underline">
                   Ir a Entidades →
                 </Link>
               </p>
@@ -284,7 +284,7 @@ export function ParametricaForm({
             emptyHint={
               <p className="p-2 text-xs text-muted-foreground">
                 Sin códigos.{" "}
-                <Link href="/admin/unspsc" className="text-primary hover:underline">
+                <Link href="/admin/parametricas" className="text-primary hover:underline">
                   Ir a Códigos UNSPSC →
                 </Link>
               </p>
@@ -298,7 +298,7 @@ export function ParametricaForm({
             emptyHint={
               <p className="p-2 text-xs text-muted-foreground">
                 Sin NITs.{" "}
-                <Link href="/admin/nits" className="text-primary hover:underline">
+                <Link href="/admin/parametricas" className="text-primary hover:underline">
                   Ir a NITs →
                 </Link>
               </p>
@@ -312,7 +312,7 @@ export function ParametricaForm({
             emptyHint={
               <p className="p-2 text-xs text-muted-foreground">
                 Sin departamentos.{" "}
-                <Link href="/admin/departamentos" className="text-primary hover:underline">
+                <Link href="/admin/parametricas" className="text-primary hover:underline">
                   Ir a Departamentos →
                 </Link>
               </p>

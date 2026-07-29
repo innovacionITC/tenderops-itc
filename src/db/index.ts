@@ -13,6 +13,16 @@ const globalForDb = globalThis as unknown as {
   postgresClient?: ReturnType<typeof postgres>;
 };
 
+// Desde la Fase 7 (BFF contra tenderops-api) ningún código de la app debería
+// importar este módulo: el acceso a datos vive en la API .NET. Se conserva
+// solo para drizzle-kit hasta que la Fase 10 lo retire.
+if (!serverEnv.DATABASE_URL) {
+  throw new Error(
+    "DATABASE_URL no está definido: el acceso a datos migró a tenderops-api (Fase 7). " +
+      "Ningún módulo de la app debería importar @/db.",
+  );
+}
+
 const client =
   globalForDb.postgresClient ?? postgres(serverEnv.DATABASE_URL, { prepare: false });
 

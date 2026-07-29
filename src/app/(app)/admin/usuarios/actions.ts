@@ -2,63 +2,31 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import { appRole, perfiles, rolesUsuario } from "@/db/schema/schema";
+import { apiFetch } from "@/lib/api/client";
+import { APP_ROLES } from "@/lib/auth/roles";
 import { requireAuth } from "@/lib/auth/session";
-import { recordAudit } from "@/lib/audit";
+
+// Los guardarraíles ("no puedes cambiar tu propio rol/desactivarte") ahora los
+// aplica la API como 409 (rol_propio_protegido / cuenta_propia_protegida) con
+// `detail` en español, que burbujea como message. Ambas mutaciones incrementan
+// token_version en la API: el refresh siguiente del usuario afectado falla.
 
 export async function updateUserRole(userId: string, role: string) {
-  const auth = await requireAuth(["administrador"]);
+  await requireAuth(["administrador"]);
   const id = z.uuid().parse(userId);
-  const parsedRole = z.enum(appRole.enumValues).parse(role);
+  const parsedRole = z.enum(APP_ROLES).parse(role);
 
-  if (id === auth.userId && parsedRole !== "administrador") {
-    throw new Error("No puedes cambiar tu propio rol de administrador.");
-  }
-
-  const [existing] = await db
-    .select({ id: rolesUsuario.id })
-    .from(rolesUsuario)
-    .where(eq(rolesUsuario.usuarioId, id))
-    .limit(1);
-
-  if (existing) {
-    await db.update(rolesUsuario).set({ rol: parsedRole }).where(eq(rolesUsuario.id, existing.id));
-  } else {
-    await db.insert(rolesUsuario).values({ usuarioId: id, rol: parsedRole });
-  }
-
-  await recordAudit(auth.userId, {
-    action: "user.role_update",
-    module: "usuarios",
-    entityType: "usuario",
-    entityId: id,
-    metadata: { role: parsedRole },
-  });
+  await apiFetch<unknown>(`/usuarios/${id}/rol`, { method: "PUT", body: { role: parsedRole } });
 
   revalidatePath("/admin/usuarios");
   return { ok: true };
 }
 
 export async function setUserStatus(userId: string, active: boolean) {
-  const auth = await requireAuth(["administrador"]);
+  await requireAuth(["administrador"]);
   const id = z.uuid().parse(userId);
 
-  if (id === auth.userId && !active) {
-    throw new Error("No puedes desactivar tu propia cuenta.");
-  }
-
-  const estado = active ? "activo" : "inactivo";
-  await db.update(perfiles).set({ estado }).where(eq(perfiles.id, id));
-
-  await recordAudit(auth.userId, {
-    action: "user.status_update",
-    module: "usuarios",
-    entityType: "usuario",
-    entityId: id,
-    metadata: { estado },
-  });
+  await apiFetch<unknown>(`/usuarios/${id}/estado`, { method: "PUT", body: { active } });
 
   revalidatePath("/admin/usuarios");
   return { ok: true };

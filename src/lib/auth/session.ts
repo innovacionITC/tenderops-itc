@@ -1,11 +1,9 @@
 import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import { perfiles, rolesUsuario } from "@/db/schema/schema";
-import { createClient } from "@/lib/supabase/server";
-import { hasAnyRole, type AppRole } from "./roles";
+import { ApiError, apiFetch } from "@/lib/api/client";
+import type { ApiSchemas } from "@/lib/api/types";
+import { APP_ROLES, hasAnyRole, type AppRole } from "./roles";
 
 export interface AuthContext {
   userId: string;
@@ -13,36 +11,31 @@ export interface AuthContext {
   role: AppRole | null;
 }
 
+function toAppRole(role: string | null): AppRole | null {
+  return (APP_ROLES as readonly string[]).includes(role ?? "") ? (role as AppRole) : null;
+}
+
 // Memoized per-request (React `cache`): safe to call from many Server
-// Components/Actions in the same render without re-querying Supabase/Postgres.
+// Components/Actions in the same render without re-hitting GET /auth/me.
+// Un 401 (sin token, token vencido irrecuperable o cuenta desactivada — la
+// API trata perfil inactivo como "sin sesión") se traduce a `null`.
 export const getAuthContext = cache(async (): Promise<AuthContext | null> => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return null;
-
-  const [row] = await db
-    .select({ role: rolesUsuario.rol, estado: perfiles.estado })
-    .from(perfiles)
-    .leftJoin(rolesUsuario, eq(rolesUsuario.usuarioId, perfiles.id))
-    .where(eq(perfiles.id, user.id))
-    .limit(1);
-
-  // A profile that exists but isn't "activo" means the account was
-  // deactivated in Administración — treat it as no session.
-  if (row && row.estado !== "activo") return null;
-
-  return { userId: user.id, email: user.email ?? null, role: row?.role ?? "lectura" };
+  try {
+    const me = await apiFetch<ApiSchemas["MeResponse"]>("/auth/me");
+    return { userId: me.userId, email: me.email, role: toAppRole(me.role) };
+  } catch (e) {
+    if (e instanceof ApiError && (e.status === 401 || e.status === 403)) return null;
+    throw e;
+  }
 });
 
 /**
  * Data Access Layer entry point for Server Components, Server Actions, and
  * Route Handlers. Redirects to /login if there's no session; throws if
- * `allowedRoles` is given and the user's role isn't in it. This — not
- * Postgres RLS — is where authorization is enforced, since Drizzle connects
- * with a direct (non-impersonated) connection. See the plan doc for why.
+ * `allowedRoles` is given and the user's role isn't in it. La firma no cambió
+ * en la Fase 7 a propósito: las ~40 llamadas existentes siguen compilando.
+ * La autorización de verdad la re-verifica la API en cada endpoint (policies);
+ * este chequeo local solo corta antes y con mejor UX.
  */
 export async function requireAuth(allowedRoles?: AppRole[]): Promise<AuthContext> {
   const auth = await getAuthContext();

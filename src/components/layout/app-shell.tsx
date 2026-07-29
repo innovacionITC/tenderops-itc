@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { LogOut } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { logout } from "@/app/login/actions";
 import { roleLabels } from "@/lib/format";
 import type { AppRole } from "@/lib/auth/roles";
 import { ItcMenu, type MenuItem as ItcMenuItem } from "@/components/itc";
@@ -65,8 +65,9 @@ export function AppShell({
   };
 
   const handleLogout = async () => {
-    await createClient().auth.signOut();
-    window.location.assign("/login");
+    // Server Action: revoca la familia de refresh tokens en la API, borra las
+    // cookies httpOnly (el cliente no puede tocarlas) y redirige a /login.
+    await logout();
   };
 
   return (

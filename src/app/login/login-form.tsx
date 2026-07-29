@@ -8,9 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login, signInWithAzure, type LoginState } from "./actions";
 
-const initialState: LoginState = {};
-
-export function LoginForm() {
+export function LoginForm({ initialError }: { initialError?: string }) {
+  const initialState: LoginState = { error: initialError };
   const [state, formAction] = useActionState(login, initialState);
 
   return (

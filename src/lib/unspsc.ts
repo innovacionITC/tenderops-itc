@@ -1,13 +1,10 @@
 import "server-only";
-import { asc } from "drizzle-orm";
-import { db } from "@/db";
-import { codigosUnspsc } from "@/db/schema/schema";
+import { apiFetch } from "@/lib/api/client";
+import type { ApiSchemas } from "@/lib/api/types";
 
 export type UnspscRow = { id: string; codigo: string; descripcion: string | null };
 
 export async function listUnspscCodes(): Promise<UnspscRow[]> {
-  return db
-    .select({ id: codigosUnspsc.id, codigo: codigosUnspsc.codigo, descripcion: codigosUnspsc.descripcion })
-    .from(codigosUnspsc)
-    .orderBy(asc(codigosUnspsc.codigo));
+  const rows = await apiFetch<ApiSchemas["CodigoUnspscResponse"][]>("/codigos-unspsc");
+  return rows.map((r) => ({ id: r.id, codigo: r.code, descripcion: r.description }));
 }

@@ -7,7 +7,7 @@ import { CalendarView } from "./calendar-view";
 
 export default async function CalendarioPage() {
   const { userId, role } = await requireAuth();
-  const [events, tasks] = await Promise.all([listCalendar(userId), listTasks()]);
+  const [events, tasks] = await Promise.all([listCalendar(), listTasks()]);
 
   return (
     <>

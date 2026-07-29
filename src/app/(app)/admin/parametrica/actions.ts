@@ -2,22 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
-import { db } from "@/db";
-import {
-  parametricaParametros,
-  palabrasClave,
-  modalidadParametros,
-  entidadesParametros,
-  estadoSecopParametros,
-  estadosSecop,
-  unspscParametros,
-  nitParametros,
-  departamentoParametros,
-  ciudadParametros,
-} from "@/db/schema/schema";
+import { apiFetch } from "@/lib/api/client";
+import type { ApiSchemas } from "@/lib/api/types";
 import { requireAuth } from "@/lib/auth/session";
-import { recordAudit } from "@/lib/audit";
 import { searchCiudades } from "@/lib/parametrica";
 
 const saveSchema = z
@@ -44,163 +31,40 @@ const saveSchema = z
     path: ["valorMinimo"],
   });
 
-function isUniqueViolation(e: unknown): boolean {
-  return typeof e === "object" && e !== null && (e as { code?: string }).code === "23505";
-}
-
 export async function saveParametricaConfig(input: z.infer<typeof saveSchema>) {
-  const auth = await requireAuth(["administrador"]);
+  await requireAuth(["administrador"]);
   const data = saveSchema.parse(input);
 
-  const result = await db.transaction(async (tx) => {
-    const [existing] = await tx
-      .select({ id: parametricaParametros.id })
-      .from(parametricaParametros)
-      .limit(1);
+  // El PUT es transaccional en la API (upsert + delete-then-insert de las 8
+  // tablas puente); un catálogo inexistente responde 422 (catalogo_invalido)
+  // con `detail` en español y revierte todo. Auditoría incluida.
+  const body: ApiSchemas["SaveParametricaRequest"] = {
+    isEnabled: data.habilitado,
+    secopIEnabled: data.datasetSecopI,
+    secopIiEnabled: data.datasetSecopIi,
+    lookbackDays: data.diasHaciaAtras,
+    cronIntervalMinutes: data.intervalosCronMin,
+    maxQueryResults: data.maxResultadosConsulta,
+    minValue: data.valorMinimo,
+    maxValue: data.valorMaximo,
+    keywords: data.palabrasClave,
+    modalityIds: data.modalidadIds,
+    entityIds: data.entidadIds,
+    secopStatusIds: data.estadoSecopIds,
+    unspscCodeIds: data.unspscIds,
+    nitIds: data.nitIds,
+    departmentIds: data.departamentoIds,
+    cityIds: data.ciudadIds,
+  };
 
-    let id: string;
-    let wasCreated = false;
-    if (existing) {
-      id = existing.id;
-      await tx
-        .update(parametricaParametros)
-        .set({
-          habilitado: data.habilitado,
-          datasetSecopI: data.datasetSecopI,
-          datasetSecopIi: data.datasetSecopIi,
-          diasHaciaAtras: data.diasHaciaAtras,
-          intervalosCronMin: data.intervalosCronMin,
-          maxResultadosConsulta: data.maxResultadosConsulta,
-          valorMinimo: data.valorMinimo?.toString() ?? null,
-          valorMaximo: data.valorMaximo?.toString() ?? null,
-          modificadoPor: auth.userId,
-          fechaModificacion: new Date().toISOString(),
-        })
-        .where(eq(parametricaParametros.id, id));
-    } else {
-      wasCreated = true;
-      const [created] = await tx
-        .insert(parametricaParametros)
-        .values({
-          habilitado: data.habilitado,
-          datasetSecopI: data.datasetSecopI,
-          datasetSecopIi: data.datasetSecopIi,
-          diasHaciaAtras: data.diasHaciaAtras,
-          intervalosCronMin: data.intervalosCronMin,
-          maxResultadosConsulta: data.maxResultadosConsulta,
-          valorMinimo: data.valorMinimo?.toString() ?? null,
-          valorMaximo: data.valorMaximo?.toString() ?? null,
-          creadoPor: auth.userId,
-          modificadoPor: auth.userId,
-        })
-        .returning({ id: parametricaParametros.id });
-      id = created.id;
-    }
+  await apiFetch<ApiSchemas["SaveParametricaResponse"]>("/parametrica", { method: "PUT", body });
 
-    await tx.delete(palabrasClave).where(eq(palabrasClave.parametricaParametrosId, id));
-    if (data.palabrasClave.length > 0) {
-      await tx.insert(palabrasClave).values(
-        Array.from(new Set(data.palabrasClave)).map((palabraClave) => ({
-          parametricaParametrosId: id,
-          palabraClave,
-          creadoPor: auth.userId,
-          modificadoPor: auth.userId,
-        })),
-      );
-    }
-
-    await tx.delete(modalidadParametros).where(eq(modalidadParametros.parametricaParametrosId, id));
-    if (data.modalidadIds.length > 0) {
-      await tx
-        .insert(modalidadParametros)
-        .values(
-          data.modalidadIds.map((modalidadId) => ({ parametricaParametrosId: id, modalidadId })),
-        );
-    }
-
-    await tx.delete(entidadesParametros).where(eq(entidadesParametros.parametricaParametrosId, id));
-    if (data.entidadIds.length > 0) {
-      await tx
-        .insert(entidadesParametros)
-        .values(data.entidadIds.map((entidadId) => ({ parametricaParametrosId: id, entidadId })));
-    }
-
-    await tx
-      .delete(estadoSecopParametros)
-      .where(eq(estadoSecopParametros.parametricaParametrosId, id));
-    if (data.estadoSecopIds.length > 0) {
-      await tx
-        .insert(estadoSecopParametros)
-        .values(
-          data.estadoSecopIds.map((estadoSecopId) => ({
-            parametricaParametrosId: id,
-            estadoSecopId,
-          })),
-        );
-    }
-
-    await tx.delete(unspscParametros).where(eq(unspscParametros.parametricaParametrosId, id));
-    if (data.unspscIds.length > 0) {
-      await tx
-        .insert(unspscParametros)
-        .values(
-          data.unspscIds.map((codigoUnspscId) => ({ parametricaParametrosId: id, codigoUnspscId })),
-        );
-    }
-
-    await tx.delete(nitParametros).where(eq(nitParametros.parametricaParametrosId, id));
-    if (data.nitIds.length > 0) {
-      await tx
-        .insert(nitParametros)
-        .values(data.nitIds.map((nitId) => ({ parametricaParametrosId: id, nitId })));
-    }
-
-    await tx
-      .delete(departamentoParametros)
-      .where(eq(departamentoParametros.parametricaParametrosId, id));
-    if (data.departamentoIds.length > 0) {
-      await tx.insert(departamentoParametros).values(
-        data.departamentoIds.map((departamentoId) => ({
-          parametricaParametrosId: id,
-          departamentoId,
-        })),
-      );
-    }
-
-    await tx.delete(ciudadParametros).where(eq(ciudadParametros.parametricaParametrosId, id));
-    if (data.ciudadIds.length > 0) {
-      await tx
-        .insert(ciudadParametros)
-        .values(data.ciudadIds.map((ciudadId) => ({ parametricaParametrosId: id, ciudadId })));
-    }
-
-    return { id, wasCreated };
-  });
-
-  await recordAudit(auth.userId, {
-    action: "parametrica.update",
-    module: "parametrica",
-    entityType: "parametrica_parametros",
-    entityId: result.id,
-    metadata: {
-      wasCreated: result.wasCreated,
-      keywordCount: data.palabrasClave.length,
-      modalidadCount: data.modalidadIds.length,
-      entidadCount: data.entidadIds.length,
-      estadoSecopCount: data.estadoSecopIds.length,
-      unspscCount: data.unspscIds.length,
-      nitCount: data.nitIds.length,
-      departamentoCount: data.departamentoIds.length,
-      ciudadCount: data.ciudadIds.length,
-    },
-  });
-
-  revalidatePath("/admin/parametrica");
+  revalidatePath("/admin/parametricas");
   return { ok: true };
 }
 
 /**
- * Búsqueda remota para el picker de ciudades: filtra en Postgres (índice
+ * Búsqueda remota para el picker de ciudades: filtra en la API (índice
  * trigram, insensible a acentos) y devuelve como máximo 50 resultados, para no
  * cargar nunca el catálogo completo (~1.100 municipios) en el cliente.
  */
@@ -212,27 +76,15 @@ export async function searchCiudadesParametrica(query: string) {
 }
 
 export async function quickAddEstadoSecop(input: { nombre: string }) {
-  const auth = await requireAuth(["administrador"]);
+  await requireAuth(["administrador"]);
   const nombre = z.string().trim().min(1).parse(input.nombre);
 
-  try {
-    const [created] = await db
-      .insert(estadosSecop)
-      .values({ nombre, creadoPor: auth.userId, modificadoPor: auth.userId })
-      .returning({ id: estadosSecop.id });
+  // Nombre duplicado → 409 con `detail` en español, burbujea como message.
+  const created = await apiFetch<ApiSchemas["QuickAddEstadoSecopResponse"]>(
+    "/estados-secop/quick-add",
+    { method: "POST", body: { name: nombre } },
+  );
 
-    await recordAudit(auth.userId, {
-      action: "estado_secop.create",
-      module: "parametrica",
-      entityType: "estado_secop",
-      entityId: created.id,
-      metadata: { nombre },
-    });
-
-    revalidatePath("/admin/parametrica");
-    return { id: created.id, label: nombre };
-  } catch (e) {
-    if (isUniqueViolation(e)) throw new Error("Ya existe ese estado SECOP.");
-    throw e;
-  }
+  revalidatePath("/admin/parametricas");
+  return { id: created.id, label: created.label };
 }

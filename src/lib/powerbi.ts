@@ -1,8 +1,10 @@
 import "server-only";
-import { getCredential } from "@/lib/credentials";
+import { apiFetch } from "@/lib/api/client";
+import type { ApiSchemas } from "@/lib/api/types";
 
-// The embed URL itself isn't secret ("Publish to web" / embed links are
-// accessible to anyone with the link) but is admin-managed via api_credentials.
+// La URL la administra un admin en /admin/credenciales (POWERBI_EMBED_URL);
+// la API la resuelve con su caché de 30 s y fallback a variable de entorno.
 export async function getPowerBiEmbedUrl(): Promise<string | null> {
-  return getCredential("POWERBI_EMBED_URL");
+  const { url } = await apiFetch<ApiSchemas["PowerBiEmbedUrlResponse"]>("/powerbi/embed-url");
+  return url;
 }

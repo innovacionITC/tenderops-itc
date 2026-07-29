@@ -1,7 +1,6 @@
 import "server-only";
-import { asc, eq } from "drizzle-orm";
-import { db } from "@/db";
-import { perfiles, rolesUsuario } from "@/db/schema/schema";
+import { apiFetch } from "@/lib/api/client";
+import type { ApiSchemas } from "@/lib/api/types";
 import type { AppRole } from "@/lib/auth/roles";
 
 export type UserRow = {
@@ -16,18 +15,16 @@ export type UserRow = {
 };
 
 export async function listUsers(): Promise<UserRow[]> {
-  return db
-    .select({
-      id: perfiles.id,
-      fullName: perfiles.nombreCompleto,
-      email: perfiles.email,
-      avatarUrl: perfiles.urlAvatar,
-      status: perfiles.estado,
-      lastLoginAt: perfiles.fechaUltimoLogin,
-      createdAt: perfiles.fechaCreacion,
-      role: rolesUsuario.rol,
-    })
-    .from(perfiles)
-    .leftJoin(rolesUsuario, eq(rolesUsuario.usuarioId, perfiles.id))
-    .orderBy(asc(perfiles.fechaCreacion));
+  const rows = await apiFetch<ApiSchemas["UsuarioResponse"][]>("/usuarios");
+
+  return rows.map((u) => ({
+    id: u.id,
+    fullName: u.fullName,
+    email: u.email,
+    avatarUrl: u.avatarUrl,
+    status: u.status,
+    lastLoginAt: u.lastLoginAt,
+    createdAt: u.createdAt,
+    role: (u.role as AppRole | null) ?? null,
+  }));
 }
