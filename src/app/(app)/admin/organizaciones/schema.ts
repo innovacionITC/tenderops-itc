@@ -6,10 +6,13 @@ import { z } from "zod";
 // del cliente queda como un stub roto (`createSchema.safeParse is not a
 // function`). Este archivo lo importan tanto actions.ts (validación antes de
 // pegarle a la API) como organizaciones-table.tsx (validación en el cliente).
-// Los 4 campos son obligatorios para organizaciones.
+// Nombre/correo/teléfono/código son obligatorios; taxId (NIT propio de la
+// organización) es opcional — no toda organización lo tiene registrado al
+// crearse.
 export const createSchema = z.object({
   nombre: z.string().trim().min(1, "El nombre es obligatorio"),
   email: z.string().trim().min(1, "El correo es obligatorio").email("Correo inválido"),
   phone: z.string().trim().min(1, "El teléfono es obligatorio"),
-  nitId: z.string().trim().min(1, "El NIT es obligatorio").uuid("NIT inválido"),
+  code: z.string().trim().min(1, "El código es obligatorio"),
+  taxId: z.string().trim().optional(),
 });

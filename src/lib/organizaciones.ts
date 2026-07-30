@@ -7,10 +7,9 @@ export type OrganizacionRow = {
   nombre: string;
   email: string | null;
   phone: string | null;
-  nitId: string | null;
-  nitDescripcion: string | null;
+  code: string;
+  taxId: string | null;
   estado: boolean | null;
-  createdAt: string;
 };
 
 export async function listOrganizaciones(): Promise<OrganizacionRow[]> {
@@ -21,9 +20,8 @@ export async function listOrganizaciones(): Promise<OrganizacionRow[]> {
     nombre: r.name,
     email: r.email ?? null,
     phone: r.phone ?? null,
-    nitId: r.nitId ?? null,
-    nitDescripcion: r.nitDescription ?? null,
+    code: r.code,
+    taxId: r.taxId ?? null,
     estado: r.isActive,
-    createdAt: r.createdAt,
   }));
 }

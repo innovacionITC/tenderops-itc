@@ -4,30 +4,18 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { apiFetch } from "@/lib/api/client";
 import { requireAuth } from "@/lib/auth/session";
-import { nitSchema } from "../nits/schema";
 import { createSchema } from "./schema";
 
 function revalidateOrganizaciones() {
   revalidatePath("/admin/organizaciones");
 }
 
-export async function createNitQuick(input: { nit: string; descripcion: string }) {
-  await requireAuth(["superadmin"]);
-  const { nit, descripcion } = nitSchema.parse(input);
-
-  const created = await apiFetch<{ id: string; nit: string; description: string | null }>(
-    "/nits",
-    { method: "POST", body: { nit, description: descripcion } },
-  );
-  revalidateOrganizaciones();
-  return { id: created.id, label: created.description ? `${created.nit} — ${created.description}` : created.nit };
-}
-
 export async function createOrganizacion(input: {
   nombre: string;
   email: string;
   phone: string;
-  nitId: string;
+  code: string;
+  taxId?: string;
 }) {
   await requireAuth(["superadmin"]);
   const parsed = createSchema.parse(input);
@@ -38,7 +26,8 @@ export async function createOrganizacion(input: {
       name: parsed.nombre,
       email: parsed.email,
       phone: parsed.phone,
-      nitId: parsed.nitId,
+      code: parsed.code,
+      taxId: parsed.taxId || null,
     },
   });
   revalidateOrganizaciones();
@@ -47,7 +36,7 @@ export async function createOrganizacion(input: {
 
 export async function updateOrganizacion(
   id: string,
-  input: { nombre: string; email: string; phone: string; nitId: string },
+  input: { nombre: string; email: string; phone: string; code: string; taxId?: string },
 ) {
   await requireAuth(["superadmin"]);
   const orgId = z.uuid().parse(id);
@@ -59,7 +48,8 @@ export async function updateOrganizacion(
       name: parsed.nombre,
       email: parsed.email,
       phone: parsed.phone,
-      nitId: parsed.nitId,
+      code: parsed.code,
+      taxId: parsed.taxId || null,
     },
   });
   revalidateOrganizaciones();

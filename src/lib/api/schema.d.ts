@@ -2107,12 +2107,11 @@ export interface components {
             /** Format: uuid */
             id: string;
             name: string;
+            code: string;
+            taxId: null | string;
             email: null | string;
             phone: null | string;
-            nitId: null | string;
-            nitDescription: null | string;
             isActive: boolean;
-            createdAt: string;
         };
         EstadoSecopResponse: {
             /** Format: uuid */
