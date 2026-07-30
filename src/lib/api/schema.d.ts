@@ -2103,6 +2103,17 @@ export interface components {
             name: string;
             isActive: boolean;
         };
+        OrganizationResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            email: null | string;
+            phone: null | string;
+            nitId: null | string;
+            nitDescription: null | string;
+            isActive: boolean;
+            createdAt: string;
+        };
         EstadoSecopResponse: {
             /** Format: uuid */
             id: string;

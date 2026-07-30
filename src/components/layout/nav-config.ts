@@ -9,7 +9,7 @@ import {
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
-import type { AppRole } from "@/lib/auth/roles";
+import { canAdmin, canApprove, type AppRole } from "@/lib/auth/roles";
 
 export type MenuItem = {
   href: string;
@@ -61,7 +61,7 @@ export const menuGroups: { title: string; items: MenuItem[] }[] = [
 ];
 
 export function isMenuItemVisible(item: MenuItem, role: AppRole | null) {
-  if (item.adminOnly) return role === "administrador";
-  if (item.privilegedOnly) return role === "administrador" || role === "director";
+  if (item.adminOnly) return canAdmin(role);
+  if (item.privilegedOnly) return canApprove(role);
   return true;
 }

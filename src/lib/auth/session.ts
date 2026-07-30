@@ -45,7 +45,7 @@ export async function requireAuth(allowedRoles?: AppRole[]): Promise<AuthContext
   }
 
   if (allowedRoles && !hasAnyRole(auth.role, allowedRoles)) {
-    throw new Error("No tienes permisos para realizar esta acción.");
+    redirect("/unauthorized");
   }
 
   return auth;

@@ -38,6 +38,7 @@ export const formatDateTime = (d: string | Date | null | undefined) => {
 };
 
 export const roleLabels: Record<string, string> = {
+  superadmin: "Super Admin",
   administrador: "Administrador",
   director: "Director / Aprobador",
   gestor: "Gestor de Licitaciones",

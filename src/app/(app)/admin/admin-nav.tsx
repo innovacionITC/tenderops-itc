@@ -2,20 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { AppRole } from "@/lib/auth/roles";
 
 const TABS = [
+  { href: "/admin/organizaciones", label: "Organizaciones", superadminOnly: true },
   { href: "/admin/usuarios", label: "Usuarios" },
   { href: "/admin/parametricas", label: "Paramétricas" },
   { href: "/admin/credenciales", label: "Credenciales" },
 ];
 
-export function AdminNav() {
+export function AdminNav({ role }: { role: AppRole | null }) {
   const pathname = usePathname();
 
   return (
     <div className="border-b bg-card px-4 sm:px-6 lg:px-8">
       <nav className="flex gap-1 overflow-x-auto">
-        {TABS.map((tab) => {
+        {TABS.filter((tab) => !tab.superadminOnly || role === "superadmin").map((tab) => {
           const active = pathname === tab.href || pathname.startsWith(tab.href + "/");
           return (
             <Link

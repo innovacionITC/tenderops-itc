@@ -55,10 +55,17 @@ function SelectContent({
   children,
   position = "item-aligned",
   align = "center",
+  container,
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Content>) {
+}: React.ComponentProps<typeof SelectPrimitive.Content> & {
+  // Por defecto el Portal cae en document.body. Si el Select vive dentro de
+  // un <dialog> nativo (p. ej. ItcModal, que usa showModal()), todo lo que
+  // esté fuera del <dialog> queda inerte y el contenido portado no recibe
+  // clicks — hay que apuntar el container al propio <dialog>.
+  container?: React.ComponentProps<typeof SelectPrimitive.Portal>["container"];
+}) {
   return (
-    <SelectPrimitive.Portal>
+    <SelectPrimitive.Portal container={container}>
       <SelectPrimitive.Content
         data-slot="select-content"
         data-align-trigger={position === "item-aligned"}
