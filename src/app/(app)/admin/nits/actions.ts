@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { apiFetch } from "@/lib/api/client";
 import { requireAuth } from "@/lib/auth/session";
+import { nitSchema } from "./schema";
 
 // Errores de negocio (409/404) llegan de la API con `detail` en español y
 // burbujean como message; la auditoría también vive en la API.
@@ -12,21 +13,19 @@ function revalidateNits() {
   revalidatePath("/admin/parametricas");
 }
 
-export async function createNit(input: { nit: string; descripcion?: string }) {
+export async function createNit(input: { nit: string; descripcion: string }) {
   await requireAuth(["administrador"]);
-  const nit = z.string().trim().min(1).parse(input.nit);
-  const descripcion = input.descripcion?.trim() || null;
+  const { nit, descripcion } = nitSchema.parse(input);
 
   await apiFetch<unknown>("/nits", { method: "POST", body: { nit, description: descripcion } });
   revalidateNits();
   return { ok: true };
 }
 
-export async function updateNit(id: string, input: { nit: string; descripcion?: string }) {
+export async function updateNit(id: string, input: { nit: string; descripcion: string }) {
   await requireAuth(["administrador"]);
   const nitId = z.uuid().parse(id);
-  const nit = z.string().trim().min(1).parse(input.nit);
-  const descripcion = input.descripcion?.trim() || null;
+  const { nit, descripcion } = nitSchema.parse(input);
 
   await apiFetch<unknown>(`/nits/${nitId}`, {
     method: "PUT",

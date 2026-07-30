@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { apiFetch } from "@/lib/api/client";
 import { requireAuth } from "@/lib/auth/session";
+import { unspscSchema } from "./schema";
 
 // Errores de negocio (409 código duplicado, 404) llegan de la API con
 // `detail` en español y burbujean como message.
@@ -12,10 +13,9 @@ function revalidateUnspsc() {
   revalidatePath("/admin/parametricas");
 }
 
-export async function createUnspscCode(input: { codigo: string; descripcion?: string }) {
+export async function createUnspscCode(input: { codigo: string; descripcion: string }) {
   await requireAuth(["administrador"]);
-  const codigo = z.string().trim().min(1).parse(input.codigo);
-  const descripcion = input.descripcion?.trim() || null;
+  const { codigo, descripcion } = unspscSchema.parse(input);
 
   await apiFetch<unknown>("/codigos-unspsc", {
     method: "POST",
@@ -25,18 +25,14 @@ export async function createUnspscCode(input: { codigo: string; descripcion?: st
   return { ok: true };
 }
 
-export async function updateUnspscCode(
-  id: string,
-  input: { codigo?: string; descripcion?: string },
-) {
+export async function updateUnspscCode(id: string, input: { codigo: string; descripcion: string }) {
   await requireAuth(["administrador"]);
   const codeId = z.uuid().parse(id);
+  const { codigo, descripcion } = unspscSchema.parse(input);
 
-  // Contrato heredado de updateUnspscCode(): `code` solo se reescribe si viene
-  // informado; `description` se reescribe siempre (null si no viene).
   await apiFetch<unknown>(`/codigos-unspsc/${codeId}`, {
     method: "PUT",
-    body: { code: input.codigo?.trim() || null, description: input.descripcion?.trim() || null },
+    body: { code: codigo, description: descripcion },
   });
   revalidateUnspsc();
   return { ok: true };

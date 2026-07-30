@@ -9,8 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { StatusBadge } from "@/components/layout/status-badge";
+import { useFieldErrors, zodIssuesToFieldErrors } from "@/lib/form-errors";
 import type { NitRow } from "@/lib/parametrica";
 import { createNit, deleteNit, setNitEstado, updateNit } from "./actions";
+import { nitSchema } from "./schema";
 
 type DialogState = { mode: "create" } | { mode: "edit"; row: NitRow } | null;
 
@@ -20,6 +22,7 @@ export function NitsTable({ rows }: { rows: NitRow[] }) {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [deleteTarget, setDeleteTarget] = useState<NitRow | null>(null);
+  const { fieldErrors, setFieldErrors, clearFieldError } = useFieldErrors();
 
   const [nit, setNit] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -27,26 +30,30 @@ export function NitsTable({ rows }: { rows: NitRow[] }) {
   const openCreate = () => {
     setNit("");
     setDescripcion("");
+    setFieldErrors({});
     setDialog({ mode: "create" });
   };
 
   const openEdit = (row: NitRow) => {
     setNit(row.nit);
     setDescripcion(row.descripcion ?? "");
+    setFieldErrors({});
     setDialog({ mode: "edit", row });
   };
 
   const handleSave = () => {
-    if (!nit.trim()) {
-      toast.error("El NIT es obligatorio");
+    const result = nitSchema.safeParse({ nit, descripcion });
+    if (!result.success) {
+      setFieldErrors(zodIssuesToFieldErrors(result.error));
       return;
     }
+    setFieldErrors({});
     startTransition(async () => {
       try {
         if (dialog?.mode === "create") {
-          await createNit({ nit, descripcion });
+          await createNit(result.data);
         } else if (dialog?.mode === "edit") {
-          await updateNit(dialog.row.id, { nit, descripcion });
+          await updateNit(dialog.row.id, result.data);
         }
         toast.success("NIT guardado");
         setDialog(null);
@@ -169,12 +176,24 @@ export function NitsTable({ rows }: { rows: NitRow[] }) {
         content={
           <div className="space-y-3">
             <div>
-              <Label className="mb-1.5">NIT</Label>
-              <ItcInput value={nit} onChange={(e: any) => setNit(e.target.value)} />
+              <Label className="mb-1.5">NIT <span className="text-destructive">*</span></Label>
+              <ItcInput
+                value={nit}
+                onChange={(e: any) => { setNit(e.target.value); clearFieldError("nit"); }}
+                aria-invalid={!!fieldErrors.nit}
+              />
+              {fieldErrors.nit && <p className="mt-1 text-xs text-destructive">{fieldErrors.nit}</p>}
             </div>
             <div>
-              <Label className="mb-1.5">Descripción</Label>
-              <ItcInput value={descripcion} onChange={(e: any) => setDescripcion(e.target.value)} />
+              <Label className="mb-1.5">Descripción <span className="text-destructive">*</span></Label>
+              <ItcInput
+                value={descripcion}
+                onChange={(e: any) => { setDescripcion(e.target.value); clearFieldError("descripcion"); }}
+                aria-invalid={!!fieldErrors.descripcion}
+              />
+              {fieldErrors.descripcion && (
+                <p className="mt-1 text-xs text-destructive">{fieldErrors.descripcion}</p>
+              )}
             </div>
           </div>
         }

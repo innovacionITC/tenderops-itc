@@ -9,8 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { StatusBadge } from "@/components/layout/status-badge";
+import { useFieldErrors, zodIssuesToFieldErrors } from "@/lib/form-errors";
 import type { CatalogItem, CiudadRow } from "@/lib/parametrica";
 import { createCiudad, deleteCiudad, setCiudadEstado, updateCiudad } from "./actions";
+import { ciudadSchema } from "./schema";
 
 type DialogState = { mode: "create" } | { mode: "edit"; row: CiudadRow } | null;
 
@@ -26,6 +28,7 @@ export function CiudadesTable({
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [deleteTarget, setDeleteTarget] = useState<CiudadRow | null>(null);
+  const { fieldErrors, setFieldErrors, clearFieldError } = useFieldErrors();
 
   const [nombre, setNombre] = useState("");
   const [departamentoId, setDepartamentoId] = useState("");
@@ -33,30 +36,30 @@ export function CiudadesTable({
   const openCreate = () => {
     setNombre("");
     setDepartamentoId("");
+    setFieldErrors({});
     setDialog({ mode: "create" });
   };
 
   const openEdit = (row: CiudadRow) => {
     setNombre(row.nombre);
     setDepartamentoId(row.departamentoId ?? "");
+    setFieldErrors({});
     setDialog({ mode: "edit", row });
   };
 
   const handleSave = () => {
-    if (!nombre.trim()) {
-      toast.error("El nombre es obligatorio");
+    const result = ciudadSchema.safeParse({ nombre, departamentoId });
+    if (!result.success) {
+      setFieldErrors(zodIssuesToFieldErrors(result.error));
       return;
     }
-    if (!departamentoId) {
-      toast.error("Selecciona un departamento");
-      return;
-    }
+    setFieldErrors({});
     startTransition(async () => {
       try {
         if (dialog?.mode === "create") {
-          await createCiudad({ nombre, departamentoId });
+          await createCiudad(result.data);
         } else if (dialog?.mode === "edit") {
-          await updateCiudad(dialog.row.id, { nombre, departamentoId });
+          await updateCiudad(dialog.row.id, result.data);
         }
         toast.success("Ciudad guardada");
         setDialog(null);
@@ -186,20 +189,28 @@ export function CiudadesTable({
         content={
           <div className="space-y-3">
             <div>
-              <Label className="mb-1.5">Nombre</Label>
-              <ItcInput value={nombre} onChange={(e: any) => setNombre(e.target.value)} />
+              <Label className="mb-1.5">Nombre <span className="text-destructive">*</span></Label>
+              <ItcInput
+                value={nombre}
+                onChange={(e: any) => { setNombre(e.target.value); clearFieldError("nombre"); }}
+                aria-invalid={!!fieldErrors.nombre}
+              />
+              {fieldErrors.nombre && (
+                <p className="mt-1 text-xs text-destructive">{fieldErrors.nombre}</p>
+              )}
             </div>
             <div>
               <Label className="mb-1.5" htmlFor="ciudad-departamento">
-                Departamento
+                Departamento <span className="text-destructive">*</span>
               </Label>
               {/* select nativo: ItcModal abre un <dialog> en el top layer y los
                   dropdowns portalados (Radix Select) quedarían detrás de él. */}
               <select
                 id="ciudad-departamento"
                 value={departamentoId}
-                onChange={(e) => setDepartamentoId(e.target.value)}
-                className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-input/30"
+                onChange={(e) => { setDepartamentoId(e.target.value); clearFieldError("departamentoId"); }}
+                aria-invalid={!!fieldErrors.departamentoId}
+                className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive dark:bg-input/30"
               >
                 <option value="" disabled>
                   Selecciona un departamento
@@ -210,6 +221,9 @@ export function CiudadesTable({
                   </option>
                 ))}
               </select>
+              {fieldErrors.departamentoId && (
+                <p className="mt-1 text-xs text-destructive">{fieldErrors.departamentoId}</p>
+              )}
             </div>
           </div>
         }

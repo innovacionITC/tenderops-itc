@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { apiFetch } from "@/lib/api/client";
 import { requireAuth } from "@/lib/auth/session";
+import { modalidadSchema } from "./schema";
 
 // Errores de negocio (409/404) llegan de la API con `detail` en español y
 // burbujean como message; la auditoría también vive en la API.
@@ -12,10 +13,9 @@ function revalidateModalidades() {
   revalidatePath("/admin/parametricas");
 }
 
-export async function createModalidad(input: { descripcion: string; codigo?: string }) {
+export async function createModalidad(input: { descripcion: string; codigo: string }) {
   await requireAuth(["administrador"]);
-  const descripcion = z.string().trim().min(1).parse(input.descripcion);
-  const codigo = input.codigo?.trim() || null;
+  const { descripcion, codigo } = modalidadSchema.parse(input);
 
   await apiFetch<unknown>("/modalidades", {
     method: "POST",
@@ -25,11 +25,10 @@ export async function createModalidad(input: { descripcion: string; codigo?: str
   return { ok: true };
 }
 
-export async function updateModalidad(id: string, input: { descripcion: string; codigo?: string }) {
+export async function updateModalidad(id: string, input: { descripcion: string; codigo: string }) {
   await requireAuth(["administrador"]);
   const modalidadId = z.uuid().parse(id);
-  const descripcion = z.string().trim().min(1).parse(input.descripcion);
-  const codigo = input.codigo?.trim() || null;
+  const { descripcion, codigo } = modalidadSchema.parse(input);
 
   await apiFetch<unknown>(`/modalidades/${modalidadId}`, {
     method: "PUT",

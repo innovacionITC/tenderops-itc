@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { apiFetch } from "@/lib/api/client";
 import { requireAuth } from "@/lib/auth/session";
+import { entidadSchema } from "./schema";
 
 // Los errores de negocio (409 nombre duplicado, 404 id inexistente) llegan de
 // la API como ProblemDetails con `detail` en español; ApiError los expone como
@@ -15,7 +16,7 @@ function revalidateEntidades() {
 
 export async function createEntidad(input: { nombre: string }) {
   await requireAuth(["administrador"]);
-  const nombre = z.string().trim().min(1).parse(input.nombre);
+  const { nombre } = entidadSchema.parse(input);
 
   await apiFetch<unknown>("/entidades", { method: "POST", body: { name: nombre } });
   revalidateEntidades();
@@ -25,7 +26,7 @@ export async function createEntidad(input: { nombre: string }) {
 export async function updateEntidad(id: string, input: { nombre: string }) {
   await requireAuth(["administrador"]);
   const entidadId = z.uuid().parse(id);
-  const nombre = z.string().trim().min(1).parse(input.nombre);
+  const { nombre } = entidadSchema.parse(input);
 
   await apiFetch<unknown>(`/entidades/${entidadId}`, { method: "PUT", body: { name: nombre } });
   revalidateEntidades();

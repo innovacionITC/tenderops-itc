@@ -6,8 +6,10 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { ItcTable, type TableColumn, ItcButton, ItcInput, ItcModal } from "@/components/itc";
 import { Label } from "@/components/ui/label";
+import { useFieldErrors, zodIssuesToFieldErrors } from "@/lib/form-errors";
 import type { UnspscRow } from "@/lib/unspsc";
 import { createUnspscCode, deleteUnspscCode, updateUnspscCode } from "./actions";
+import { unspscSchema } from "./schema";
 
 type DialogState = { mode: "create" } | { mode: "edit"; row: UnspscRow } | null;
 
@@ -16,6 +18,7 @@ export function UnspscTable({ rows }: { rows: UnspscRow[] }) {
   const [isPending, startTransition] = useTransition();
   const [dialog, setDialog] = useState<DialogState>(null);
   const [deleteTarget, setDeleteTarget] = useState<UnspscRow | null>(null);
+  const { fieldErrors, setFieldErrors, clearFieldError } = useFieldErrors();
 
   const [codigo, setCodigo] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -23,26 +26,30 @@ export function UnspscTable({ rows }: { rows: UnspscRow[] }) {
   const openCreate = () => {
     setCodigo("");
     setDescripcion("");
+    setFieldErrors({});
     setDialog({ mode: "create" });
   };
 
   const openEdit = (row: UnspscRow) => {
     setCodigo(row.codigo);
     setDescripcion(row.descripcion ?? "");
+    setFieldErrors({});
     setDialog({ mode: "edit", row });
   };
 
   const handleSave = () => {
-    if (!codigo.trim()) {
-      toast.error("El código es obligatorio");
+    const result = unspscSchema.safeParse({ codigo, descripcion });
+    if (!result.success) {
+      setFieldErrors(zodIssuesToFieldErrors(result.error));
       return;
     }
+    setFieldErrors({});
     startTransition(async () => {
       try {
         if (dialog?.mode === "create") {
-          await createUnspscCode({ codigo, descripcion });
+          await createUnspscCode(result.data);
         } else if (dialog?.mode === "edit") {
-          await updateUnspscCode(dialog.row.id, { codigo, descripcion });
+          await updateUnspscCode(dialog.row.id, result.data);
         }
         toast.success("Código guardado");
         setDialog(null);
@@ -129,12 +136,24 @@ export function UnspscTable({ rows }: { rows: UnspscRow[] }) {
         content={
           <div className="space-y-3">
             <div>
-              <Label className="mb-1.5">Código</Label>
-              <ItcInput value={codigo} onChange={(e: any) => setCodigo(e.target.value)} />
+              <Label className="mb-1.5">Código <span className="text-destructive">*</span></Label>
+              <ItcInput
+                value={codigo}
+                onChange={(e: any) => { setCodigo(e.target.value); clearFieldError("codigo"); }}
+                aria-invalid={!!fieldErrors.codigo}
+              />
+              {fieldErrors.codigo && <p className="mt-1 text-xs text-destructive">{fieldErrors.codigo}</p>}
             </div>
             <div>
-              <Label className="mb-1.5">Descripción</Label>
-              <ItcInput value={descripcion} onChange={(e: any) => setDescripcion(e.target.value)} />
+              <Label className="mb-1.5">Descripción <span className="text-destructive">*</span></Label>
+              <ItcInput
+                value={descripcion}
+                onChange={(e: any) => { setDescripcion(e.target.value); clearFieldError("descripcion"); }}
+                aria-invalid={!!fieldErrors.descripcion}
+              />
+              {fieldErrors.descripcion && (
+                <p className="mt-1 text-xs text-destructive">{fieldErrors.descripcion}</p>
+              )}
             </div>
           </div>
         }

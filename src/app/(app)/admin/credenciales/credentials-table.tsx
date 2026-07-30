@@ -9,8 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { formatDateTime } from "@/lib/format";
+import { useFieldErrors, zodIssuesToFieldErrors } from "@/lib/form-errors";
 import type { CredentialRow } from "@/lib/credentials";
 import { createCredential, deleteCredential, updateCredential } from "./actions";
+import { credentialCreateSchema, credentialUpdateSchema } from "./schema";
 
 type DialogState = { mode: "create" } | { mode: "edit"; row: CredentialRow } | null;
 
@@ -19,6 +21,7 @@ export function CredentialsTable({ rows }: { rows: CredentialRow[] }) {
   const [isPending, startTransition] = useTransition();
   const [dialog, setDialog] = useState<DialogState>(null);
   const [deleteTarget, setDeleteTarget] = useState<CredentialRow | null>(null);
+  const { fieldErrors, setFieldErrors, clearFieldError } = useFieldErrors();
 
   const [clave, setClave] = useState("");
   const [valor, setValor] = useState("");
@@ -28,6 +31,7 @@ export function CredentialsTable({ rows }: { rows: CredentialRow[] }) {
     setClave("");
     setValor("");
     setDescripcion("");
+    setFieldErrors({});
     setDialog({ mode: "create" });
   };
 
@@ -35,28 +39,49 @@ export function CredentialsTable({ rows }: { rows: CredentialRow[] }) {
     setClave(row.clave);
     setValor("");
     setDescripcion(row.descripcion ?? "");
+    setFieldErrors({});
     setDialog({ mode: "edit", row });
   };
 
   const handleSave = () => {
-    if (!clave.trim()) {
-      toast.error("La clave es obligatoria");
+    if (dialog?.mode === "create") {
+      const result = credentialCreateSchema.safeParse({ clave, valor, descripcion });
+      if (!result.success) {
+        setFieldErrors(zodIssuesToFieldErrors(result.error));
+        return;
+      }
+      setFieldErrors({});
+      startTransition(async () => {
+        try {
+          await createCredential(result.data);
+          toast.success("Credencial guardada");
+          setDialog(null);
+          router.refresh();
+        } catch (e) {
+          toast.error(e instanceof Error ? e.message : "No se pudo guardar la credencial");
+        }
+      });
       return;
     }
-    startTransition(async () => {
-      try {
-        if (dialog?.mode === "create") {
-          await createCredential({ clave, valor, descripcion });
-        } else if (dialog?.mode === "edit") {
-          await updateCredential(dialog.row.id, { valor: valor || undefined, descripcion });
-        }
-        toast.success("Credencial guardada");
-        setDialog(null);
-        router.refresh();
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "No se pudo guardar la credencial");
+
+    if (dialog?.mode === "edit") {
+      const result = credentialUpdateSchema.safeParse({ valor: valor || undefined, descripcion });
+      if (!result.success) {
+        setFieldErrors(zodIssuesToFieldErrors(result.error));
+        return;
       }
-    });
+      setFieldErrors({});
+      startTransition(async () => {
+        try {
+          await updateCredential(dialog.row.id, result.data);
+          toast.success("Credencial guardada");
+          setDialog(null);
+          router.refresh();
+        } catch (e) {
+          toast.error(e instanceof Error ? e.message : "No se pudo guardar la credencial");
+        }
+      });
+    }
   };
 
   const handleDelete = () => {
@@ -141,27 +166,40 @@ export function CredentialsTable({ rows }: { rows: CredentialRow[] }) {
         content={
           <div className="space-y-3">
             <div>
-              <Label className="mb-1.5">Clave</Label>
+              <Label className="mb-1.5">Clave <span className="text-destructive">*</span></Label>
               <ItcInput
                 value={clave}
-                onChange={(e: any) => setClave(e.target.value.toUpperCase())}
+                onChange={(e: any) => { setClave(e.target.value.toUpperCase()); clearFieldError("clave"); }}
                 disabled={dialog?.mode === "edit"}
                 placeholder="POWERBI_EMBED_URL"
+                aria-invalid={!!fieldErrors.clave}
               />
+              {fieldErrors.clave && <p className="mt-1 text-xs text-destructive">{fieldErrors.clave}</p>}
             </div>
             <div>
-              <Label className="mb-1.5">Valor</Label>
+              <Label className="mb-1.5">
+                Valor {dialog?.mode === "create" && <span className="text-destructive">*</span>}
+              </Label>
               <Textarea
                 value={valor}
-                onChange={(e) => setValor(e.target.value)}
+                onChange={(e) => { setValor(e.target.value); clearFieldError("valor"); }}
                 placeholder={
                   dialog?.mode === "edit" ? "(sin cambios — deja en blanco para no modificar)" : ""
                 }
+                aria-invalid={!!fieldErrors.valor}
               />
+              {fieldErrors.valor && <p className="mt-1 text-xs text-destructive">{fieldErrors.valor}</p>}
             </div>
             <div>
-              <Label className="mb-1.5">Descripción</Label>
-              <ItcInput value={descripcion} onChange={(e: any) => setDescripcion(e.target.value)} />
+              <Label className="mb-1.5">Descripción <span className="text-destructive">*</span></Label>
+              <ItcInput
+                value={descripcion}
+                onChange={(e: any) => { setDescripcion(e.target.value); clearFieldError("descripcion"); }}
+                aria-invalid={!!fieldErrors.descripcion}
+              />
+              {fieldErrors.descripcion && (
+                <p className="mt-1 text-xs text-destructive">{fieldErrors.descripcion}</p>
+              )}
             </div>
           </div>
         }

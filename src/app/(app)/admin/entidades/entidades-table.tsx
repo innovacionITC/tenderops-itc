@@ -9,8 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { StatusBadge } from "@/components/layout/status-badge";
+import { useFieldErrors, zodIssuesToFieldErrors } from "@/lib/form-errors";
 import type { EntidadRow } from "@/lib/parametrica";
 import { createEntidad, deleteEntidad, setEntidadEstado, updateEntidad } from "./actions";
+import { entidadSchema } from "./schema";
 
 type DialogState = { mode: "create" } | { mode: "edit"; row: EntidadRow } | null;
 
@@ -20,30 +22,35 @@ export function EntidadesTable({ rows }: { rows: EntidadRow[] }) {
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [deleteTarget, setDeleteTarget] = useState<EntidadRow | null>(null);
+  const { fieldErrors, setFieldErrors, clearFieldError } = useFieldErrors();
 
   const [nombre, setNombre] = useState("");
 
   const openCreate = () => {
     setNombre("");
+    setFieldErrors({});
     setDialog({ mode: "create" });
   };
 
   const openEdit = (row: EntidadRow) => {
     setNombre(row.nombre);
+    setFieldErrors({});
     setDialog({ mode: "edit", row });
   };
 
   const handleSave = () => {
-    if (!nombre.trim()) {
-      toast.error("El nombre es obligatorio");
+    const result = entidadSchema.safeParse({ nombre });
+    if (!result.success) {
+      setFieldErrors(zodIssuesToFieldErrors(result.error));
       return;
     }
+    setFieldErrors({});
     startTransition(async () => {
       try {
         if (dialog?.mode === "create") {
-          await createEntidad({ nombre });
+          await createEntidad(result.data);
         } else if (dialog?.mode === "edit") {
-          await updateEntidad(dialog.row.id, { nombre });
+          await updateEntidad(dialog.row.id, result.data);
         }
         toast.success("Entidad guardada");
         setDialog(null);
@@ -161,8 +168,15 @@ export function EntidadesTable({ rows }: { rows: EntidadRow[] }) {
         content={
           <div className="space-y-3">
             <div>
-              <Label className="mb-1.5">Nombre</Label>
-              <ItcInput value={nombre} onChange={(e: any) => setNombre(e.target.value)} />
+              <Label className="mb-1.5">Nombre <span className="text-destructive">*</span></Label>
+              <ItcInput
+                value={nombre}
+                onChange={(e: any) => { setNombre(e.target.value); clearFieldError("nombre"); }}
+                aria-invalid={!!fieldErrors.nombre}
+              />
+              {fieldErrors.nombre && (
+                <p className="mt-1 text-xs text-destructive">{fieldErrors.nombre}</p>
+              )}
             </div>
           </div>
         }
