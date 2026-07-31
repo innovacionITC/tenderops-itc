@@ -3,6 +3,12 @@ import { apiFetch } from "@/lib/api/client";
 import type { ApiSchemas } from "@/lib/api/types";
 import type { AppRole } from "@/lib/auth/roles";
 
+export type UserOrganizacionRow = {
+  id: string;
+  nombre: string;
+  estado: boolean;
+};
+
 export type UserRow = {
   id: string;
   fullName: string | null;
@@ -12,6 +18,7 @@ export type UserRow = {
   lastLoginAt: string | null;
   createdAt: string;
   role: AppRole | null;
+  organizaciones: UserOrganizacionRow[];
 };
 
 export async function listUsers(): Promise<UserRow[]> {
@@ -26,5 +33,10 @@ export async function listUsers(): Promise<UserRow[]> {
     lastLoginAt: u.lastLoginAt,
     createdAt: u.createdAt,
     role: (u.role as AppRole | null) ?? null,
+    organizaciones: u.organizaciones.map((o) => ({
+      id: o.id,
+      nombre: o.name,
+      estado: o.isActive,
+    })),
   }));
 }

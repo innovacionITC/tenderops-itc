@@ -19,13 +19,21 @@ const ROLE_OPTIONS = Object.keys(roleLabels) as AppRole[];
 export function UsersTable({
   users,
   currentUserId,
+  currentUserRole,
 }: {
   users: UserRow[];
   currentUserId: string;
+  currentUserRole: AppRole | null;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [pendingId, setPendingId] = useState<string | null>(null);
+
+  // Solo un superadmin puede otorgar el rol superadmin a otro usuario (la API
+  // lo exige igual con un 403; esto solo evita ofrecer una opción condenada).
+  const roleOptions = ROLE_OPTIONS.filter(
+    (role) => role !== "superadmin" || currentUserRole === "superadmin",
+  );
 
   const handleRoleChange = (userId: string, role: AppRole) => {
     setPendingId(userId);
@@ -69,6 +77,22 @@ export function UsersTable({
       ),
     },
     {
+      key: "organizaciones",
+      title: "Organizaciones",
+      render: (u) =>
+        u.organizaciones.length === 0 ? (
+          <span className="text-xs text-muted-foreground">—</span>
+        ) : (
+          <div className="flex flex-wrap gap-1">
+            {u.organizaciones.map((org) => (
+              <StatusBadge key={org.id} tone={org.estado ? "info" : "muted"}>
+                {org.nombre}
+              </StatusBadge>
+            ))}
+          </div>
+        ),
+    },
+    {
       key: "rol",
       title: "Rol",
       render: (u) => {
@@ -85,7 +109,7 @@ export function UsersTable({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {ROLE_OPTIONS.map((role) => (
+                {roleOptions.map((role) => (
                   <SelectItem key={role} value={role}>
                     {roleLabels[role]}
                   </SelectItem>

@@ -14,7 +14,7 @@ export default async function UsuariosPage() {
         description="Gestión de roles y estado de acceso de los usuarios de TenderOps."
       />
       <div className="p-4 sm:p-6 lg:p-8">
-        <UsersTable users={users} currentUserId={auth.userId} />
+        <UsersTable users={users} currentUserId={auth.userId} currentUserRole={auth.role} />
       </div>
     </>
   );
