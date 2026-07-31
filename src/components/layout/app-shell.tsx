@@ -7,18 +7,24 @@ import { LogOut } from "lucide-react";
 import { logout } from "@/app/login/actions";
 import { roleLabels } from "@/lib/format";
 import type { AppRole } from "@/lib/auth/roles";
+import type { OrganizationSummary } from "@/lib/auth/session";
 import { ItcMenu, type MenuItem as ItcMenuItem } from "@/components/itc";
 import { isMenuItemVisible, menuGroups } from "./nav-config";
 import { NotificationsBell } from "./notifications-bell";
+import { OrganizationSwitcher } from "./organization-switcher";
 
 export function AppShell({
   children,
   userEmail,
   role,
+  activeOrganizationId,
+  organizations,
 }: {
   children: React.ReactNode;
   userEmail: string | null;
   role: AppRole | null;
+  activeOrganizationId: string;
+  organizations: OrganizationSummary[];
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -111,9 +117,10 @@ export function AppShell({
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b bg-background/80 px-4 backdrop-blur sm:px-6">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="hidden truncate text-sm text-muted-foreground sm:block">
-              Organización: <span className="font-medium text-foreground">Intelecto</span>
-            </div>
+            <OrganizationSwitcher
+              activeOrganizationId={activeOrganizationId}
+              organizations={organizations}
+            />
           </div>
           <div className="flex items-center gap-3 sm:gap-4">
             <NotificationsBell />

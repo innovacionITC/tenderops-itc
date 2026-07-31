@@ -13,7 +13,7 @@ export type OrganizacionRow = {
 };
 
 export async function listOrganizaciones(): Promise<OrganizacionRow[]> {
-  const rows = await apiFetch<ApiSchemas["OrganizationResponse"][]>("/organizaciones");
+  const rows = await apiFetch<ApiSchemas["OrganizacionResponse"][]>("/organizaciones");
 
   return rows.map((r) => ({
     id: r.id,

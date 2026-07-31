@@ -217,6 +217,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/auth/switch-organization": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SwitchOrganizationRequest"];
+                    "text/json": components["schemas"]["SwitchOrganizationRequest"];
+                    "application/*+json": components["schemas"]["SwitchOrganizationRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TokensResponse"];
+                        "application/json": components["schemas"]["TokensResponse"];
+                        "text/json": components["schemas"]["TokensResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/me": {
         parameters: {
             query?: never;
@@ -1625,6 +1668,317 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/organizaciones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["OrganizacionResponse"][];
+                        "application/json": components["schemas"]["OrganizacionResponse"][];
+                        "text/json": components["schemas"]["OrganizacionResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateOrganizacionRequest"];
+                    "text/json": components["schemas"]["CreateOrganizacionRequest"];
+                    "application/*+json": components["schemas"]["CreateOrganizacionRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["OrganizacionResponse"];
+                        "application/json": components["schemas"]["OrganizacionResponse"];
+                        "text/json": components["schemas"]["OrganizacionResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizaciones/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateOrganizacionRequest"];
+                    "text/json": components["schemas"]["UpdateOrganizacionRequest"];
+                    "application/*+json": components["schemas"]["UpdateOrganizacionRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizaciones/{id}/estado": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetOrganizacionEstadoRequest"];
+                    "text/json": components["schemas"]["SetOrganizacionEstadoRequest"];
+                    "application/*+json": components["schemas"]["SetOrganizacionEstadoRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/organizaciones/{id}/miembros": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MembershipResponse"][];
+                        "application/json": components["schemas"]["MembershipResponse"][];
+                        "text/json": components["schemas"]["MembershipResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AddMembershipRequest"];
+                    "text/json": components["schemas"]["AddMembershipRequest"];
+                    "application/*+json": components["schemas"]["AddMembershipRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["MembershipResponse"];
+                        "application/json": components["schemas"]["MembershipResponse"];
+                        "text/json": components["schemas"]["MembershipResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/organizaciones/{id}/miembros/{userId}/estado": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetMembershipEstadoRequest"];
+                    "text/json": components["schemas"]["SetMembershipEstadoRequest"];
+                    "application/*+json": components["schemas"]["SetMembershipEstadoRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/organizaciones/{id}/miembros/{userId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    userId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/parametrica": {
         parameters: {
             query?: never;
@@ -1958,6 +2312,10 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        AddMembershipRequest: {
+            /** Format: uuid */
+            userId: string;
+        };
         AuditoriaItemResponse: {
             /** Format: uuid */
             id: string;
@@ -2055,6 +2413,13 @@ export interface components {
             nit: string;
             description: null | string;
         };
+        CreateOrganizacionRequest: {
+            name: string;
+            code: string;
+            taxId: null | string;
+            email: null | string;
+            phone: null | string;
+        };
         CredencialResponse: {
             /** Format: uuid */
             id: string;
@@ -2103,16 +2468,6 @@ export interface components {
             name: string;
             isActive: boolean;
         };
-        OrganizationResponse: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            code: string;
-            taxId: null | string;
-            email: null | string;
-            phone: null | string;
-            isActive: boolean;
-        };
         EstadoSecopResponse: {
             /** Format: uuid */
             id: string;
@@ -2129,6 +2484,22 @@ export interface components {
             email: null | string;
             fullName: null | string;
             role: string;
+            /** Format: uuid */
+            activeOrganizationId: string;
+            activeOrganizationName: string;
+            activeOrganizationCode: string;
+            organizations: components["schemas"]["OrganizationSummaryResponse"][];
+        };
+        MembershipResponse: {
+            /** Format: uuid */
+            organizationId: string;
+            /** Format: uuid */
+            userId: string;
+            fullName: null | string;
+            email: null | string;
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
         };
         ModalidadResponse: {
             /** Format: uuid */
@@ -2153,6 +2524,22 @@ export interface components {
             isRead: boolean;
             /** Format: date-time */
             createdAt: string;
+        };
+        OrganizacionResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            code: string;
+            taxId: null | string;
+            email: null | string;
+            phone: null | string;
+            isActive: boolean;
+        };
+        OrganizationSummaryResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            code: string;
         };
         ParametricaConfigResponse: {
             /** Format: uuid */
@@ -2241,10 +2628,16 @@ export interface components {
         SetEntidadEstadoRequest: {
             isActive: boolean;
         };
+        SetMembershipEstadoRequest: {
+            isActive: boolean;
+        };
         SetModalidadEstadoRequest: {
             isActive: boolean;
         };
         SetNitEstadoRequest: {
+            isActive: boolean;
+        };
+        SetOrganizacionEstadoRequest: {
             isActive: boolean;
         };
         SetUsuarioEstadoRequest: {
@@ -2252,6 +2645,11 @@ export interface components {
         };
         SsoRequest: {
             idToken: string;
+        };
+        SwitchOrganizationRequest: {
+            refreshToken: string;
+            /** Format: uuid */
+            organizationId: string;
         };
         TareaResponse: {
             /** Format: uuid */
@@ -2310,8 +2708,21 @@ export interface components {
             nit: string;
             description: null | string;
         };
+        UpdateOrganizacionRequest: {
+            name: string;
+            code: string;
+            taxId: null | string;
+            email: null | string;
+            phone: null | string;
+        };
         UpdateUsuarioRolRequest: {
             role: string;
+        };
+        UsuarioOrganizacionResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            isActive: boolean;
         };
         UsuarioResponse: {
             /** Format: uuid */
@@ -2325,6 +2736,7 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
             role: null | string;
+            organizaciones: components["schemas"]["UsuarioOrganizacionResponse"][];
         };
     };
     responses: never;

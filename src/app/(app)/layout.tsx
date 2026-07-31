@@ -5,7 +5,12 @@ export default async function AuthenticatedLayout({ children }: { children: Reac
   const auth = await requireAuth();
 
   return (
-    <AppShell userEmail={auth.email} role={auth.role}>
+    <AppShell
+      userEmail={auth.email}
+      role={auth.role}
+      activeOrganizationId={auth.activeOrganizationId}
+      organizations={auth.organizations}
+    >
       {children}
     </AppShell>
   );
