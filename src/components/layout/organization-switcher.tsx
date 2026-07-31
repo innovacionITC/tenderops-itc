@@ -34,10 +34,7 @@ export function OrganizationSwitcher({
   function handleSwitch(orgId: string) {
     if (orgId === activeOrganizationId) return;
     startTransition(async () => {
-      const result = await switchOrganization(orgId);
-      if (!result.error) {
-        window.location.href = "/dashboard";
-      }
+      await switchOrganization(orgId);
     });
   }
 
