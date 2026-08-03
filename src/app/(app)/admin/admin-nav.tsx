@@ -7,6 +7,7 @@ import type { AppRole } from "@/lib/auth/roles";
 const TABS = [
   { href: "/admin/organizaciones", label: "Organizaciones", superadminOnly: true },
   { href: "/admin/usuarios", label: "Usuarios" },
+  { href: "/admin/plantillas", label: "Plantillas" },
   { href: "/admin/parametricas", label: "Paramétricas" },
   { href: "/admin/credenciales", label: "Credenciales" },
 ];

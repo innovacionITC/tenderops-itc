@@ -21,22 +21,30 @@ interface ProblemDetails {
   detail?: string;
   code?: string;
   traceId?: string;
+  extensions?: {
+    errors?: Record<string, string[]>;
+  };
 }
 
 export class ApiError extends Error {
   readonly status: number;
   readonly code: string | null;
   readonly detail: string | null;
-  /** Correlaciona con los logs de la API (Fase 8 del plan .NET, OpenTelemetry). */
   readonly traceId: string | null;
+  readonly fieldErrors: Record<string, string[]>;
 
   constructor(status: number, problem: ProblemDetails | null) {
-    super(problem?.detail ?? problem?.title ?? `API respondió ${status}`);
+    const errors = problem?.extensions?.errors;
+    const firstError = errors
+      ? Object.values(errors).flat().join(" ")
+      : null;
+    super(firstError ?? problem?.detail ?? problem?.title ?? `API respondió ${status}`);
     this.name = "ApiError";
     this.status = status;
     this.code = problem?.code ?? null;
     this.detail = problem?.detail ?? null;
     this.traceId = problem?.traceId ?? null;
+    this.fieldErrors = errors ?? {};
   }
 }
 
@@ -147,14 +155,16 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     }
   }
 
+  const isFormData = body instanceof FormData;
+
   const doFetch = (accessToken: string | null) =>
     fetch(url, {
       method,
       headers: {
-        ...(body !== undefined ? { "Content-Type": "application/json" } : {}),
+        ...(body !== undefined && !isFormData ? { "Content-Type": "application/json" } : {}),
         ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body !== undefined ? (isFormData ? body : JSON.stringify(body)) : undefined,
       cache: "no-store",
     });
 
