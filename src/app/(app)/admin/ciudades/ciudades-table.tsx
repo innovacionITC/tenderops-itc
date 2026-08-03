@@ -228,6 +228,7 @@ export function CiudadesTable({
           </div>
         }
         variant="form"
+        confirmText={dialog?.mode === "edit" ? "Guardar" : "Crear"}
         disabled={isPending}
       />
 

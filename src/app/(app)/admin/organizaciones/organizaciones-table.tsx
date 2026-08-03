@@ -281,6 +281,7 @@ export function OrganizacionesTable({
           </div>
         }
         variant="form"
+        confirmText={dialog?.mode === "edit" ? "Guardar" : "Crear"}
         disabled={isPending}
       />
 

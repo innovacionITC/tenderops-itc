@@ -158,6 +158,7 @@ export function UnspscTable({ rows }: { rows: UnspscRow[] }) {
           </div>
         }
         variant="form"
+        confirmText={dialog?.mode === "edit" ? "Guardar" : "Crear"}
         disabled={isPending}
       />
 

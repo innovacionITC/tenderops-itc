@@ -192,6 +192,7 @@ export function DepartamentosTable({ rows }: { rows: DepartamentoRow[] }) {
           </div>
         }
         variant="form"
+        confirmText={dialog?.mode === "edit" ? "Guardar" : "Crear"}
         disabled={isPending}
       />
 

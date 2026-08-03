@@ -200,6 +200,7 @@ export function ModalidadesTable({ rows }: { rows: ModalidadRow[] }) {
           </div>
         }
         variant="form"
+        confirmText={dialog?.mode === "edit" ? "Guardar" : "Crear"}
         disabled={isPending}
       />
 

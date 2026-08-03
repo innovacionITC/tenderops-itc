@@ -198,6 +198,7 @@ export function NitsTable({ rows }: { rows: NitRow[] }) {
           </div>
         }
         variant="form"
+        confirmText={dialog?.mode === "edit" ? "Guardar" : "Crear"}
         disabled={isPending}
       />
 

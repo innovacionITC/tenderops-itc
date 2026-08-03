@@ -181,6 +181,7 @@ export function EntidadesTable({ rows }: { rows: EntidadRow[] }) {
           </div>
         }
         variant="form"
+        confirmText={dialog?.mode === "edit" ? "Guardar" : "Crear"}
         disabled={isPending}
       />
 

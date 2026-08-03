@@ -204,6 +204,7 @@ export function CredentialsTable({ rows }: { rows: CredentialRow[] }) {
           </div>
         }
         variant="form"
+        confirmText={dialog?.mode === "edit" ? "Guardar" : "Crear"}
         disabled={isPending}
       />
 
