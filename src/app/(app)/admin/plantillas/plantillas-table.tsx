@@ -6,11 +6,14 @@ import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { ItcTable, type TableColumn, ItcButton, ItcInput, ItcModal } from "@/components/itc";
 import { Label } from "@/components/ui/label";
+import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
+import { StatusBadge } from "@/components/layout/status-badge";
 import { useFieldErrors, zodIssuesToFieldErrors } from "@/lib/form-errors";
 import type { PlantillaRow } from "@/lib/plantillas";
 import type { AppRole } from "@/lib/auth/roles";
 import { canAdmin } from "@/lib/auth/roles";
-import { createPlantilla, deletePlantilla, updatePlantilla } from "./actions";
+import { createPlantilla, deletePlantilla, setPlantillaEstado, updatePlantilla } from "./actions";
 import { plantillaSchema, createArchivoSchema, archivoSchema, ALLOWED_EXTENSIONS } from "./schema";
 
 type DialogState = { mode: "create" } | { mode: "edit"; row: PlantillaRow } | null;
@@ -25,6 +28,7 @@ export function PlantillasTable({
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [isPending, startTransition] = useTransition();
+  const [pendingId, setPendingId] = useState<string | null>(null);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [deleteTarget, setDeleteTarget] = useState<PlantillaRow | null>(null);
   const { fieldErrors, setFieldErrors, clearFieldError } = useFieldErrors();
@@ -113,6 +117,21 @@ export function PlantillasTable({
     });
   };
 
+  const handleEstadoChange = (row: PlantillaRow, estado: boolean) => {
+    setPendingId(row.id);
+    startTransition(async () => {
+      try {
+        await setPlantillaEstado(row.id, estado);
+        toast.success(estado ? "Plantilla activada" : "Plantilla desactivada");
+        router.refresh();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "No se pudo actualizar el estado");
+      } finally {
+        setPendingId(null);
+      }
+    });
+  };
+
   const columns: TableColumn<PlantillaRow>[] = [
     {
       key: "nombre",
@@ -132,6 +151,26 @@ export function PlantillasTable({
       render: (r) => (
         <span className="text-sm text-muted-foreground">{r.archivo ?? "—"}</span>
       ),
+    },
+    {
+      key: "estado",
+      title: "Estado",
+      render: (r) => {
+        const rowPending = isPending && pendingId === r.id;
+        return (
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={r.estado}
+              disabled={rowPending || !canCreate}
+              onCheckedChange={(checked) => handleEstadoChange(r, checked)}
+            />
+            <StatusBadge tone={r.estado ? "success" : "muted"}>
+              {r.estado ? "Activa" : "Inactiva"}
+            </StatusBadge>
+            {rowPending && <Spinner className="size-3.5 text-muted-foreground" />}
+          </div>
+        );
+      },
     },
     {
       key: "acciones",

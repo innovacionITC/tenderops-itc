@@ -57,6 +57,18 @@ export async function updatePlantilla(id: string, formData: FormData) {
   return { ok: true };
 }
 
+export async function setPlantillaEstado(id: string, estado: boolean) {
+  await requireAuth(["administrador"]);
+  const plantillaId = z.uuid().parse(id);
+
+  await apiFetch<unknown>(`/plantillas/${plantillaId}/estado`, {
+    method: "PATCH",
+    body: { isActive: estado },
+  });
+  revalidatePlantillas();
+  return { ok: true };
+}
+
 export async function deletePlantilla(id: string) {
   await requireAuth(["administrador"]);
   const plantillaId = z.uuid().parse(id);
