@@ -1,7 +1,7 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { requireAuth } from "@/lib/auth/session";
 import { listPlantillas } from "@/lib/plantillas";
-import { PlantillasTable } from "./plantillas-table";
+import { PlantillasTable } from "@/components/plantillas/plantillas-table";
 
 export default async function PlantillasPage() {
   const auth = await requireAuth(["administrador"]);
@@ -14,7 +14,7 @@ export default async function PlantillasPage() {
         description="Gestión de las plantillas del sistema."
       />
       <div className="p-4 sm:p-6 lg:p-8">
-        <PlantillasTable rows={rows} userRole={auth.role} />
+        <PlantillasTable rows={rows} userRole={auth.role} variant="admin" />
       </div>
     </>
   );

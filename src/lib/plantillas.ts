@@ -7,6 +7,7 @@ type PlantillaResponse = {
   description: string | null;
   fileName: string | null;
   isActive: boolean;
+  createdAt: string;
 };
 
 export type PlantillaRow = {
@@ -15,6 +16,7 @@ export type PlantillaRow = {
   descripcion: string | null;
   archivo: string | null;
   estado: boolean;
+  createdAt: string;
 };
 
 export async function listPlantillas(): Promise<PlantillaRow[]> {
@@ -26,5 +28,6 @@ export async function listPlantillas(): Promise<PlantillaRow[]> {
     descripcion: r.description ?? null,
     archivo: r.fileName ?? null,
     estado: r.isActive,
+    createdAt: r.createdAt,
   }));
 }

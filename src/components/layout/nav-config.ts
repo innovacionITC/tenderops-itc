@@ -32,7 +32,7 @@ export const menuGroups: { title: string; items: MenuItem[] }[] = [
   {
     title: "Preparación",
     items: [
-      { href: "/plantillas", icon: FileStack, label: "Plantillas", comingSoon: true },
+      { href: "/plantillas", icon: FileStack, label: "Plantillas" },
       { href: "/indicadores", icon: TrendingUp, label: "Indicadores", comingSoon: true },
     ],
   },

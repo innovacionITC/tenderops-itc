@@ -4,10 +4,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { apiFetch } from "@/lib/api/client";
 import { requireAuth } from "@/lib/auth/session";
-import { plantillaSchema, createArchivoSchema, archivoSchema } from "./schema";
+import { plantillaSchema, createArchivoSchema, archivoSchema } from "@/lib/plantillas-schema";
 
 function revalidatePlantillas() {
   revalidatePath("/admin/plantillas");
+  revalidatePath("/plantillas");
 }
 
 export async function createPlantilla(formData: FormData) {

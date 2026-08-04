@@ -139,13 +139,8 @@ export interface ApiFetchOptions {
   query?: Record<string, string | number | undefined>;
 }
 
-/**
- * fetch autenticado contra la API: adjunta el Bearer de la cookie httpOnly,
- * detecta 401, refresca una sola vez (deduplicado) y reintenta. Lanza
- * `ApiError` en cualquier otra respuesta no-2xx, con el `detail` en español
- * de la API como `message`.
- */
-export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
+
+async function fetchWithAuth(path: string, options: ApiFetchOptions): Promise<Response> {
   const { method = "GET", body, query } = options;
 
   const url = new URL(`${serverEnv.TENDEROPS_API_URL}${path}`);
@@ -179,6 +174,18 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     }
   }
 
+  return res;
+}
+
+/**
+ * Como `fetchWithAuth`, pero lanza `ApiError` en cualquier respuesta no-2xx
+ * (con el `detail` en español de la API como `message`) y parsea el body
+ * como JSON.
+ */
+export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): Promise<T> {
+  const { method = "GET" } = options;
+  const res = await fetchWithAuth(path, options);
+
   if (!res.ok) {
     const error = new ApiError(res.status, await parseProblem(res));
     // Solo 5xx: los 4xx son errores de negocio esperados (validación, 404,
@@ -193,4 +200,14 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
 
   if (res.status === 204) return undefined as T;
   return (await res.json()) as T;
+}
+
+/**
+ * Como `apiFetch` pero devuelve la `Response` cruda (body sin parsear, sin
+ * comprobar `ok`) — para proxies de streaming binario como la descarga de
+ * archivos de plantillas, donde el llamador reenvía el body/headers tal
+ * cual. Comparte el mismo Bearer + refresh deduplicado que `apiFetch`.
+ */
+export async function apiFetchRaw(path: string, options: ApiFetchOptions = {}): Promise<Response> {
+  return fetchWithAuth(path, options);
 }
