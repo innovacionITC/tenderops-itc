@@ -25,7 +25,7 @@ export const menuGroups: { title: string; items: MenuItem[] }[] = [
   {
     title: "Licitaciones",
     items: [
-      { href: "/secop", icon: Search, label: "Consulta SECOP", comingSoon: true },
+      { href: "/secop", icon: Search, label: "Consulta SECOP" },
       { href: "/seguimiento", icon: Eye, label: "Procesos en seguimiento", comingSoon: true },
     ],
   },

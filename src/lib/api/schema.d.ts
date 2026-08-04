@@ -2076,6 +2076,210 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/plantillas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PlantillaResponse"][];
+                        "application/json": components["schemas"]["PlantillaResponse"][];
+                        "text/json": components["schemas"]["PlantillaResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/x-www-form-urlencoded": {
+                        Name?: string;
+                        Description?: string;
+                        File?: components["schemas"]["IFormFile"];
+                    };
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["PlantillaResponse"];
+                        "application/json": components["schemas"]["PlantillaResponse"];
+                        "text/json": components["schemas"]["PlantillaResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/plantillas/{id}/archivo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/plantillas/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/x-www-form-urlencoded": {
+                        Name?: string;
+                        Description?: string;
+                        File?: components["schemas"]["IFormFile"];
+                    };
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/plantillas/{id}/estado": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetPlantillaEstadoRequest"];
+                    "text/json": components["schemas"]["SetPlantillaEstadoRequest"];
+                    "application/*+json": components["schemas"]["SetPlantillaEstadoRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
     "/powerbi/embed-url": {
         parameters: {
             query?: never;
@@ -2107,6 +2311,126 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/secop/procesos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    dataset?: string;
+                    soloNuevos?: boolean;
+                    buscar?: string;
+                    page?: number | string;
+                    pageSize?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProcesoDetectadoListResponse"];
+                        "application/json": components["schemas"]["ProcesoDetectadoListResponse"];
+                        "text/json": components["schemas"]["ProcesoDetectadoListResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/secop/sincronizaciones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    page?: number | string;
+                    pageSize?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SecopSyncRunListResponse"];
+                        "application/json": components["schemas"]["SecopSyncRunListResponse"];
+                        "text/json": components["schemas"]["SecopSyncRunListResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/secop/sincronizar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TriggerSyncResponse"];
+                        "application/json": components["schemas"]["TriggerSyncResponse"];
+                        "text/json": components["schemas"]["TriggerSyncResponse"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -2474,6 +2798,8 @@ export interface components {
             name: string;
             isActive: boolean;
         };
+        /** Format: binary */
+        IFormFile: string;
         LoginRequest: {
             email: string;
             password: string;
@@ -2566,6 +2892,16 @@ export interface components {
             departmentIds: string[];
             cityIds: string[];
         };
+        PlantillaResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            description: string;
+            fileName: string;
+            isActive: boolean;
+            /** Format: date-time */
+            createdAt: string;
+        };
         PowerBiEmbedUrlResponse: {
             url: null | string;
         };
@@ -2579,6 +2915,38 @@ export interface components {
             estimatedValue: null | number | string;
             /** Format: date-time */
             updatedAt: string;
+        };
+        ProcesoDetectadoListResponse: {
+            items: components["schemas"]["ProcesoDetectadoResponse"][];
+            /** Format: int32 */
+            total: number | string;
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            pageSize: number | string;
+        };
+        ProcesoDetectadoResponse: {
+            /** Format: uuid */
+            id: string;
+            secopId: string;
+            dataset: string;
+            title: null | string;
+            entityName: null | string;
+            subject: null | string;
+            modality: null | string;
+            status: null | string;
+            /** Format: double */
+            value: null | number | string;
+            /** Format: date-time */
+            publicationDate: null | string;
+            /** Format: date-time */
+            closingDate: null | string;
+            secopUrl: null | string;
+            isNew: boolean;
+            /** Format: date-time */
+            firstDetectedAt: string;
+            /** Format: date-time */
+            lastDetectedAt: string;
         };
         QuickAddEstadoSecopRequest: {
             name: string;
@@ -2619,6 +2987,34 @@ export interface components {
             id: string;
             wasCreated: boolean;
         };
+        SecopSyncRunListResponse: {
+            items: components["schemas"]["SecopSyncRunResponse"][];
+            /** Format: int32 */
+            total: number | string;
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            pageSize: number | string;
+        };
+        SecopSyncRunResponse: {
+            /** Format: uuid */
+            id: string;
+            dataset: string;
+            status: string;
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            finishedAt: null | string;
+            /** Format: int32 */
+            fetchedCount: number | string;
+            /** Format: int32 */
+            insertedCount: number | string;
+            /** Format: int32 */
+            updatedCount: number | string;
+            soql: null | string;
+            errorCode: null | string;
+            errorMessage: null | string;
+        };
         SetCiudadEstadoRequest: {
             isActive: boolean;
         };
@@ -2638,6 +3034,9 @@ export interface components {
             isActive: boolean;
         };
         SetOrganizacionEstadoRequest: {
+            isActive: boolean;
+        };
+        SetPlantillaEstadoRequest: {
             isActive: boolean;
         };
         SetUsuarioEstadoRequest: {
@@ -2672,6 +3071,10 @@ export interface components {
             /** Format: int32 */
             expiresIn: number | string;
             refreshToken: string;
+        };
+        TriggerSyncResponse: {
+            jobIdSecopI: null | string;
+            jobIdSecopIi: null | string;
         };
         UpcomingProcessResponse: {
             /** Format: uuid */
