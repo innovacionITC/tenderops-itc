@@ -23,11 +23,14 @@ export type ProcesoRow = {
   objeto: string | null;
   modalidad: string | null;
   estado: string | null;
+  fase: string | null;
   valor: number | null;
   fechaPublicacion: string | null;
   fechaCierre: string | null;
   url: string | null;
   esNuevo: boolean;
+  promovido: boolean;
+  descartado: boolean;
   detectadoEl: string;
 };
 
@@ -49,4 +52,25 @@ export type Paginado<T> = {
   total: number;
   page: number;
   pageSize: number;
+};
+
+export type SecopFiltros = {
+  modalidades: string[];
+  estados: string[];
+  fases: string[];
+  totalSinFiltrar: number;
+};
+
+export type BuscarEnVivoRow = {
+  secopId: string;
+  titulo: string | null;
+  entidad: string | null;
+  objeto: string | null;
+  modalidad: string | null;
+  estado: string | null;
+  fase: string | null;
+  valor: number | null;
+  fechaPublicacion: string | null;
+  fechaCierre: string | null;
+  url: string | null;
 };

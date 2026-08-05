@@ -12,6 +12,7 @@ import { entidadSchema } from "./schema";
 
 function revalidateEntidades() {
   revalidatePath("/admin/parametricas");
+  revalidatePath("/secop");
 }
 
 export async function createEntidad(input: { nombre: string }) {
@@ -50,6 +51,18 @@ export async function deleteEntidad(id: string) {
   const entidadId = z.uuid().parse(id);
 
   await apiFetch<unknown>(`/entidades/${entidadId}`, { method: "DELETE" });
+  revalidateEntidades();
+  return { ok: true };
+}
+
+export async function setEntidadMonitoreo(id: string, monitoreo: boolean) {
+  await requireAuth(["administrador"]);
+  const entidadId = z.uuid().parse(id);
+
+  await apiFetch<unknown>(`/entidades/${entidadId}/monitoreo`, {
+    method: "PATCH",
+    body: { isMonitored: monitoreo },
+  });
   revalidateEntidades();
   return { ok: true };
 }

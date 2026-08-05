@@ -1153,6 +1153,47 @@ export interface paths {
         };
         trace?: never;
     };
+    "/entidades/{id}/monitoreo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetEntidadMonitoreoRequest"];
+                    "text/json": components["schemas"]["SetEntidadMonitoreoRequest"];
+                    "application/*+json": components["schemas"]["SetEntidadMonitoreoRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
     "/estados-secop": {
         parameters: {
             query?: never;
@@ -2330,6 +2371,17 @@ export interface paths {
                     dataset?: string;
                     soloNuevos?: boolean;
                     buscar?: string;
+                    entidad?: string;
+                    objeto?: string;
+                    modalidad?: string;
+                    estado?: string;
+                    fase?: string;
+                    cuantiaMin?: number | string;
+                    cuantiaMax?: number | string;
+                    detectadoDesde?: string;
+                    detectadoHasta?: string;
+                    soloPromovidos?: boolean;
+                    entidadesMonitoreadas?: boolean;
                     page?: number | string;
                     pageSize?: number | string;
                 };
@@ -2354,6 +2406,162 @@ export interface paths {
         };
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/secop/procesos/filtros": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SecopFiltrosResponse"];
+                        "application/json": components["schemas"]["SecopFiltrosResponse"];
+                        "text/json": components["schemas"]["SecopFiltrosResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/secop/procesos/{id}/promover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/secop/procesos/{id}/descartar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["DescartarProcesoRequest"];
+                    "text/json": components["schemas"]["DescartarProcesoRequest"];
+                    "application/*+json": components["schemas"]["DescartarProcesoRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/secop/buscar-en-vivo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["BuscarEnVivoRequest"];
+                    "text/json": components["schemas"]["BuscarEnVivoRequest"];
+                    "application/*+json": components["schemas"]["BuscarEnVivoRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["BuscarEnVivoResponse"];
+                        "application/json": components["schemas"]["BuscarEnVivoResponse"];
+                        "text/json": components["schemas"]["BuscarEnVivoResponse"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -2665,6 +2873,44 @@ export interface components {
             /** Format: int32 */
             pageSize: number | string;
         };
+        BuscarEnVivoRequest: {
+            dataset: string;
+            entidad: null | string;
+            objeto: null | string;
+            modalidad: null | string;
+            estado: null | string;
+            /** Format: double */
+            cuantiaMin: null | number | string;
+            /** Format: double */
+            cuantiaMax: null | number | string;
+            /** Format: int32 */
+            page: null | number | string;
+            /** Format: int32 */
+            pageSize: null | number | string;
+        };
+        BuscarEnVivoResponse: {
+            rows: components["schemas"]["BuscarEnVivoRowResponse"][];
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            pageSize: number | string;
+        };
+        BuscarEnVivoRowResponse: {
+            secopId: string;
+            title: null | string;
+            entityName: null | string;
+            subject: null | string;
+            modality: null | string;
+            status: null | string;
+            /** Format: double */
+            value: null | number | string;
+            /** Format: date-time */
+            publicationDate: null | string;
+            /** Format: date-time */
+            closingDate: null | string;
+            phase: null | string;
+            secopUrl: null | string;
+        };
         CalendarItemResponse: {
             id: string;
             title: string;
@@ -2786,11 +3032,15 @@ export interface components {
             /** Format: int32 */
             cityCount: number | string;
         };
+        DescartarProcesoRequest: {
+            motivo: null | string;
+        };
         EntidadResponse: {
             /** Format: uuid */
             id: string;
             name: string;
             isActive: boolean;
+            isMonitored: boolean;
         };
         EstadoSecopResponse: {
             /** Format: uuid */
@@ -2941,8 +3191,11 @@ export interface components {
             publicationDate: null | string;
             /** Format: date-time */
             closingDate: null | string;
+            phase: null | string;
             secopUrl: null | string;
             isNew: boolean;
+            promotedToFollowup: boolean;
+            isDiscarded: boolean;
             /** Format: date-time */
             firstDetectedAt: string;
             /** Format: date-time */
@@ -2987,6 +3240,13 @@ export interface components {
             id: string;
             wasCreated: boolean;
         };
+        SecopFiltrosResponse: {
+            modalidades: string[];
+            estados: string[];
+            fases: string[];
+            /** Format: int32 */
+            totalSinFiltrar: number | string;
+        };
         SecopSyncRunListResponse: {
             items: components["schemas"]["SecopSyncRunResponse"][];
             /** Format: int32 */
@@ -3023,6 +3283,9 @@ export interface components {
         };
         SetEntidadEstadoRequest: {
             isActive: boolean;
+        };
+        SetEntidadMonitoreoRequest: {
+            isMonitored: boolean;
         };
         SetMembershipEstadoRequest: {
             isActive: boolean;

@@ -103,11 +103,11 @@ export async function listModalidadesAdmin(): Promise<ModalidadRow[]> {
   }));
 }
 
-export type EntidadRow = { id: string; nombre: string; estado: boolean | null };
+export type EntidadRow = { id: string; nombre: string; estado: boolean | null; monitoreo: boolean };
 
 export async function listEntidadesAdmin(): Promise<EntidadRow[]> {
   const rows = await apiFetch<ApiSchemas["EntidadResponse"][]>("/entidades");
-  return rows.map((r) => ({ id: r.id, nombre: r.name, estado: r.isActive }));
+  return rows.map((r) => ({ id: r.id, nombre: r.name, estado: r.isActive, monitoreo: r.isMonitored }));
 }
 
 export type NitRow = {

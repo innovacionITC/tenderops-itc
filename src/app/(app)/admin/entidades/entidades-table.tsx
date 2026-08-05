@@ -11,7 +11,7 @@ import { Switch } from "@/components/ui/switch";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { useFieldErrors, zodIssuesToFieldErrors } from "@/lib/form-errors";
 import type { EntidadRow } from "@/lib/parametrica";
-import { createEntidad, deleteEntidad, setEntidadEstado, updateEntidad } from "./actions";
+import { createEntidad, deleteEntidad, setEntidadEstado, setEntidadMonitoreo, updateEntidad } from "./actions";
 import { entidadSchema } from "./schema";
 
 type DialogState = { mode: "create" } | { mode: "edit"; row: EntidadRow } | null;
@@ -90,6 +90,21 @@ export function EntidadesTable({ rows }: { rows: EntidadRow[] }) {
     });
   };
 
+  const handleMonitoreoChange = (row: EntidadRow, monitoreo: boolean) => {
+    setPendingId(row.id);
+    startTransition(async () => {
+      try {
+        await setEntidadMonitoreo(row.id, monitoreo);
+        toast.success(monitoreo ? "Monitoreo activado" : "Monitoreo desactivado");
+        router.refresh();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "No se pudo actualizar el monitoreo");
+      } finally {
+        setPendingId(null);
+      }
+    });
+  };
+
   const columns: TableColumn<EntidadRow>[] = [
     {
       key: "nombre",
@@ -112,6 +127,23 @@ export function EntidadesTable({ rows }: { rows: EntidadRow[] }) {
             <StatusBadge tone={activo ? "success" : "muted"}>
               {activo ? "Activa" : "Inactiva"}
             </StatusBadge>
+            {rowPending && <Spinner className="size-3.5 text-muted-foreground" />}
+          </div>
+        );
+      },
+    },
+    {
+      key: "monitoreo",
+      title: "Seguimiento permanente",
+      render: (r) => {
+        const rowPending = isPending && pendingId === r.id;
+        return (
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={r.monitoreo}
+              disabled={rowPending}
+              onCheckedChange={(checked) => handleMonitoreoChange(r, checked)}
+            />
             {rowPending && <Spinner className="size-3.5 text-muted-foreground" />}
           </div>
         );

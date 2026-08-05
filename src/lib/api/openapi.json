@@ -1,4 +1,4 @@
-﻿{
+{
   "openapi": "3.1.1",
   "info": {
     "title": "TenderOps.Api | v1",
@@ -1348,6 +1348,49 @@
         }
       }
     },
+    "/entidades/{id}/monitoreo": {
+      "patch": {
+        "tags": [
+          "Entidades"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetEntidadMonitoreoRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetEntidadMonitoreoRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetEntidadMonitoreoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/estados-secop": {
       "get": {
         "tags": [
@@ -2637,6 +2680,95 @@
             }
           },
           {
+            "name": "entidad",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "objeto",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "modalidad",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fase",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "cuantiaMin",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            }
+          },
+          {
+            "name": "cuantiaMax",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            }
+          },
+          {
+            "name": "detectadoDesde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "detectadoHasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "soloPromovidos",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "entidadesMonitoreadas",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "page",
             "in": "query",
             "schema": {
@@ -2678,6 +2810,150 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ProcesoDetectadoListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/secop/procesos/filtros": {
+      "get": {
+        "tags": [
+          "SecopSync"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecopFiltrosResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecopFiltrosResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SecopFiltrosResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/secop/procesos/{id}/promover": {
+      "patch": {
+        "tags": [
+          "SecopSync"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/secop/procesos/{id}/descartar": {
+      "patch": {
+        "tags": [
+          "SecopSync"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DescartarProcesoRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DescartarProcesoRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DescartarProcesoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/secop/buscar-en-vivo": {
+      "post": {
+        "tags": [
+          "SecopSync"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuscarEnVivoRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuscarEnVivoRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/BuscarEnVivoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuscarEnVivoResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuscarEnVivoResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BuscarEnVivoResponse"
                 }
               }
             }
@@ -3093,6 +3369,203 @@
               "string"
             ],
             "format": "int32"
+          }
+        }
+      },
+      "BuscarEnVivoRequest": {
+        "required": [
+          "dataset",
+          "entidad",
+          "objeto",
+          "modalidad",
+          "estado",
+          "cuantiaMin",
+          "cuantiaMax",
+          "page",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string"
+          },
+          "entidad": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "objeto": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "modalidad": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "estado": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cuantiaMin": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "cuantiaMax": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "BuscarEnVivoResponse": {
+        "required": [
+          "rows",
+          "page",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "rows": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BuscarEnVivoRowResponse"
+            }
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "BuscarEnVivoRowResponse": {
+        "required": [
+          "secopId",
+          "title",
+          "entityName",
+          "subject",
+          "modality",
+          "status",
+          "value",
+          "publicationDate",
+          "closingDate",
+          "phase",
+          "secopUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "secopId": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "entityName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "subject": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "modality": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "value": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "publicationDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "closingDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "phase": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "secopUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -3577,11 +4050,26 @@
           }
         }
       },
+      "DescartarProcesoRequest": {
+        "required": [
+          "motivo"
+        ],
+        "type": "object",
+        "properties": {
+          "motivo": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "EntidadResponse": {
         "required": [
           "id",
           "name",
-          "isActive"
+          "isActive",
+          "isMonitored"
         ],
         "type": "object",
         "properties": {
@@ -3593,6 +4081,9 @@
             "type": "string"
           },
           "isActive": {
+            "type": "boolean"
+          },
+          "isMonitored": {
             "type": "boolean"
           }
         }
@@ -4167,8 +4658,11 @@
           "value",
           "publicationDate",
           "closingDate",
+          "phase",
           "secopUrl",
           "isNew",
+          "promotedToFollowup",
+          "isDiscarded",
           "firstDetectedAt",
           "lastDetectedAt"
         ],
@@ -4237,6 +4731,12 @@
             ],
             "format": "date-time"
           },
+          "phase": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
           "secopUrl": {
             "type": [
               "null",
@@ -4244,6 +4744,12 @@
             ]
           },
           "isNew": {
+            "type": "boolean"
+          },
+          "promotedToFollowup": {
+            "type": "boolean"
+          },
+          "isDiscarded": {
             "type": "boolean"
           },
           "firstDetectedAt": {
@@ -4439,6 +4945,43 @@
           }
         }
       },
+      "SecopFiltrosResponse": {
+        "required": [
+          "modalidades",
+          "estados",
+          "fases",
+          "totalSinFiltrar"
+        ],
+        "type": "object",
+        "properties": {
+          "modalidades": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "estados": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "totalSinFiltrar": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
       "SecopSyncRunListResponse": {
         "required": [
           "items",
@@ -4590,6 +5133,17 @@
         "type": "object",
         "properties": {
           "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "SetEntidadMonitoreoRequest": {
+        "required": [
+          "isMonitored"
+        ],
+        "type": "object",
+        "properties": {
+          "isMonitored": {
             "type": "boolean"
           }
         }
