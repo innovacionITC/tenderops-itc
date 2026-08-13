@@ -1,5 +1,5 @@
-export type Vista = "detectados" | "monitoreadas" | "vivo";
+export type Vista = "detectados" | "vivo";
 
 export function parseVista(v: string | undefined): Vista {
-  return v === "monitoreadas" || v === "vivo" ? v : "detectados";
+  return v === "vivo" ? v : "detectados";
 }

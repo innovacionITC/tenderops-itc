@@ -10,6 +10,7 @@ import {
   Eye,
   XCircle,
   Info,
+  Star,
 } from "lucide-react";
 import {
   ItcTable,
@@ -21,18 +22,14 @@ import {
 } from "@/components/itc";
 import type { DateRange } from "react-day-picker";
 import { DetalleProcesoModal } from "./detalle-proceso-modal";
+import { SelectConOtro, TODOS } from "./select-con-otro";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Spinner } from "@/components/ui/spinner";
 import { StatusBadge, type Tone } from "@/components/layout/status-badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { LoadingOverlay } from "@/components/layout/loading-overlay";
+import { RowActionButton } from "@/components/layout/row-action-button";
 import { formatCOP, formatDate, formatDateTime } from "@/lib/format";
 import {
   datasetLabels,
@@ -43,7 +40,6 @@ import {
 } from "@/lib/secop-shared";
 import { sincronizarSecop, promoverProceso, descartarProceso } from "./actions";
 
-const TODOS = "todos";
 const PAGE_SIZES = [10, 25, 50, 100] as const;
 
 function toIsoDate(d: Date | undefined): string {
@@ -63,12 +59,14 @@ function fromIsoDate(s: string): Date | undefined {
 
 const estadoTone: Record<string, Tone> = {
   ok: "success",
+  sin_novedades: "muted",
   error: "danger",
   running: "info",
 };
 
 const estadoLabel: Record<string, string> = {
   ok: "Completada",
+  sin_novedades: "Sin novedades",
   error: "Con error",
   running: "En curso",
 };
@@ -94,22 +92,24 @@ export function ProcesosSecopView({
   sincronizaciones,
   filtros,
   filtrosDisponibles,
+  entidadesDisponibles,
   esAdmin,
-  vista = "detectados",
 }: {
   procesos: Paginado<ProcesoRow>;
   sincronizaciones: SincronizacionRow[];
   filtros: FiltrosState;
   filtrosDisponibles: SecopFiltros;
+  entidadesDisponibles: string[];
   esAdmin: boolean;
-  vista?: "detectados" | "monitoreadas";
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  // Separado de isPending (promover/descartar): así el modal de carga de la
+  // búsqueda no aparece encima del modal de confirmación de esas acciones.
+  const [isBuscando, startBuscar] = useTransition();
   const [isPending, startTransition] = useTransition();
   const [isSyncing, startSync] = useTransition();
   const [buscar, setBuscar] = useState(filtros.buscar);
-  const [entidad, setEntidad] = useState(filtros.entidad);
   const [objeto, setObjeto] = useState(filtros.objeto);
   const [cuantiaMin, setCuantiaMin] = useState(filtros.cuantiaMin);
   const [cuantiaMax, setCuantiaMax] = useState(filtros.cuantiaMax);
@@ -125,7 +125,7 @@ export function ProcesosSecopView({
       dataset: cambios.dataset ?? filtros.dataset,
       nuevos: cambios.soloNuevos ?? filtros.soloNuevos,
       buscar: cambios.buscar ?? buscar,
-      entidad: cambios.entidad ?? entidad,
+      entidad: cambios.entidad ?? filtros.entidad,
       objeto: cambios.objeto ?? objeto,
       modalidad: cambios.modalidad ?? filtros.modalidad,
       estado: cambios.estado ?? filtros.estado,
@@ -139,7 +139,6 @@ export function ProcesosSecopView({
     };
 
     const qs = new URLSearchParams();
-    if (vista !== "detectados") qs.set("vista", vista);
     if (next.dataset) qs.set("dataset", next.dataset);
     if (next.nuevos) qs.set("nuevos", "1");
     if (next.buscar.trim()) qs.set("buscar", next.buscar.trim());
@@ -155,7 +154,7 @@ export function ProcesosSecopView({
     if (next.pageSize !== 25) qs.set("pageSize", String(next.pageSize));
     if (next.page > 1) qs.set("page", String(next.page));
 
-    startTransition(() => {
+    startBuscar(() => {
       router.push(qs.size > 0 ? `${pathname}?${qs}` : pathname);
     });
   };
@@ -164,9 +163,9 @@ export function ProcesosSecopView({
     startSync(async () => {
       try {
         await sincronizarSecop();
-        toast.success("Sincronización encolada", {
+        toast.success("Sincronización iniciada", {
           description:
-            "Los resultados aparecerán en unos minutos. Actualiza la página para verlos.",
+            "El proceso corre en segundo plano y puede tardar unos minutos. Revisa 'Últimas sincronizaciones' para ver el resultado.",
         });
         router.refresh();
       } catch (e) {
@@ -222,7 +221,12 @@ export function ProcesosSecopView({
       title: "Entidad",
       width: "20%",
       render: (r) => (
-        <span className="block truncate text-sm text-muted-foreground" title={r.entidad ?? undefined}>
+        <span className="flex items-center gap-1 truncate text-sm text-muted-foreground" title={r.entidad ?? undefined}>
+          {r.entidadRegistrada && (
+            <span title="Entidad registrada en Administración">
+              <Star className="h-3 w-3 shrink-0 text-yellow-500" />
+            </span>
+          )}
           {r.entidad ?? "—"}
         </span>
       ),
@@ -296,41 +300,31 @@ export function ProcesosSecopView({
       align: "right",
       render: (r) => (
         <div className="flex justify-end gap-1">
-          <ItcButton
-            className="p-1.5 hover:bg-muted rounded"
-            onClick={() => setDetalleTarget(r)}
+          <RowActionButton
+            icon={<Info className="h-3.5 w-3.5" />}
             title="Ver detalle"
-          >
-            <Info className="h-3.5 w-3.5" />
-          </ItcButton>
+            onClick={() => setDetalleTarget(r)}
+          />
           {r.url && (
-            <a
-              href={r.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex rounded p-1.5 hover:bg-muted"
+            <RowActionButton
+              icon={<ExternalLink className="h-3.5 w-3.5" />}
               title="Abrir en SECOP"
-            >
-              <ExternalLink className="h-3.5 w-3.5" />
-            </a>
+              href={r.url}
+            />
           )}
           {!r.promovido && (
-            <ItcButton
-              className="p-1.5 hover:bg-muted rounded"
-              onClick={() => setPromoverTarget(r)}
+            <RowActionButton
+              icon={<Eye className="h-3.5 w-3.5" />}
               title="Promover a seguimiento"
-            >
-              <Eye className="h-3.5 w-3.5" />
-            </ItcButton>
+              onClick={() => setPromoverTarget(r)}
+            />
           )}
           {!r.descartado && (
-            <ItcButton
-              className="p-1.5 hover:bg-muted rounded"
-              onClick={() => setDescartarTarget(r)}
+            <RowActionButton
+              icon={<XCircle className="h-3.5 w-3.5" />}
               title="Descartar proceso"
-            >
-              <XCircle className="h-3.5 w-3.5" />
-            </ItcButton>
+              onClick={() => setDescartarTarget(r)}
+            />
           )}
         </div>
       ),
@@ -345,10 +339,15 @@ export function ProcesosSecopView({
 
   return (
     <div className="space-y-6">
-      <Card>
+      {/* overflow-visible: el Card de shadcn trae overflow-hidden por defecto,
+          y el calendario de ItcDateRangePicker se posiciona con position:
+          absolute dentro de este mismo contenedor (no usa portal a
+          document.body) — sin este override, el Card le corta la grilla de
+          días y solo se ve el encabezado del mes. */}
+      <Card className="overflow-visible">
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Filtros</CardTitle>
-          {esAdmin && vista === "detectados" && (
+          {esAdmin && (
             <ItcButton onClick={handleSincronizar} disabled={isSyncing}>
               {isSyncing ? (
                 <Spinner className="size-3.5" />
@@ -359,7 +358,7 @@ export function ProcesosSecopView({
             </ItcButton>
           )}
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <CardContent className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2">
             <Label className="mb-1.5">Buscar</Label>
             <div className="flex gap-1.5">
@@ -388,24 +387,13 @@ export function ProcesosSecopView({
             </div>
           </div>
 
-          <div>
-            <Label className="mb-1.5">Entidad</Label>
-            <ItcInput
-              value={entidad}
-              placeholder="Filtrar por entidad…"
-              onChange={(
-                e: ChangeEvent<
-                  HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                >,
-              ) => setEntidad(e.target.value)}
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  aplicar({ entidad });
-                }
-              }}
-            />
-          </div>
+          <SelectConOtro
+            label="Entidad"
+            value={filtros.entidad}
+            opciones={entidadesDisponibles}
+            placeholderTodos="Todas"
+            onChange={(value) => aplicar({ entidad: value })}
+          />
 
           <div>
             <Label className="mb-1.5">Objeto</Label>
@@ -428,87 +416,51 @@ export function ProcesosSecopView({
 
           <div>
             <Label className="mb-1.5">Fuente</Label>
-            <Select
+            <ItcInput
+              type="select"
               value={filtros.dataset || TODOS}
-              onValueChange={(value) =>
-                aplicar({ dataset: value === TODOS ? "" : value })
+              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+                aplicar({ dataset: e.target.value === TODOS ? "" : e.target.value })
               }
             >
-              <SelectTrigger size="sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={TODOS}>Todas</SelectItem>
-                <SelectItem value="secop_i">SECOP I</SelectItem>
-                <SelectItem value="secop_ii">SECOP II</SelectItem>
-              </SelectContent>
-            </Select>
+              <option value={TODOS}>Todas</option>
+              <option value="secop_i">SECOP I</option>
+              <option value="secop_ii">SECOP II</option>
+            </ItcInput>
           </div>
 
-          <div>
-            <Label className="mb-1.5">Modalidad</Label>
-            <Select
-              value={filtros.modalidad || TODOS}
-              onValueChange={(value) =>
-                aplicar({ modalidad: value === TODOS ? "" : value })
-              }
-            >
-              <SelectTrigger size="sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={TODOS}>Todas</SelectItem>
-                {filtrosDisponibles.modalidades.map((m) => (
-                  <SelectItem key={m} value={m}>
-                    {m}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SelectConOtro
+            label="Modalidad"
+            value={filtros.modalidad}
+            opciones={filtrosDisponibles.modalidades}
+            placeholderTodos="Todas"
+            onChange={(value) => aplicar({ modalidad: value })}
+          />
 
-          <div>
-            <Label className="mb-1.5">Estado</Label>
-            <Select
-              value={filtros.estado || TODOS}
-              onValueChange={(value) =>
-                aplicar({ estado: value === TODOS ? "" : value })
-              }
-            >
-              <SelectTrigger size="sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={TODOS}>Todos</SelectItem>
-                {filtrosDisponibles.estados.map((e) => (
-                  <SelectItem key={e} value={e}>
-                    {e}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <SelectConOtro
+            label="Estado"
+            value={filtros.estado}
+            opciones={filtrosDisponibles.estados}
+            placeholderTodos="Todos"
+            onChange={(value) => aplicar({ estado: value })}
+          />
 
           <div>
             <Label className="mb-1.5">Fase</Label>
-            <Select
+            <ItcInput
+              type="select"
               value={filtros.fase || TODOS}
-              onValueChange={(value) =>
-                aplicar({ fase: value === TODOS ? "" : value })
+              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+                aplicar({ fase: e.target.value === TODOS ? "" : e.target.value })
               }
             >
-              <SelectTrigger size="sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={TODOS}>Todas</SelectItem>
-                {filtrosDisponibles.fases.map((f) => (
-                  <SelectItem key={f} value={f}>
-                    {f}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <option value={TODOS}>Todas</option>
+              {filtrosDisponibles.fases.map((f) => (
+                <option key={f} value={f}>
+                  {f}
+                </option>
+              ))}
+            </ItcInput>
           </div>
 
           <div>
@@ -571,17 +523,15 @@ export function ProcesosSecopView({
             />
           </div>
 
-          {vista === "detectados" && (
-            <div className="flex items-end">
-              <label className="flex items-center gap-2 text-sm">
-                <Switch
-                  checked={filtros.soloNuevos}
-                  onCheckedChange={(checked) => aplicar({ soloNuevos: checked })}
-                />
-                Solo nuevos
-              </label>
-            </div>
-          )}
+          <div className="flex items-end">
+            <label className="flex items-center gap-2 text-sm">
+              <Switch
+                checked={filtros.soloNuevos}
+                onCheckedChange={(checked) => aplicar({ soloNuevos: checked })}
+              />
+              Solo nuevos
+            </label>
+          </div>
         </CardContent>
       </Card>
 
@@ -594,30 +544,28 @@ export function ProcesosSecopView({
           </p>
           <div className="flex items-center gap-2">
             <Label className="text-xs">Filas</Label>
-            <Select
+            <ItcInput
+              type="select"
+              className="w-20"
               value={String(filtros.pageSize)}
-              onValueChange={(v) => aplicar({ pageSize: Number(v) })}
+              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+                aplicar({ pageSize: Number(e.target.value) })
+              }
             >
-              <SelectTrigger size="sm" className="w-20">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PAGE_SIZES.map((s) => (
-                  <SelectItem key={s} value={String(s)}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {isPending && <Spinner className="size-3.5 text-muted-foreground" />}
+              {PAGE_SIZES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </ItcInput>
+            {isBuscando && <Spinner className="size-3.5 text-muted-foreground" />}
           </div>
         </div>
 
         {procesos.items.length === 0 ? (
           <div className="rounded-2xl border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">
-            {vista === "monitoreadas"
-              ? "No hay procesos detectados para entidades en seguimiento permanente. Marca entidades como \"Seguimiento permanente\" en Administración."
-              : "No hay procesos detectados todavía. Revisa la paramétrica de búsqueda en Administración y espera a la próxima sincronización."}
+            No hay procesos detectados todavía. Revisa la paramétrica de búsqueda en Administración y espera a la
+            próxima sincronización.
           </div>
         ) : (
           <>
@@ -637,7 +585,7 @@ export function ProcesosSecopView({
                 <ItcButton
                   type="button"
                   variant="secondary"
-                  disabled={procesos.page <= 1 || isPending}
+                  disabled={procesos.page <= 1 || isBuscando}
                   onClick={() => aplicar({ page: procesos.page - 1 })}
                 >
                   Anterior
@@ -648,7 +596,7 @@ export function ProcesosSecopView({
                 <ItcButton
                   type="button"
                   variant="secondary"
-                  disabled={procesos.page >= totalPaginas || isPending}
+                  disabled={procesos.page >= totalPaginas || isBuscando}
                   onClick={() => aplicar({ page: procesos.page + 1 })}
                 >
                   Siguiente
@@ -659,7 +607,7 @@ export function ProcesosSecopView({
         )}
       </div>
 
-      {esAdmin && vista === "detectados" && (
+      {esAdmin && (
         <Card>
           <CardHeader>
             <CardTitle>Últimas sincronizaciones</CardTitle>
@@ -685,7 +633,7 @@ export function ProcesosSecopView({
                     <span className="text-muted-foreground">
                       {formatDateTime(s.inicio)}
                     </span>
-                    {s.estado === "ok" && (
+                    {(s.estado === "ok" || s.estado === "sin_novedades") && (
                       <span className="text-muted-foreground">
                         {s.consultados} consultados · {s.insertados} nuevos ·{" "}
                         {s.actualizados} actualizados
@@ -782,6 +730,8 @@ export function ProcesosSecopView({
         }
         onClose={() => setDetalleTarget(null)}
       />
+
+      {isBuscando && <LoadingOverlay />}
     </div>
   );
 }

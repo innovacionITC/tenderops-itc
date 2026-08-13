@@ -6,6 +6,7 @@ import {
   listSincronizacionesSecop,
   getSecopFiltros,
 } from "@/lib/secop";
+import { listEntidadesAdmin, listDepartamentos, listCiudadesAdmin } from "@/lib/parametrica";
 import { DATASETS } from "@/lib/secop-shared";
 import { ProcesosSecopView } from "./procesos-secop-view";
 import { BusquedaEnVivoView } from "./busqueda-en-vivo-view";
@@ -41,17 +42,66 @@ export default async function SecopPage({
   const header = (
     <PageHeader
       title="Consulta SECOP"
-      description="Búsqueda en tiempo real, seguimiento global y monitoreo diario de entidades."
+      description="Búsqueda en tiempo real y sincronización diaria de procesos detectados."
     />
   );
 
   if (vista === "vivo") {
+    let filtrosDisponibles: Awaited<ReturnType<typeof getSecopFiltros>> | null = null;
+    let entidadesDisponibles: string[] | null = null;
+    let departamentosDisponibles: string[] | null = null;
+    let ciudadesDisponibles: string[] | null = null;
+    let vivoError: string | null = null;
+
+    try {
+      const [filtros, entidades, departamentos, ciudades] = await Promise.all([
+        getSecopFiltros(),
+        listEntidadesAdmin(),
+        listDepartamentos(),
+        listCiudadesAdmin(),
+      ]);
+      filtrosDisponibles = filtros;
+      entidadesDisponibles = entidades
+        .filter((e) => e.estado !== false)
+        .map((e) => e.nombre)
+        .sort((a, b) => a.localeCompare(b));
+      departamentosDisponibles = departamentos
+        .filter((d) => d.estado !== false)
+        .map((d) => d.label)
+        .sort((a, b) => a.localeCompare(b));
+      // El filtro "Ciudad" hace match exacto solo por nombre (el mismo
+      // municipio puede repetirse en distintos departamentos), así que se
+      // deduplica por nombre en vez de listar cada fila del catálogo.
+      ciudadesDisponibles = Array.from(
+        new Set(
+          ciudades.filter((c) => c.estado !== false).map((c) => c.nombre),
+        ),
+      ).sort((a, b) => a.localeCompare(b));
+    } catch (e) {
+      vivoError = e instanceof Error ? e.message : "Error al cargar los filtros.";
+    }
+
     return (
       <>
         {header}
         <div className="space-y-4 p-4 sm:p-6 lg:p-8">
           <SecopTabsNav vista={vista} />
-          <BusquedaEnVivoView />
+          {vivoError ||
+          !filtrosDisponibles ||
+          !entidadesDisponibles ||
+          !departamentosDisponibles ||
+          !ciudadesDisponibles ? (
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+              {vivoError ?? "Error al cargar los filtros."}
+            </div>
+          ) : (
+            <BusquedaEnVivoView
+              filtrosDisponibles={filtrosDisponibles}
+              entidadesDisponibles={entidadesDisponibles}
+              departamentosDisponibles={departamentosDisponibles}
+              ciudadesDisponibles={ciudadesDisponibles}
+            />
+          )}
         </div>
       </>
     );
@@ -81,11 +131,12 @@ export default async function SecopPage({
     procesos: Awaited<ReturnType<typeof listProcesosSecop>>;
     sincronizaciones: Awaited<ReturnType<typeof listSincronizacionesSecop>>;
     filtrosDisponibles: Awaited<ReturnType<typeof getSecopFiltros>>;
+    entidadesDisponibles: string[];
   } | null = null;
   let error: string | null = null;
 
   try {
-    const [procesos, sincronizaciones, filtrosDisponibles] = await Promise.all([
+    const [procesos, sincronizaciones, filtrosDisponibles, entidades] = await Promise.all([
       listProcesosSecop({
         dataset,
         soloNuevos,
@@ -99,14 +150,20 @@ export default async function SecopPage({
         cuantiaMax,
         detectadoDesde,
         detectadoHasta,
-        entidadesMonitoreadas: vista === "monitoreadas" ? true : undefined,
         page,
         pageSize,
       }),
       esAdmin && vista === "detectados" ? listSincronizacionesSecop() : Promise.resolve([]),
       getSecopFiltros(),
+      listEntidadesAdmin(),
     ]);
-    resultado = { procesos, sincronizaciones, filtrosDisponibles };
+    // El filtro "Entidad" solo ofrece entidades activas del catálogo — una
+    // desactivada no tiene sentido como criterio de búsqueda hacia adelante.
+    const entidadesDisponibles = entidades
+      .filter((e) => e.estado !== false)
+      .map((e) => e.nombre)
+      .sort((a, b) => a.localeCompare(b));
+    resultado = { procesos, sincronizaciones, filtrosDisponibles, entidadesDisponibles };
   } catch (e) {
     error = e instanceof Error ? e.message : "Error al cargar los procesos detectados.";
   }
@@ -122,7 +179,6 @@ export default async function SecopPage({
           </div>
         ) : (
           <ProcesosSecopView
-            vista={vista}
             procesos={resultado.procesos}
             sincronizaciones={resultado.sincronizaciones}
             filtros={{
@@ -141,6 +197,7 @@ export default async function SecopPage({
               pageSize,
             }}
             filtrosDisponibles={resultado.filtrosDisponibles}
+            entidadesDisponibles={resultado.entidadesDisponibles}
             esAdmin={esAdmin}
           />
         )}

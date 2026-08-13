@@ -46,8 +46,9 @@ export function DetalleProcesoModal({
     <ItcModal
       open={proceso !== null}
       onClose={onClose}
-      variant="info"
       size="lg"
+      maxHeight="90vh"
+      className="detalle-proceso-modal"
       title={proceso?.titulo ?? proceso?.secopId ?? "Detalle del proceso"}
       content={
         proceso && (

@@ -31,6 +31,7 @@ export type ProcesoRow = {
   esNuevo: boolean;
   promovido: boolean;
   descartado: boolean;
+  entidadRegistrada: boolean;
   detectadoEl: string;
 };
 
@@ -65,6 +66,7 @@ export type BuscarEnVivoRow = {
   secopId: string;
   titulo: string | null;
   entidad: string | null;
+  entityNit: string | null;
   objeto: string | null;
   modalidad: string | null;
   estado: string | null;

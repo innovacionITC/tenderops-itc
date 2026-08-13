@@ -42,6 +42,7 @@ function toProcesoRow(r: ProcesoResponse): ProcesoRow {
     esNuevo: r.isNew,
     promovido: r.promotedToFollowup,
     descartado: r.isDiscarded,
+    entidadRegistrada: r.entidadRegistrada,
     detectadoEl: r.firstDetectedAt,
   };
 }
@@ -75,7 +76,6 @@ export async function listProcesosSecop(params: {
   detectadoDesde?: string;
   detectadoHasta?: string;
   soloPromovidos?: boolean;
-  entidadesMonitoreadas?: boolean;
   page?: number;
   pageSize?: number;
 }): Promise<Paginado<ProcesoRow>> {
@@ -94,7 +94,6 @@ export async function listProcesosSecop(params: {
       detectadoDesde: params.detectadoDesde,
       detectadoHasta: params.detectadoHasta,
       soloPromovidos: params.soloPromovidos ? "true" : undefined,
-      entidadesMonitoreadas: params.entidadesMonitoreadas ? "true" : undefined,
       page: params.page ?? 1,
       pageSize: params.pageSize ?? PAGE_SIZE,
     },
@@ -128,11 +127,18 @@ export async function getSecopFiltros(): Promise<SecopFiltros> {
 
 export async function buscarEnVivo(params: {
   dataset: string;
+  keyword?: string;
   entidad?: string;
   nit?: string;
+  numeroProceso?: string;
   objeto?: string;
   modalidad?: string;
   estado?: string;
+  departamento?: string;
+  ciudad?: string;
+  unspsc?: string;
+  publicadoDesde?: string;
+  publicadoHasta?: string;
   cuantiaMin?: number;
   cuantiaMax?: number;
   page?: number;
@@ -142,11 +148,18 @@ export async function buscarEnVivo(params: {
     method: "POST",
     body: {
       dataset: params.dataset,
+      keyword: params.keyword,
       entidad: params.entidad,
       nit: params.nit,
+      numeroProceso: params.numeroProceso,
       objeto: params.objeto,
       modalidad: params.modalidad,
       estado: params.estado,
+      departamento: params.departamento,
+      ciudad: params.ciudad,
+      unspsc: params.unspsc,
+      publicadoDesde: params.publicadoDesde,
+      publicadoHasta: params.publicadoHasta,
       cuantiaMin: params.cuantiaMin,
       cuantiaMax: params.cuantiaMax,
       page: params.page ?? 1,
@@ -159,6 +172,7 @@ export async function buscarEnVivo(params: {
       secopId: r.secopId,
       titulo: r.title ?? null,
       entidad: r.entityName ?? null,
+      entityNit: r.entityNit ?? null,
       objeto: r.subject ?? null,
       modalidad: r.modality ?? null,
       estado: r.status ?? null,

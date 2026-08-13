@@ -224,6 +224,15 @@ html:root {
   font-weight: 500;
 }
 
+/* ItcModal no expone un prop para acotar la altura de .itc-modal-content —
+   su CSS trae overflow-y:auto pero sin max-height nunca se activa (el
+   contenedor crece libre y se desborda del <dialog>, que tampoco tiene
+   overflow propio). Se ancla acá por clase en vez de tocar el paquete. */
+.detalle-proceso-modal .itc-modal-content {
+  max-height: 65vh !important;
+  overflow-y: auto !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

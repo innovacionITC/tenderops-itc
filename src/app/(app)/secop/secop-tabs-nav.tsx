@@ -8,7 +8,6 @@ import type { Vista } from "./vista";
 
 const TABS = [
   { key: "detectados", label: "Procesos detectados" },
-  { key: "monitoreadas", label: "Entidades monitoreadas" },
   { key: "vivo", label: "Búsqueda en vivo" },
 ] satisfies { key: Vista; label: string }[];
 
