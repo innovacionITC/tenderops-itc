@@ -15,21 +15,27 @@ function revalidateEntidades() {
   revalidatePath("/secop");
 }
 
-export async function createEntidad(input: { nombre: string }) {
+export async function createEntidad(input: { nombre: string; nit: string; dv?: string }) {
   await requireAuth(["administrador"]);
-  const { nombre } = entidadSchema.parse(input);
+  const { nombre, nit, dv } = entidadSchema.parse(input);
 
-  await apiFetch<unknown>("/entidades", { method: "POST", body: { name: nombre } });
+  await apiFetch<unknown>("/entidades", { method: "POST", body: { name: nombre, nit, dv } });
   revalidateEntidades();
   return { ok: true };
 }
 
-export async function updateEntidad(id: string, input: { nombre: string }) {
+export async function updateEntidad(
+  id: string,
+  input: { nombre: string; nit: string; dv?: string },
+) {
   await requireAuth(["administrador"]);
   const entidadId = z.uuid().parse(id);
-  const { nombre } = entidadSchema.parse(input);
+  const { nombre, nit, dv } = entidadSchema.parse(input);
 
-  await apiFetch<unknown>(`/entidades/${entidadId}`, { method: "PUT", body: { name: nombre } });
+  await apiFetch<unknown>(`/entidades/${entidadId}`, {
+    method: "PUT",
+    body: { name: nombre, nit, dv },
+  });
   revalidateEntidades();
   return { ok: true };
 }
@@ -55,14 +61,4 @@ export async function deleteEntidad(id: string) {
   return { ok: true };
 }
 
-export async function setEntidadMonitoreo(id: string, monitoreo: boolean) {
-  await requireAuth(["administrador"]);
-  const entidadId = z.uuid().parse(id);
 
-  await apiFetch<unknown>(`/entidades/${entidadId}/monitoreo`, {
-    method: "PATCH",
-    body: { isMonitored: monitoreo },
-  });
-  revalidateEntidades();
-  return { ok: true };
-}

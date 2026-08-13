@@ -22,7 +22,6 @@ const saveSchema = z
     entidadIds: z.array(z.uuid()),
     estadoSecopIds: z.array(z.uuid()),
     unspscIds: z.array(z.uuid()),
-    nitIds: z.array(z.uuid()),
     departamentoIds: z.array(z.uuid()),
     ciudadIds: z.array(z.uuid()),
   })
@@ -52,7 +51,6 @@ export async function saveParametricaConfig(input: z.infer<typeof saveSchema>) {
     entityIds: data.entidadIds,
     secopStatusIds: data.estadoSecopIds,
     unspscCodeIds: data.unspscIds,
-    nitIds: data.nitIds,
     departmentIds: data.departamentoIds,
     cityIds: data.ciudadIds,
   };

@@ -1153,47 +1153,7 @@ export interface paths {
         };
         trace?: never;
     };
-    "/entidades/{id}/monitoreo": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SetEntidadMonitoreoRequest"];
-                    "text/json": components["schemas"]["SetEntidadMonitoreoRequest"];
-                    "application/*+json": components["schemas"]["SetEntidadMonitoreoRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        trace?: never;
-    };
+
     "/estados-secop": {
         parameters: {
             query?: never;
@@ -1439,171 +1399,9 @@ export interface paths {
         };
         trace?: never;
     };
-    "/nits": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["NitResponse"][];
-                        "application/json": components["schemas"]["NitResponse"][];
-                        "text/json": components["schemas"]["NitResponse"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CreateNitRequest"];
-                    "text/json": components["schemas"]["CreateNitRequest"];
-                    "application/*+json": components["schemas"]["CreateNitRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["NitResponse"];
-                        "application/json": components["schemas"]["NitResponse"];
-                        "text/json": components["schemas"]["NitResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/nits/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["UpdateNitRequest"];
-                    "text/json": components["schemas"]["UpdateNitRequest"];
-                    "application/*+json": components["schemas"]["UpdateNitRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        post?: never;
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/nits/{id}/estado": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["SetNitEstadoRequest"];
-                    "text/json": components["schemas"]["SetNitEstadoRequest"];
-                    "application/*+json": components["schemas"]["SetNitEstadoRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-            };
-        };
-        trace?: never;
-    };
+
+
+
     "/notificaciones": {
         parameters: {
             query?: never;
@@ -2899,6 +2697,7 @@ export interface components {
             secopId: string;
             title: null | string;
             entityName: null | string;
+            entityNit: null | string;
             subject: null | string;
             modality: null | string;
             status: null | string;
@@ -2974,15 +2773,14 @@ export interface components {
         };
         CreateEntidadRequest: {
             name: string;
+            nit: string;
+            dv?: string | null;
         };
         CreateModalidadRequest: {
             description: string;
             code: null | string;
         };
-        CreateNitRequest: {
-            nit: string;
-            description: null | string;
-        };
+
         CreateOrganizacionRequest: {
             name: string;
             code: string;
@@ -3040,7 +2838,8 @@ export interface components {
             id: string;
             name: string;
             isActive: boolean;
-            isMonitored: boolean;
+            nit: string | null;
+            dv: string | null;
         };
         EstadoSecopResponse: {
             /** Format: uuid */
@@ -3084,13 +2883,7 @@ export interface components {
             code: null | string;
             isActive: boolean;
         };
-        NitResponse: {
-            /** Format: uuid */
-            id: string;
-            nit: string;
-            description: null | string;
-            isActive: boolean;
-        };
+
         NotificacionResponse: {
             /** Format: uuid */
             id: string;
@@ -3138,7 +2931,6 @@ export interface components {
             entityIds: string[];
             secopStatusIds: string[];
             unspscCodeIds: string[];
-            nitIds: string[];
             departmentIds: string[];
             cityIds: string[];
         };
@@ -3200,6 +2992,7 @@ export interface components {
             firstDetectedAt: string;
             /** Format: date-time */
             lastDetectedAt: string;
+            entidadRegistrada: boolean;
         };
         QuickAddEstadoSecopRequest: {
             name: string;
@@ -3231,7 +3024,6 @@ export interface components {
             entityIds: string[];
             secopStatusIds: string[];
             unspscCodeIds: string[];
-            nitIds: string[];
             departmentIds: string[];
             cityIds: string[];
         };
@@ -3284,18 +3076,14 @@ export interface components {
         SetEntidadEstadoRequest: {
             isActive: boolean;
         };
-        SetEntidadMonitoreoRequest: {
-            isMonitored: boolean;
-        };
+
         SetMembershipEstadoRequest: {
             isActive: boolean;
         };
         SetModalidadEstadoRequest: {
             isActive: boolean;
         };
-        SetNitEstadoRequest: {
-            isActive: boolean;
-        };
+
         SetOrganizacionEstadoRequest: {
             isActive: boolean;
         };
@@ -3365,15 +3153,14 @@ export interface components {
         };
         UpdateEntidadRequest: {
             name: string;
+            nit: string;
+            dv?: string | null;
         };
         UpdateModalidadRequest: {
             description: string;
             code: null | string;
         };
-        UpdateNitRequest: {
-            nit: string;
-            description: null | string;
-        };
+
         UpdateOrganizacionRequest: {
             name: string;
             code: string;

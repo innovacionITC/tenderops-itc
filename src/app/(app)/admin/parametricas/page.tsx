@@ -11,8 +11,6 @@ import {
   listEstadosSecop,
   listModalidades,
   listModalidadesAdmin,
-  listNits,
-  listNitsAdmin,
 } from "@/lib/parametrica";
 import { listUnspscCodes } from "@/lib/unspsc";
 import { ParametricasAccordions } from "./parametricas-accordions";
@@ -26,11 +24,9 @@ export default async function ParametricasPage() {
     entidades,
     estadosSecop,
     unspscCodes,
-    nits,
     departamentos,
     entidadesAdmin,
     modalidadesAdmin,
-    nitsAdmin,
     unspscAdmin,
     departamentosAdmin,
     ciudadesAdmin,
@@ -40,11 +36,9 @@ export default async function ParametricasPage() {
     listEntidades(),
     listEstadosSecop(),
     listUnspscCodes(),
-    listNits(),
     listDepartamentos(),
     listEntidadesAdmin(),
     listModalidadesAdmin(),
-    listNitsAdmin(),
     listUnspscCodes(),
     listDepartamentosAdmin(),
     listCiudadesAdmin(),
@@ -61,11 +55,10 @@ export default async function ParametricasPage() {
       <div className="p-4 sm:p-6 lg:p-8">
         <ParametricasAccordions
           config={config}
-          catalogs={{ modalidades, entidades, estadosSecop, unspscCodes, nits, departamentos }}
+          catalogs={{ modalidades, entidades, estadosSecop, unspscCodes, departamentos }}
           ciudadesSeleccionadas={ciudadesSeleccionadas}
           entidadesAdmin={entidadesAdmin}
           modalidadesAdmin={modalidadesAdmin}
-          nitsAdmin={nitsAdmin}
           unspscAdmin={unspscAdmin}
           departamentosAdmin={departamentosAdmin}
           ciudadesAdmin={ciudadesAdmin}

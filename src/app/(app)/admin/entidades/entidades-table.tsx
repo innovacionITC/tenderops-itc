@@ -9,9 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { StatusBadge } from "@/components/layout/status-badge";
+import { RowActionButton } from "@/components/layout/row-action-button";
 import { useFieldErrors, zodIssuesToFieldErrors } from "@/lib/form-errors";
 import type { EntidadRow } from "@/lib/parametrica";
-import { createEntidad, deleteEntidad, setEntidadEstado, setEntidadMonitoreo, updateEntidad } from "./actions";
+import { createEntidad, deleteEntidad, setEntidadEstado, updateEntidad } from "./actions";
 import { entidadSchema } from "./schema";
 
 type DialogState = { mode: "create" } | { mode: "edit"; row: EntidadRow } | null;
@@ -25,21 +26,27 @@ export function EntidadesTable({ rows }: { rows: EntidadRow[] }) {
   const { fieldErrors, setFieldErrors, clearFieldError } = useFieldErrors();
 
   const [nombre, setNombre] = useState("");
+  const [nit, setNit] = useState("");
+  const [dv, setDv] = useState("");
 
   const openCreate = () => {
     setNombre("");
+    setNit("");
+    setDv("");
     setFieldErrors({});
     setDialog({ mode: "create" });
   };
 
   const openEdit = (row: EntidadRow) => {
     setNombre(row.nombre);
+    setNit(row.nit ?? "");
+    setDv(row.dv ?? "");
     setFieldErrors({});
     setDialog({ mode: "edit", row });
   };
 
   const handleSave = () => {
-    const result = entidadSchema.safeParse({ nombre });
+    const result = entidadSchema.safeParse({ nombre, nit, dv });
     if (!result.success) {
       setFieldErrors(zodIssuesToFieldErrors(result.error));
       return;
@@ -90,26 +97,20 @@ export function EntidadesTable({ rows }: { rows: EntidadRow[] }) {
     });
   };
 
-  const handleMonitoreoChange = (row: EntidadRow, monitoreo: boolean) => {
-    setPendingId(row.id);
-    startTransition(async () => {
-      try {
-        await setEntidadMonitoreo(row.id, monitoreo);
-        toast.success(monitoreo ? "Monitoreo activado" : "Monitoreo desactivado");
-        router.refresh();
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "No se pudo actualizar el monitoreo");
-      } finally {
-        setPendingId(null);
-      }
-    });
-  };
-
   const columns: TableColumn<EntidadRow>[] = [
     {
       key: "nombre",
       title: "Entidad",
       render: (r) => <span className="font-medium">{r.nombre}</span>,
+    },
+    {
+      key: "nit",
+      title: "NIT",
+      render: (r) => (
+        <span className="font-mono text-sm">
+          {r.nit ? (r.dv ? `${r.nit}-${r.dv}` : r.nit) : "—"}
+        </span>
+      ),
     },
     {
       key: "estado",
@@ -122,28 +123,11 @@ export function EntidadesTable({ rows }: { rows: EntidadRow[] }) {
             <Switch
               checked={activo}
               disabled={rowPending}
-              onCheckedChange={(checked) => handleEstadoChange(r, checked)}
+              onCheckedChange={(checked: boolean) => handleEstadoChange(r, checked)}
             />
             <StatusBadge tone={activo ? "success" : "muted"}>
               {activo ? "Activa" : "Inactiva"}
             </StatusBadge>
-            {rowPending && <Spinner className="size-3.5 text-muted-foreground" />}
-          </div>
-        );
-      },
-    },
-    {
-      key: "monitoreo",
-      title: "Seguimiento permanente",
-      render: (r) => {
-        const rowPending = isPending && pendingId === r.id;
-        return (
-          <div className="flex items-center gap-2">
-            <Switch
-              checked={r.monitoreo}
-              disabled={rowPending}
-              onCheckedChange={(checked) => handleMonitoreoChange(r, checked)}
-            />
             {rowPending && <Spinner className="size-3.5 text-muted-foreground" />}
           </div>
         );
@@ -155,12 +139,16 @@ export function EntidadesTable({ rows }: { rows: EntidadRow[] }) {
       align: "right",
       render: (r) => (
         <div className="flex justify-end gap-1">
-          <ItcButton onClick={() => openEdit(r)} className="p-1.5 hover:bg-muted rounded">
-            <Pencil className="h-3.5 w-3.5" />
-          </ItcButton>
-          <ItcButton onClick={() => setDeleteTarget(r)} className="p-1.5 hover:bg-muted rounded">
-            <Trash2 className="h-3.5 w-3.5" />
-          </ItcButton>
+          <RowActionButton
+            icon={<Pencil className="h-3.5 w-3.5" />}
+            title="Editar"
+            onClick={() => openEdit(r)}
+          />
+          <RowActionButton
+            icon={<Trash2 className="h-3.5 w-3.5" />}
+            title="Eliminar"
+            onClick={() => setDeleteTarget(r)}
+          />
         </div>
       ),
     },
@@ -209,6 +197,31 @@ export function EntidadesTable({ rows }: { rows: EntidadRow[] }) {
               {fieldErrors.nombre && (
                 <p className="mt-1 text-xs text-destructive">{fieldErrors.nombre}</p>
               )}
+            </div>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <Label className="mb-1.5">NIT <span className="text-destructive">*</span></Label>
+                <ItcInput
+                  value={nit}
+                  onChange={(e: any) => { setNit(e.target.value); clearFieldError("nit"); }}
+                  aria-invalid={!!fieldErrors.nit}
+                />
+                {fieldErrors.nit && (
+                  <p className="mt-1 text-xs text-destructive">{fieldErrors.nit}</p>
+                )}
+              </div>
+              <div className="w-20">
+                <Label className="mb-1.5">DV</Label>
+                <ItcInput
+                  value={dv}
+                  maxLength={1}
+                  onChange={(e: any) => { setDv(e.target.value); clearFieldError("dv"); }}
+                  aria-invalid={!!fieldErrors.dv}
+                />
+                {fieldErrors.dv && (
+                  <p className="mt-1 text-xs text-destructive">{fieldErrors.dv}</p>
+                )}
+              </div>
             </div>
           </div>
         }

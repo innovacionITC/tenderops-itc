@@ -19,7 +19,6 @@ export type ParametricaConfig = {
   /** Antes siempre vacío (bug de origen: el save escribía unspsc_parametros
    * pero el get nunca los leía). La API sí los devuelve desde la Fase 5. */
   unspscIds: string[];
-  nitIds: string[];
   departamentoIds: string[];
   ciudadIds: string[];
 };
@@ -52,7 +51,6 @@ export async function getParametricaConfig(): Promise<ParametricaConfig | null> 
     entidadIds: config.entityIds,
     estadoSecopIds: config.secopStatusIds,
     unspscIds: config.unspscCodeIds,
-    nitIds: config.nitIds,
     departamentoIds: config.departmentIds,
     ciudadIds: config.cityIds,
   };
@@ -70,15 +68,6 @@ export async function listModalidades(): Promise<CatalogItem[]> {
 export async function listEntidades(): Promise<CatalogItem[]> {
   const rows = await apiFetch<ApiSchemas["EntidadResponse"][]>("/entidades");
   return rows.map((r) => ({ id: r.id, label: r.name, estado: r.isActive }));
-}
-
-export async function listNits(): Promise<CatalogItem[]> {
-  const rows = await apiFetch<ApiSchemas["NitResponse"][]>("/nits");
-  return rows.map((r) => ({
-    id: r.id,
-    label: r.description ? `${r.nit} — ${r.description}` : r.nit,
-    estado: r.isActive,
-  }));
 }
 
 export async function listEstadosSecop(): Promise<CatalogItem[]> {
@@ -103,27 +92,22 @@ export async function listModalidadesAdmin(): Promise<ModalidadRow[]> {
   }));
 }
 
-export type EntidadRow = { id: string; nombre: string; estado: boolean | null; monitoreo: boolean };
+export type EntidadRow = {
+  id: string;
+  nombre: string;
+  estado: boolean | null;
+  nit: string | null;
+  dv: string | null;
+};
 
 export async function listEntidadesAdmin(): Promise<EntidadRow[]> {
   const rows = await apiFetch<ApiSchemas["EntidadResponse"][]>("/entidades");
-  return rows.map((r) => ({ id: r.id, nombre: r.name, estado: r.isActive, monitoreo: r.isMonitored }));
-}
-
-export type NitRow = {
-  id: string;
-  nit: string;
-  descripcion: string | null;
-  estado: boolean | null;
-};
-
-export async function listNitsAdmin(): Promise<NitRow[]> {
-  const rows = await apiFetch<ApiSchemas["NitResponse"][]>("/nits");
   return rows.map((r) => ({
     id: r.id,
-    nit: r.nit,
-    descripcion: r.description,
+    nombre: r.name,
     estado: r.isActive,
+    nit: r.nit ?? null,
+    dv: r.dv ?? null,
   }));
 }
 

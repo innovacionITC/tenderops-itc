@@ -9,7 +9,6 @@ import {
 import { ParametricaForm } from "../parametrica/parametrica-form";
 import { EntidadesTable } from "../entidades/entidades-table";
 import { ModalidadesTable } from "../modalidades/modalidades-table";
-import { NitsTable } from "../nits/nits-table";
 import { UnspscTable } from "../unspsc/unspsc-table";
 import { DepartamentosTable } from "../departamentos/departamentos-table";
 import { CiudadesTable } from "../ciudades/ciudades-table";
@@ -18,7 +17,6 @@ import type {
   CatalogItem,
   ModalidadRow,
   EntidadRow,
-  NitRow,
   DepartamentoRow,
   CiudadRow,
 } from "@/lib/parametrica";
@@ -31,13 +29,11 @@ interface ParametricasAccordionsProps {
     entidades: CatalogItem[];
     estadosSecop: CatalogItem[];
     unspscCodes: UnspscRow[];
-    nits: CatalogItem[];
     departamentos: CatalogItem[];
   };
   ciudadesSeleccionadas: CatalogItem[];
   entidadesAdmin: EntidadRow[];
   modalidadesAdmin: ModalidadRow[];
-  nitsAdmin: NitRow[];
   unspscAdmin: UnspscRow[];
   departamentosAdmin: DepartamentoRow[];
   ciudadesAdmin: CiudadRow[];
@@ -50,7 +46,6 @@ export function ParametricasAccordions({
   ciudadesSeleccionadas,
   entidadesAdmin,
   modalidadesAdmin,
-  nitsAdmin,
   unspscAdmin,
   departamentosAdmin,
   ciudadesAdmin,
@@ -80,13 +75,6 @@ export function ParametricasAccordions({
         <AccordionTrigger>Modalidades</AccordionTrigger>
         <AccordionContent>
           <ModalidadesTable rows={modalidadesAdmin} />
-        </AccordionContent>
-      </AccordionItem>
-
-      <AccordionItem value="nits">
-        <AccordionTrigger>NITs</AccordionTrigger>
-        <AccordionContent>
-          <NitsTable rows={nitsAdmin} />
         </AccordionContent>
       </AccordionItem>
 
