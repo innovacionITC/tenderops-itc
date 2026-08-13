@@ -21,6 +21,17 @@ export type UserRow = {
   organizaciones: UserOrganizacionRow[];
 };
 
+export type OrganizacionDisponible = {
+  id: string;
+  nombre: string;
+};
+
+export async function listOrganizacionesDisponibles(): Promise<OrganizacionDisponible[]> {
+  const rows = await apiFetch<{ id: string; name: string }[]>("/usuarios/organizaciones-disponibles");
+
+  return rows.map((r) => ({ id: r.id, nombre: r.name }));
+}
+
 export async function listUsers(): Promise<UserRow[]> {
   const rows = await apiFetch<ApiSchemas["UsuarioResponse"][]>("/usuarios");
 

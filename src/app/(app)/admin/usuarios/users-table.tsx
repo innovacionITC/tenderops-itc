@@ -3,16 +3,19 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ItcTable, type TableColumn } from "@/components/itc";
+import { Pencil } from "lucide-react";
+import { ItcModal, ItcTable, type TableColumn } from "@/components/itc";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { StatusBadge } from "@/components/layout/status-badge";
+import { RowActionButton } from "@/components/layout/row-action-button";
 import { formatDateTime } from "@/lib/format";
 import { roleLabels } from "@/lib/format";
 import type { AppRole } from "@/lib/auth/roles";
-import type { UserRow } from "@/lib/users";
-import { setUserStatus, updateUserRole } from "./actions";
+import type { OrganizacionDisponible, UserRow } from "@/lib/users";
+import { CatalogPicker } from "@/app/(app)/admin/parametrica/catalog-picker";
+import { setUserStatus, updateUserOrganizaciones, updateUserRole } from "./actions";
 
 const ROLE_OPTIONS = Object.keys(roleLabels) as AppRole[];
 
@@ -20,14 +23,19 @@ export function UsersTable({
   users,
   currentUserId,
   currentUserRole,
+  organizacionesDisponibles,
 }: {
   users: UserRow[];
   currentUserId: string;
   currentUserRole: AppRole | null;
+  organizacionesDisponibles: OrganizacionDisponible[];
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [deactivateTarget, setDeactivateTarget] = useState<UserRow | null>(null);
+  const [orgDialogUser, setOrgDialogUser] = useState<UserRow | null>(null);
+  const [selectedOrgIds, setSelectedOrgIds] = useState<Set<string>>(new Set());
 
   // Solo un superadmin puede otorgar el rol superadmin a otro usuario (la API
   // lo exige igual con un 403; esto solo evita ofrecer una opción condenada).
@@ -65,6 +73,45 @@ export function UsersTable({
     });
   };
 
+  const handleConfirmDeactivate = () => {
+    if (!deactivateTarget) return;
+    handleStatusChange(deactivateTarget.id, false);
+    setDeactivateTarget(null);
+  };
+
+  const openOrganizacionesDialog = (user: UserRow) => {
+    const availableIds = new Set(organizacionesDisponibles.map((o) => o.id));
+    setSelectedOrgIds(new Set(user.organizaciones.map((o) => o.id).filter((id) => availableIds.has(id))));
+    setOrgDialogUser(user);
+  };
+
+  const toggleOrgId = (id: string) => {
+    setSelectedOrgIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleSaveOrganizaciones = () => {
+    if (!orgDialogUser) return;
+    const userId = orgDialogUser.id;
+    setPendingId(userId);
+    startTransition(async () => {
+      try {
+        await updateUserOrganizaciones(userId, [...selectedOrgIds]);
+        toast.success("Organizaciones actualizadas");
+        setOrgDialogUser(null);
+        router.refresh();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "No se pudieron actualizar las organizaciones");
+      } finally {
+        setPendingId(null);
+      }
+    });
+  };
+
   const columns: TableColumn<UserRow>[] = [
     {
       key: "usuario",
@@ -79,18 +126,26 @@ export function UsersTable({
     {
       key: "organizaciones",
       title: "Organizaciones",
-      render: (u) =>
-        u.organizaciones.length === 0 ? (
-          <span className="text-xs text-muted-foreground">—</span>
-        ) : (
-          <div className="flex flex-wrap gap-1">
-            {u.organizaciones.map((org) => (
+      render: (u) => (
+        <div className="flex flex-wrap items-center gap-1">
+          {u.organizaciones.length === 0 ? (
+            <span className="text-xs text-muted-foreground">—</span>
+          ) : (
+            u.organizaciones.map((org) => (
               <StatusBadge key={org.id} tone={org.estado ? "info" : "muted"}>
                 {org.nombre}
               </StatusBadge>
-            ))}
-          </div>
-        ),
+            ))
+          )}
+          {organizacionesDisponibles.length > 0 && (
+            <RowActionButton
+              icon={<Pencil className="h-3.5 w-3.5" />}
+              title="Administrar organizaciones"
+              onClick={() => openOrganizacionesDialog(u)}
+            />
+          )}
+        </div>
+      ),
     },
     {
       key: "rol",
@@ -132,7 +187,13 @@ export function UsersTable({
             <Switch
               checked={u.status === "activo"}
               disabled={isSelf || rowPending}
-              onCheckedChange={(checked) => handleStatusChange(u.id, checked)}
+              onCheckedChange={(checked) => {
+                if (checked) {
+                  handleStatusChange(u.id, true);
+                } else {
+                  setDeactivateTarget(u);
+                }
+              }}
             />
             <StatusBadge tone={u.status === "activo" ? "success" : "muted"}>
               {u.status === "activo" ? "Activo" : "Inactivo"}
@@ -151,21 +212,62 @@ export function UsersTable({
     },
   ];
 
-  return users.length === 0 ? (
-    <div className="rounded-2xl border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">
-      Sin usuarios registrados.
-    </div>
-  ) : (
-    <ItcTable
-      data={users}
-      columns={columns}
-      rowKey={(u) => u.id}
-      showSearch
-      searchKeys={["fullName", "email"]}
-      searchPlaceholder="Buscar por palabra..."
-      striped
-      hoverable
-      stickyHeader
-    />
+  return (
+    <>
+      {users.length === 0 ? (
+        <div className="rounded-2xl border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">
+          Sin usuarios registrados.
+        </div>
+      ) : (
+        <ItcTable
+          data={users}
+          columns={columns}
+          rowKey={(u) => u.id}
+          showSearch
+          searchKeys={["fullName", "email"]}
+          searchPlaceholder="Buscar por palabra..."
+          pagination
+          pageSize={10}
+          pageSizeOptions={[10, 25, 50, 100]}
+          striped
+          hoverable
+          stickyHeader
+        />
+      )}
+
+      <ItcModal
+        open={deactivateTarget !== null}
+        onClose={() => setDeactivateTarget(null)}
+        onConfirm={handleConfirmDeactivate}
+        title="¿Inactivar usuario?"
+        content={
+          <p className="text-sm text-muted-foreground">
+            <span className="font-medium">{deactivateTarget?.fullName ?? deactivateTarget?.email}</span>{" "}
+            no podrá iniciar sesión hasta que se reactive su cuenta.
+          </p>
+        }
+        variant="confirm"
+        confirmText="Inactivar"
+        disabled={isPending}
+      />
+
+      <ItcModal
+        open={orgDialogUser !== null}
+        onClose={() => setOrgDialogUser(null)}
+        onConfirm={handleSaveOrganizaciones}
+        title="Administrar organizaciones"
+        content={
+          <CatalogPicker
+            title={orgDialogUser?.fullName ?? orgDialogUser?.email ?? ""}
+            items={organizacionesDisponibles.map((o) => ({ id: o.id, label: o.nombre }))}
+            selectedIds={selectedOrgIds}
+            onToggle={toggleOrgId}
+          />
+        }
+        variant="form"
+        confirmText="Guardar"
+        disabled={isPending}
+      />
+    </>
   );
 }

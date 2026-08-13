@@ -31,3 +31,17 @@ export async function setUserStatus(userId: string, active: boolean) {
   revalidatePath("/admin/usuarios");
   return { ok: true };
 }
+
+export async function updateUserOrganizaciones(userId: string, organizacionIds: string[]) {
+  await requireAuth(["administrador"]);
+  const id = z.uuid().parse(userId);
+  const orgIds = z.array(z.uuid()).parse(organizacionIds);
+
+  await apiFetch<unknown>(`/usuarios/${id}/organizaciones`, {
+    method: "PUT",
+    body: { organizacionIds: orgIds },
+  });
+
+  revalidatePath("/admin/usuarios");
+  return { ok: true };
+}
