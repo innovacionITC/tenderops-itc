@@ -8,6 +8,7 @@ import { ItcTable, type TableColumn, ItcButton, ItcInput, ItcModal } from "@/com
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/layout/status-badge";
+import { RowActionButton } from "@/components/layout/row-action-button";
 import { formatDateTime } from "@/lib/format";
 import { useFieldErrors, zodIssuesToFieldErrors } from "@/lib/form-errors";
 import type { CredentialRow } from "@/lib/credentials";
@@ -131,12 +132,16 @@ export function CredentialsTable({ rows }: { rows: CredentialRow[] }) {
       align: "right",
       render: (r) => (
         <div className="flex justify-end gap-1">
-          <ItcButton onClick={() => openEdit(r)} className="p-1.5 hover:bg-muted rounded">
-            <Pencil className="h-3.5 w-3.5" />
-          </ItcButton>
-          <ItcButton onClick={() => setDeleteTarget(r)} className="p-1.5 hover:bg-muted rounded">
-            <Trash2 className="h-3.5 w-3.5" />
-          </ItcButton>
+          <RowActionButton
+            icon={<Pencil className="h-3.5 w-3.5" />}
+            title="Editar"
+            onClick={() => openEdit(r)}
+          />
+          <RowActionButton
+            icon={<Trash2 className="h-3.5 w-3.5" />}
+            title="Eliminar"
+            onClick={() => setDeleteTarget(r)}
+          />
         </div>
       ),
     },

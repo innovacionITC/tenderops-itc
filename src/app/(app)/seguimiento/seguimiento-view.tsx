@@ -1,8 +1,9 @@
 "use client";
 
 import { ExternalLink } from "lucide-react";
-import { ItcTable, type TableColumn, ItcButton } from "@/components/itc";
+import { ItcTable, type TableColumn } from "@/components/itc";
 import { StatusBadge } from "@/components/layout/status-badge";
+import { RowActionButton } from "@/components/layout/row-action-button";
 import { formatCOP, formatDate } from "@/lib/format";
 import {
   datasetLabels,
@@ -68,15 +69,11 @@ export function SeguimientoView({
       align: "right",
       render: (r) =>
         r.url ? (
-          <a
-            href={r.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex rounded p-1.5 hover:bg-muted"
+          <RowActionButton
+            icon={<ExternalLink className="h-3.5 w-3.5" />}
             title="Abrir en SECOP"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-          </a>
+            href={r.url}
+          />
         ) : null,
     },
   ];
