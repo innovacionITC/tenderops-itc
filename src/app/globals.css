@@ -200,9 +200,18 @@ html:root {
     padding-block: 0.4rem;
   }
 }
+/* La librería solo pone fondo a los botones de grupo expandidos vía su propio
+   dark-theme hardcodeado (#374151), que ni sigue nuestros tokens ni se aplica
+   de forma pareja a todos los grupos — de ahí fondo fijo aquí, igual para
+   todos e independiente del estado expanded. */
+.app-sidebar-menu .itc-menu-button[aria-expanded] {
+  background-color: var(--sidebar-accent);
+  border-radius: var(--radius-md);
+  color: var(--sidebar-foreground);
+}
 .app-sidebar-menu .itc-menu-button[aria-expanded]:hover {
-  background-color: transparent;
-  color: color-mix(in oklch, var(--sidebar-foreground) 85%, transparent);
+  background-color: var(--sidebar-accent);
+  color: var(--sidebar-foreground);
 }
 .app-sidebar-menu .itc-menu-button[aria-expanded] .itc-menu-label {
   font-size: 0.6875rem;
@@ -212,6 +221,14 @@ html:root {
 }
 .app-sidebar-menu .itc-menu-button[aria-expanded] .itc-menu-icon {
   opacity: 0.5;
+}
+/* Opciones (ítems hoja): la librería solo resalta al hacer hover con el mismo
+   gris hardcodeado #374151 — se reemplaza por el accent del sidebar para que
+   combine con el resto, sin pisar el ítem activo (que ya tiene su propio
+   fondo azul fijo más abajo). */
+.app-sidebar-menu .itc-menu-button:not([aria-expanded]):not(:has(svg[data-nav-active])):hover {
+  background-color: var(--sidebar-accent);
+  color: var(--sidebar-foreground);
 }
 /* Ítem activo: ver data-nav-active en app-shell.tsx */
 .app-sidebar-menu .itc-menu-button:has(svg[data-nav-active]) {
