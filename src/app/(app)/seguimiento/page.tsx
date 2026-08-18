@@ -1,12 +1,12 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { requireAuth } from "@/lib/auth/session";
-import { listProcesosSecop } from "@/lib/secop";
+import { listProcesosSeguimiento } from "@/lib/seguimiento";
 import { SeguimientoView } from "./seguimiento-view";
 
 export default async function SeguimientoPage() {
-  await requireAuth();
+  await requireAuth(["administrador", "director", "gestor"]);
 
-  const procesos = await listProcesosSecop({ soloPromovidos: true });
+  const procesos = await listProcesosSeguimiento();
 
   return (
     <>
