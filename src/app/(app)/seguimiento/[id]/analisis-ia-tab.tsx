@@ -2,6 +2,7 @@
 
 import { useTransition, useState } from "react";
 import { toast } from "sonner";
+import { ItcButton } from "@/components/itc";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { ejecutarAnalisisIa } from "./analisis-ia-actions";
 
@@ -52,13 +53,9 @@ export function AnalisisIaTab({
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <button
-          onClick={handleEjecutar}
-          disabled={isPending}
-          className="cursor-pointer rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
-        >
+        <ItcButton onClick={handleEjecutar} disabled={isPending}>
           {isPending ? "Analizando…" : "Ejecutar análisis"}
-        </button>
+        </ItcButton>
       </div>
 
       {current ? (

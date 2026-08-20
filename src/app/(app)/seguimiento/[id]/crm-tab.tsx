@@ -4,6 +4,9 @@ import { useTransition, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { ItcButton, ItcInput } from "@/components/itc";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { type ProcesoSeguimientoRow } from "@/lib/seguimiento-shared";
 import { crearOportunidadCrm } from "./crm-actions";
@@ -74,37 +77,27 @@ export function CrmTab({ proceso }: { proceso: ProcesoSeguimientoRow }) {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-muted-foreground">
-          Tema
-        </label>
-        <input
-          type="text"
+        <Label>Tema</Label>
+        <ItcInput
           value={tema}
           onChange={(e) => setTema(e.target.value)}
           maxLength={300}
-          className="h-8 w-full rounded-lg border bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring"
         />
       </div>
 
       <div className="space-y-2">
-        <label className="block text-xs font-medium text-muted-foreground">
-          Descripción (objeto del proceso)
-        </label>
-        <textarea
+        <Label>Descripción (objeto del proceso)</Label>
+        <Textarea
           readOnly
           value={proceso.objeto ?? ""}
           placeholder="El proceso no tiene objeto registrado"
-          className="min-h-[80px] w-full rounded-lg border bg-muted/50 px-2.5 py-1.5 text-sm outline-none resize-none"
+          className="min-h-[80px] resize-none bg-muted/50"
         />
       </div>
 
-      <button
-        onClick={handleCrear}
-        disabled={isPending || tema.trim().length === 0}
-        className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-      >
+      <ItcButton onClick={handleCrear} disabled={isPending || tema.trim().length === 0}>
         {isPending ? "Creando…" : "Crear oportunidad"}
-      </button>
+      </ItcButton>
     </div>
   );
 }

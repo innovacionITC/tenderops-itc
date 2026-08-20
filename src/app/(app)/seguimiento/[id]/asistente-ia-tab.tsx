@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "sonner";
+import { ItcButton, ItcInput } from "@/components/itc";
 import { iniciarSesionAsistenteIa, refrescarSesionAsistenteIa } from "./asistente-ia-actions";
 
 type Sesion = {
@@ -184,13 +185,9 @@ export function AsistenteIaTab({
         <p className="text-sm text-muted-foreground">
           Inicia una sesión para chatear con el asistente IA.
         </p>
-        <button
-          onClick={handleStart}
-          disabled={isStarting}
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        >
+        <ItcButton onClick={handleStart} disabled={isStarting}>
           {isStarting ? "Iniciando…" : "Iniciar sesión"}
-        </button>
+        </ItcButton>
       </div>
     );
   }
@@ -223,21 +220,16 @@ export function AsistenteIaTab({
         <div ref={messagesEndRef} />
       </div>
       <div className="flex gap-2 border-t pt-2">
-        <input
-          type="text"
+        <ItcInput
+          className="flex-1"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
           placeholder="Escribe un mensaje…"
-          className="flex-1 rounded-lg border bg-transparent px-3 py-2 text-sm outline-none focus-visible:border-ring"
         />
-        <button
-          onClick={handleSend}
-          disabled={isSending || !input.trim()}
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-        >
+        <ItcButton onClick={handleSend} disabled={isSending || !input.trim()}>
           Enviar
-        </button>
+        </ItcButton>
       </div>
     </div>
   );

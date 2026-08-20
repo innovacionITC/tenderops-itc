@@ -27,6 +27,7 @@ export async function crearTarea(input: {
     },
   });
 
+  revalidatePath(`/seguimiento/${input.processId}`);
   revalidatePath("/seguimiento");
   revalidatePath("/calendario");
   return { ok: true as const };
