@@ -10,7 +10,7 @@ export type ProcesoSeguimientoRow = {
   valor: number | null;
   fechaPresentacionOferta: string | null;
   url: string | null;
-  estado: "en_seguimiento" | "cerrado";
+  estado: "en_seguimiento" | "presentado" | "cerrado";
   resultado: string | null;
   responsableUserId: string | null;
   createdAt: string;
@@ -18,13 +18,30 @@ export type ProcesoSeguimientoRow = {
   crmOpportunityId: string | null;
   crmOpportunityUrl: string | null;
   crmCreatedAt: string | null;
+  motivoDescarte: string | null;
+  valorAdjudicado: number | null;
+  fechaAdjudicacion: string | null;
 };
 
 export const RESULTADO_OPCIONES = [
   { value: "presentado", label: "Presentado" },
   { value: "no_adjudicado", label: "No adjudicado" },
   { value: "descartado", label: "Descartado" },
+  { value: "adjudicado", label: "Adjudicado" },
 ] as const;
+
+export function opcionesMarcarDisponibles(estado: string, resultado: string | null) {
+  const internalStatus = resultado ?? (estado === "en_seguimiento" ? "en_seguimiento" : estado);
+  if (internalStatus === "en_seguimiento") {
+    return RESULTADO_OPCIONES.filter((o) => o.value === "presentado" || o.value === "descartado");
+  }
+  if (internalStatus === "presentado") {
+    return RESULTADO_OPCIONES.filter((o) =>
+      o.value === "adjudicado" || o.value === "no_adjudicado" || o.value === "descartado",
+    );
+  }
+  return [];
+}
 
 export const TAREA_TITULO_OPCIONES = [
   "Preparar documentos habilitantes",

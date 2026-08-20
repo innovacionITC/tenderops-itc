@@ -22,6 +22,9 @@ type ProcesoSeguimientoResponse = {
   crmOpportunityId: string | null;
   crmOpportunityUrl: string | null;
   crmCreatedAt: string | null;
+  motivoDescarte: string | null;
+  valorAdjudicado: number | string | null;
+  fechaAdjudicacion: string | null;
 };
 
 function toNumber(v: number | string | null | undefined): number | null {
@@ -51,6 +54,9 @@ function toProcesoSeguimientoRow(r: ProcesoSeguimientoResponse): ProcesoSeguimie
     crmOpportunityId: r.crmOpportunityId ?? null,
     crmOpportunityUrl: r.crmOpportunityUrl ?? null,
     crmCreatedAt: r.crmCreatedAt ?? null,
+    motivoDescarte: r.motivoDescarte ?? null,
+    valorAdjudicado: toNumber(r.valorAdjudicado),
+    fechaAdjudicacion: r.fechaAdjudicacion ?? null,
   };
 }
 

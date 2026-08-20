@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useTransition, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-import { ItcTabs, ItcModal } from "@/components/itc";
+import { ItcButton, ItcTabs, ItcModal } from "@/components/itc";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { type ProcesoSeguimientoRow } from "@/lib/seguimiento-shared";
 import type { TaskRow } from "@/lib/tasks";
@@ -16,6 +16,20 @@ import { AsistenteIaTab } from "./asistente-ia-tab";
 import { CrmTab } from "./crm-tab";
 
 type TabKey = "analisis-ia" | "asistente-ia" | "matriz-cumplimiento" | "tareas" | "crm";
+
+// "presentado" no es un cierre: el proceso sigue activo mientras se conoce el
+// resultado real, por eso tiene su propio estado en vez de cerrado/en_seguimiento.
+const ESTADO_LABEL: Record<ProcesoSeguimientoRow["estado"], string> = {
+  en_seguimiento: "En seguimiento",
+  presentado: "Presentado",
+  cerrado: "Cerrado",
+};
+
+const ESTADO_TONE: Record<ProcesoSeguimientoRow["estado"], "info" | "success" | "muted"> = {
+  en_seguimiento: "info",
+  presentado: "success",
+  cerrado: "muted",
+};
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "analisis-ia", label: "Análisis IA" },
@@ -84,13 +98,17 @@ export function WorkspaceView({
             {proceso.titulo ?? proceso.secopId ?? "Proceso sin título"}
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <StatusBadge tone={proceso.estado === "en_seguimiento" ? "info" : "muted"}>
-              {proceso.estado === "en_seguimiento" ? "En seguimiento" : "Cerrado"}
-            </StatusBadge>
+            <StatusBadge tone={ESTADO_TONE[proceso.estado]}>{ESTADO_LABEL[proceso.estado]}</StatusBadge>
             {proceso.resultado && (
               <StatusBadge tone="success">{proceso.resultado}</StatusBadge>
             )}
           </div>
+          {proceso.resultado === "descartado" && proceso.motivoDescarte && (
+            <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">Motivo del descarte:</span>{" "}
+              {proceso.motivoDescarte}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
           {proceso.url && (
@@ -104,13 +122,13 @@ export function WorkspaceView({
               Abrir en SECOP
             </a>
           )}
-          <button
+          <ItcButton
+            variant="secondary"
             onClick={() => setCerrarTarget(true)}
             disabled={proceso.estado === "cerrado"}
-            className="shrink-0 cursor-pointer whitespace-nowrap rounded-lg border px-3 py-1.5 text-sm font-medium hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
           >
             Cerrar seguimiento
-          </button>
+          </ItcButton>
         </div>
       </div>
 
