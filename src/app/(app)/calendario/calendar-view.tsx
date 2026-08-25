@@ -1,91 +1,132 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check } from "lucide-react";
 import { toast } from "sonner";
+import { Calendar, Views, dateFnsLocalizer, type View } from "react-big-calendar";
+import { es } from "date-fns/locale/es";
+import { startOfWeek, getDay, parse, format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { formatDate } from "@/lib/format";
-import type { CalendarItem } from "@/lib/calendar";
+import type { Actividad } from "@/lib/calendar";
 import type { TaskRow } from "@/lib/tasks";
 import { completeTask } from "./actions";
+import { ActividadDetalleModal } from "./actividad-detalle-modal";
 
-const MONTHS = [
-  "Enero",
-  "Febrero",
-  "Marzo",
-  "Abril",
-  "Mayo",
-  "Junio",
-  "Julio",
-  "Agosto",
-  "Septiembre",
-  "Octubre",
-  "Noviembre",
-  "Diciembre",
-];
-const DAY_LABELS = ["L", "M", "M", "J", "V", "S", "D"];
+import "react-big-calendar/lib/css/react-big-calendar.css";
+
+const locales = { es };
+
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek: () => startOfWeek(new Date(), { weekStartsOn: 1 }),
+  getDay,
+  locales,
+});
+
+type CalendarEvent = {
+  actividad: Actividad;
+  start: Date;
+  end: Date;
+  title: string;
+};
+
+const CALENDARIO_MENSAJE_VACIO =
+  "No existen actividades programadas para el período seleccionado.";
+
+function toIsoDate(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
 
 export function CalendarView({
-  events,
+  actividades,
   tasks,
   currentUserId,
   canManageAll,
+  initialView,
+  initialDate,
+  searchParams,
 }: {
-  events: CalendarItem[];
+  actividades: Actividad[];
   tasks: TaskRow[];
   currentUserId: string;
   canManageAll: boolean;
+  initialView: View;
+  initialDate: Date;
+  searchParams: URLSearchParams;
 }) {
   const router = useRouter();
+  const pathname = typeof window !== "undefined" ? window.location.pathname : "/calendario";
   const [isPending, startTransition] = useTransition();
   const [closingId, setClosingId] = useState<string | null>(null);
+  const [selectedActividad, setSelectedActividad] = useState<Actividad | null>(null);
+  const [currentView, setCurrentView] = useState<View>(initialView);
+  const [currentDate, setCurrentDate] = useState(initialDate);
 
-  const today = new Date();
-  const [cursor, setCursor] = useState({ year: today.getFullYear(), month: today.getMonth() });
-
-  const eventsByDay = useMemo(() => {
-    const m = new Map<string, CalendarItem[]>();
-    for (const ev of events) {
-      const d = new Date(ev.startDate);
-      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-      if (!m.has(key)) m.set(key, []);
-      m.get(key)!.push(ev);
-    }
-    return m;
-  }, [events]);
-
-  const grid = useMemo(() => {
-    const first = new Date(cursor.year, cursor.month, 1);
-    const startOffset = (first.getDay() + 6) % 7; // Monday = 0
-    const daysInMonth = new Date(cursor.year, cursor.month + 1, 0).getDate();
-    const cells: Array<{ date: Date | null; key: string }> = [];
-    for (let i = 0; i < startOffset; i++) cells.push({ date: null, key: `pad-${i}` });
-    for (let d = 1; d <= daysInMonth; d++) {
-      cells.push({
-        date: new Date(cursor.year, cursor.month, d),
-        key: `${cursor.year}-${cursor.month}-${d}`,
+  const navigateTo = useCallback(
+    (view: View, date: Date) => {
+      const qs = new URLSearchParams(searchParams.toString());
+      qs.set("vista", view);
+      qs.set("fecha", toIsoDate(date));
+      startTransition(() => {
+        router.push(`${pathname}?${qs}`);
       });
-    }
-    while (cells.length % 7 !== 0) cells.push({ date: null, key: `tail-${cells.length}` });
-    return cells;
-  }, [cursor]);
+    },
+    [router, pathname, searchParams],
+  );
 
-  const move = (delta: number) => {
-    setCursor((c) => {
-      const m = c.month + delta;
-      const year = c.year + Math.floor(m / 12);
-      const month = ((m % 12) + 12) % 12;
-      return { year, month };
-    });
-  };
+  const handleNavigate = useCallback(
+    (date: Date) => {
+      setCurrentDate(date);
+      navigateTo(currentView, date);
+    },
+    [currentView, navigateTo],
+  );
 
-  const isToday = (d: Date) =>
-    d.getFullYear() === today.getFullYear() &&
-    d.getMonth() === today.getMonth() &&
-    d.getDate() === today.getDate();
+  const handleViewChange = useCallback(
+    (view: View) => {
+      setCurrentView(view);
+      navigateTo(view, currentDate);
+    },
+    [currentDate, navigateTo],
+  );
+
+  const calendarEvents: CalendarEvent[] = useMemo(
+    () =>
+      actividades.map((a) => ({
+        actividad: a,
+        start: new Date(a.startDate),
+        end: a.endDate ? new Date(a.endDate) : new Date(a.startDate),
+        title: a.title,
+      })),
+    [actividades],
+  );
+
+  const eventPropGetter = useCallback(
+    (event: CalendarEvent) => {
+      const { estado, source } = event.actividad;
+      let className = "";
+      if (estado === "vencida") className = "rbc-event-vencida";
+      else if (estado === "proxima_a_vencer") className = "rbc-event-proxima";
+      else if (estado === "completada") className = "rbc-event-completada";
+      else if (source === "secop_closing") className = "rbc-event-secop";
+      else if (source === "task") className = "rbc-event-tarea";
+      else className = "rbc-event-evento";
+      return { className };
+    },
+    [],
+  );
+
+  const handleSelectEvent = useCallback((event: CalendarEvent) => {
+    setSelectedActividad(event.actividad);
+  }, []);
 
   const handleComplete = (taskId: string) => {
     setClosingId(taskId);
@@ -102,84 +143,41 @@ export function CalendarView({
     });
   };
 
+  const messages = {
+    allDay: "Todo el día",
+    previous: "Anterior",
+    next: "Siguiente",
+    today: "Hoy",
+    month: "Mes",
+    week: "Semana",
+    day: "Día",
+    agenda: "Agenda",
+    date: "Fecha",
+    time: "Hora",
+    event: "Actividad",
+    noEventsInRange: CALENDARIO_MENSAJE_VACIO,
+    showMore: (total: number) => `+${total} más`,
+  };
+
   return (
     <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:grid-cols-[1fr_360px] lg:p-8">
       <div className="rounded-2xl border bg-card p-4 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="text-lg font-semibold">
-            {MONTHS[cursor.month]} {cursor.year}
-          </div>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => move(-1)}
-              className="rounded p-1.5 hover:bg-muted/50"
-              aria-label="Mes anterior"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </button>
-            <button
-              onClick={() => setCursor({ year: today.getFullYear(), month: today.getMonth() })}
-              className="rounded px-2 py-1 text-xs hover:bg-muted/50"
-            >
-              Hoy
-            </button>
-            <button
-              onClick={() => move(1)}
-              className="rounded p-1.5 hover:bg-muted/50"
-              aria-label="Mes siguiente"
-            >
-              <ChevronRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-
-        <div className="mb-1 grid grid-cols-7 gap-1 text-[11px] font-medium text-muted-foreground">
-          {DAY_LABELS.map((d, i) => (
-            <div key={i} className="py-1 text-center">
-              {d}
-            </div>
-          ))}
-        </div>
-        <div className="grid grid-cols-7 gap-1">
-          {grid.map((cell) => {
-            if (!cell.date)
-              return <div key={cell.key} className="min-h-[88px] rounded-md bg-muted/20" />;
-            const key = `${cell.date.getFullYear()}-${cell.date.getMonth()}-${cell.date.getDate()}`;
-            const dayEvents = eventsByDay.get(key) ?? [];
-            return (
-              <div
-                key={cell.key}
-                className={`flex min-h-[88px] flex-col gap-1 rounded-md border p-1.5 ${isToday(cell.date) ? "ring-2 ring-primary" : ""}`}
-              >
-                <div className="text-[11px] font-medium text-muted-foreground">
-                  {cell.date.getDate()}
-                </div>
-                <div className="flex flex-col gap-0.5 overflow-hidden">
-                  {dayEvents.slice(0, 3).map((ev) => (
-                    <div
-                      key={ev.id}
-                      title={ev.title}
-                      className={`truncate rounded px-1 py-0.5 text-[10px] ${
-                        ev.source === "secop_closing"
-                          ? "bg-destructive/15 text-destructive"
-                          : ev.source === "task"
-                            ? "bg-amber-500/20 text-amber-700 dark:text-amber-400"
-                            : "bg-sky-500/15 text-sky-600 dark:text-sky-400"
-                      }`}
-                    >
-                      {ev.title}
-                    </div>
-                  ))}
-                  {dayEvents.length > 3 && (
-                    <div className="text-[10px] text-muted-foreground">
-                      +{dayEvents.length - 3} más
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <Calendar<CalendarEvent>
+          localizer={localizer}
+          events={calendarEvents}
+          startAccessor="start"
+          endAccessor="end"
+          view={currentView}
+          onView={handleViewChange}
+          date={currentDate}
+          onNavigate={handleNavigate}
+          eventPropGetter={eventPropGetter}
+          onSelectEvent={handleSelectEvent}
+          messages={messages}
+          views={[Views.MONTH, Views.WEEK, Views.DAY]}
+          culture="es"
+          style={{ height: "calc(100vh - 14rem)" }}
+        />
         <div className="mt-3 flex items-center gap-3 text-[11px] text-muted-foreground">
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-sm bg-destructive/60" /> Cierre SECOP
@@ -189,6 +187,9 @@ export function CalendarView({
           </span>
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-sm bg-sky-500/60" /> Evento
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-sm bg-emerald-500/60" /> Completada
           </span>
         </div>
       </div>
@@ -221,22 +222,18 @@ export function CalendarView({
                     <div className="flex flex-shrink-0 flex-col items-end gap-1">
                       <StatusBadge
                         tone={
-                          t.priority === "alta"
-                            ? "danger"
-                            : t.priority === "media"
-                              ? "warning"
-                              : "muted"
+                          t.priority === "alta" ? "danger"
+                            : t.priority === "media" ? "warning"
+                            : "muted"
                         }
                       >
                         {t.priority ?? "—"}
                       </StatusBadge>
                       <StatusBadge
                         tone={
-                          t.status === "completada"
-                            ? "success"
-                            : t.status === "vencida"
-                              ? "danger"
-                              : "info"
+                          t.status === "completada" ? "success"
+                            : t.status === "vencida" ? "danger"
+                            : "info"
                         }
                       >
                         {t.status ?? "—"}
@@ -267,6 +264,13 @@ export function CalendarView({
           )}
         </div>
       </aside>
+
+      {selectedActividad && (
+        <ActividadDetalleModal
+          actividad={selectedActividad}
+          onClose={() => setSelectedActividad(null)}
+        />
+      )}
     </div>
   );
 }
