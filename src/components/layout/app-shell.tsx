@@ -135,7 +135,7 @@ export function AppShell({
             </div>
             <button
               onClick={handleLogout}
-              className="text-muted-foreground transition-colors hover:text-destructive"
+              className="cursor-pointer text-muted-foreground transition-colors hover:text-destructive"
               title="Cerrar sesión"
             >
               <LogOut className="h-4 w-4" />

@@ -3,8 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { Building2, Lock, Mail } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ItcButton, ItcInput } from "@/components/itc";
 import { Label } from "@/components/ui/label";
 import { login, signInWithAzure, type LoginState } from "./actions";
 
@@ -30,32 +29,26 @@ export function LoginForm({ initialError }: { initialError?: string }) {
       <form action={formAction} className="space-y-4">
         <div className="space-y-1.5">
           <Label htmlFor="email">Correo</Label>
-          <div className="relative">
-            <Mail className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              defaultValue={state?.email}
-              className="pl-9"
-            />
-          </div>
+          <ItcInput
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            defaultValue={state?.email}
+            icon={<Mail className="h-4 w-4" />}
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="password">Contraseña</Label>
-          <div className="relative">
-            <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              className="pl-9"
-            />
-          </div>
+          <ItcInput
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+            icon={<Lock className="h-4 w-4" />}
+          />
         </div>
 
         {state?.error && (
@@ -73,18 +66,18 @@ export function LoginForm({ initialError }: { initialError?: string }) {
 function AzureButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" variant="outline" className="w-full" disabled={pending}>
+    <ItcButton type="submit" variant="secondary" className="w-full" disabled={pending}>
       <Building2 className="h-4 w-4" />
       {pending ? "Conectando con Microsoft..." : "Continuar con Microsoft Entra ID"}
-    </Button>
+    </ItcButton>
   );
 }
 
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" className="w-full" disabled={pending}>
+    <ItcButton type="submit" className="w-full" disabled={pending}>
       {pending ? "Ingresando..." : "Ingresar"}
-    </Button>
+    </ItcButton>
   );
 }
