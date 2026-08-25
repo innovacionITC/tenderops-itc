@@ -48,7 +48,6 @@ export const menuGroups: { title: string; items: MenuItem[] }[] = [
         icon: ShieldCheck,
         label: "Auditoría",
         privilegedOnly: true,
-        comingSoon: true,
       },
       {
         href: "/admin",
