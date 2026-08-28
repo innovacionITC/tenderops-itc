@@ -166,6 +166,21 @@ export async function listDepartamentosAdmin(): Promise<DepartamentoRow[]> {
   }));
 }
 
+export type SuborganizacionRow = {
+  id: string;
+  nombre: string;
+  estado: boolean | null;
+};
+
+export async function listSuborganizacionesAdmin(): Promise<SuborganizacionRow[]> {
+  const rows = await apiFetch<{ id: string; name: string; isActive: boolean }[]>("/suborganizaciones");
+  return rows.map((r) => ({
+    id: r.id,
+    nombre: r.name,
+    estado: r.isActive,
+  }));
+}
+
 export type CiudadRow = {
   id: string;
   nombre: string;

@@ -9,6 +9,7 @@ import {
   listEntidades,
   listEntidadesAdmin,
   listEstadosSecop,
+  listSuborganizacionesAdmin,
   listModalidades,
   listModalidadesAdmin,
 } from "@/lib/parametrica";
@@ -26,6 +27,7 @@ export default async function ParametricasPage() {
     unspscCodes,
     departamentos,
     entidadesAdmin,
+    suborganizacionesAdmin,
     modalidadesAdmin,
     unspscAdmin,
     departamentosAdmin,
@@ -38,6 +40,7 @@ export default async function ParametricasPage() {
     listUnspscCodes(),
     listDepartamentos(),
     listEntidadesAdmin(),
+    listSuborganizacionesAdmin(),
     listModalidadesAdmin(),
     listUnspscCodes(),
     listDepartamentosAdmin(),
@@ -58,6 +61,7 @@ export default async function ParametricasPage() {
           catalogs={{ modalidades, entidades, estadosSecop, unspscCodes, departamentos }}
           ciudadesSeleccionadas={ciudadesSeleccionadas}
           entidadesAdmin={entidadesAdmin}
+          suborganizacionesAdmin={suborganizacionesAdmin}
           modalidadesAdmin={modalidadesAdmin}
           unspscAdmin={unspscAdmin}
           departamentosAdmin={departamentosAdmin}

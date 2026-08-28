@@ -12,11 +12,13 @@ import { ModalidadesTable } from "../modalidades/modalidades-table";
 import { UnspscTable } from "../unspsc/unspsc-table";
 import { DepartamentosTable } from "../departamentos/departamentos-table";
 import { CiudadesTable } from "../ciudades/ciudades-table";
+import { SuborganizacionesTable } from "../suborganizaciones/suborganizaciones-table";
 import type {
   ParametricaConfig,
   CatalogItem,
   ModalidadRow,
   EntidadRow,
+  SuborganizacionRow,
   DepartamentoRow,
   CiudadRow,
 } from "@/lib/parametrica";
@@ -33,6 +35,7 @@ interface ParametricasAccordionsProps {
   };
   ciudadesSeleccionadas: CatalogItem[];
   entidadesAdmin: EntidadRow[];
+  suborganizacionesAdmin: SuborganizacionRow[];
   modalidadesAdmin: ModalidadRow[];
   unspscAdmin: UnspscRow[];
   departamentosAdmin: DepartamentoRow[];
@@ -45,6 +48,7 @@ export function ParametricasAccordions({
   catalogs,
   ciudadesSeleccionadas,
   entidadesAdmin,
+  suborganizacionesAdmin,
   modalidadesAdmin,
   unspscAdmin,
   departamentosAdmin,
@@ -61,6 +65,13 @@ export function ParametricasAccordions({
             catalogs={catalogs}
             ciudadesSeleccionadas={ciudadesSeleccionadas}
           />
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="suborganizaciones">
+        <AccordionTrigger>Suborganizaciones</AccordionTrigger>
+        <AccordionContent>
+          <SuborganizacionesTable rows={suborganizacionesAdmin} />
         </AccordionContent>
       </AccordionItem>
 
