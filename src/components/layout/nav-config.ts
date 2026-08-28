@@ -9,7 +9,7 @@ import {
   TrendingUp,
   type LucideIcon,
 } from "lucide-react";
-import { canAdmin, canApprove, type AppRole } from "@/lib/auth/roles";
+import { canAdmin, canApprove, canConsult, type AppRole } from "@/lib/auth/roles";
 
 export type MenuItem = {
   href: string;
@@ -17,6 +17,7 @@ export type MenuItem = {
   label: string;
   adminOnly?: boolean;
   privilegedOnly?: boolean; // admin + director
+  consultOnly?: boolean; // admin + director + gestor + consultor (excluye "lectura")
   comingSoon?: boolean; // not yet migrated from tenderops-itc
 };
 
@@ -33,7 +34,7 @@ export const menuGroups: { title: string; items: MenuItem[] }[] = [
     title: "Preparación",
     items: [
       { href: "/plantillas", icon: FileStack, label: "Plantillas" },
-      { href: "/indicadores", icon: TrendingUp, label: "Indicadores", comingSoon: true },
+      { href: "/indicadores", icon: TrendingUp, label: "Indicadores", consultOnly: true },
     ],
   },
   {
@@ -62,5 +63,6 @@ export const menuGroups: { title: string; items: MenuItem[] }[] = [
 export function isMenuItemVisible(item: MenuItem, role: AppRole | null) {
   if (item.adminOnly) return canAdmin(role);
   if (item.privilegedOnly) return canApprove(role);
+  if (item.consultOnly) return canConsult(role);
   return true;
 }

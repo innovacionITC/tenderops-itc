@@ -31,3 +31,7 @@ export function canApprove(role: AppRole | null) {
 export function canAdmin(role: AppRole | null) {
   return hasAnyRole(role, ["administrador"]);
 }
+
+export function canConsult(role: AppRole | null) {
+  return hasAnyRole(role, ["administrador", "director", "gestor", "consultor"]);
+}
