@@ -14,6 +14,7 @@ import { AnalisisIaTab } from "./analisis-ia-tab";
 import { MatrizCumplimientoTab } from "./matriz-cumplimiento-tab";
 import { AsistenteIaTab } from "./asistente-ia-tab";
 import { CrmTab } from "./crm-tab";
+import { type OportunidadDocumentoRow } from "./crm-actions";
 
 type TabKey = "analisis-ia" | "asistente-ia" | "matriz-cumplimiento" | "tareas" | "crm";
 
@@ -64,12 +65,14 @@ export function WorkspaceView({
   tareas,
   usuariosAsignables,
   analisisIa,
+  documentosCrm,
   directLineBaseUrl,
 }: {
   proceso: ProcesoSeguimientoRow;
   tareas: TaskRow[];
   usuariosAsignables: { id: string; name: string }[];
   analisisIa: AnalisisIa | null;
+  documentosCrm: OportunidadDocumentoRow[];
   directLineBaseUrl: string;
 }) {
   const router = useRouter();
@@ -161,7 +164,7 @@ export function WorkspaceView({
                 />
               )}
               {t.key === "crm" && (
-                <CrmTab proceso={proceso} />
+                <CrmTab proceso={proceso} documentosCrm={documentosCrm} />
               )}
             </div>
           ),

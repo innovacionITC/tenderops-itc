@@ -10,6 +10,16 @@ type CrmOportunidadResponse = {
   opportunityUrl: string | null;
 };
 
+export type OportunidadDocumentoRow = {
+  documentoId: string;
+  nombreArchivo: string;
+  extension: string;
+  tamannoBytes: number;
+  estado: "pendiente" | "descargado" | "error";
+  errorMensaje: string | null;
+  creadoEn: string;
+};
+
 export async function crearOportunidadCrm(procesoId: string, tema: string) {
   await requireAuth(["administrador", "director", "gestor"]);
   const id = z.uuid().parse(procesoId);
@@ -25,4 +35,18 @@ export async function crearOportunidadCrm(procesoId: string, tema: string) {
 
   revalidatePath("/seguimiento/" + id);
   return result;
+}
+
+export async function listDocumentosCrm(procesoId: string) {
+  await requireAuth(["administrador", "director", "gestor"]);
+  const id = z.uuid().parse(procesoId);
+
+  return apiFetch<OportunidadDocumentoRow[]>(`/procesos-seguimiento/${id}/crm/documentos`);
+}
+
+export async function reintentarDescargaDocumentosCrm(procesoId: string) {
+  await requireAuth(["administrador", "director", "gestor"]);
+  const id = z.uuid().parse(procesoId);
+  await apiFetch<unknown>(`/procesos-seguimiento/${id}/crm/documentos/reintentar`, { method: "POST" });
+  return { ok: true as const };
 }
