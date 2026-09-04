@@ -198,8 +198,11 @@ export async function apiFetch<T>(path: string, options: ApiFetchOptions = {}): 
     throw error;
   }
 
-  if (res.status === 204) return undefined as T;
-  return (await res.json()) as T;
+  // No solo 204: `Accepted()` del lado .NET (ej. reintentar sincronización de
+  // documentos) responde 202 sin body, y `res.json()` truena con
+  // "Unexpected end of JSON input" ante un body vacío en cualquier 2xx.
+  const text = await res.text();
+  return (text ? JSON.parse(text) : undefined) as T;
 }
 
 /**
