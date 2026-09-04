@@ -171,6 +171,9 @@ html:root {
   border-bottom: 1px solid var(--sidebar-border);
   padding: 0.875rem 1.25rem;
 }
+.app-sidebar-menu.itc-menu-wrapper[data-collapsed="true"] .itc-menu-header {
+  padding-inline: 0.5rem;
+}
 .app-sidebar-menu .itc-menu-hamburger {
   color: var(--sidebar-foreground);
   border-radius: var(--radius-md);
