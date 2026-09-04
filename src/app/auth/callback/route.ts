@@ -5,12 +5,25 @@ import { ApiError, apiFetch, persistSessionTokens, toSessionTokens } from "@/lib
 import { ENTRA_STATE_COOKIE, ENTRA_VERIFIER_COOKIE } from "@/lib/api/cookies";
 import type { ApiSchemas } from "@/lib/api/types";
 
+// Next construye request.url con el hostname:puerto con el que arrancó el
+// server, ignorando el Host entrante — sirve para desarrollo normal, pero
+// detrás de un túnel (ngrok) da el origin del servidor local en vez del
+// público, y el navegador termina redirigido a http://localhost:3000. Los
+// forwarders sí exponen el host real en X-Forwarded-Host/-Proto.
+function resolveOrigin(request: Request): string {
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  if (!forwardedHost) return new URL(request.url).origin;
+  const forwardedProto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim() || "https";
+  return `${forwardedProto}://${forwardedHost}`;
+}
+
 // Completa el authorization code flow (PKCE) contra Microsoft Entra que inició
 // signInWithAzure(): intercambia el `code` por un id_token directamente con
 // Entra y se lo postea a la API (POST /auth/sso/entra), que valida el token
 // contra el JWKS de Entra y emite los tokens propios de la app.
 export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
+  const origin = resolveOrigin(request);
   const code = searchParams.get("code");
   const state = searchParams.get("state");
   const next = searchParams.get("next") ?? "/dashboard";
