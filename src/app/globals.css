@@ -144,7 +144,19 @@ html:root {
   --itc-font: var(--font-sans);
 }
 
-
+/* itc-frontend-base fija border-collapse: collapse en .itc-table, que combinado
+ * con el thead sticky (.itc-table-container.sticky-header thead th) es un caso
+ * conocido de renderizado inconsistente entre navegadores: el header pegajoso
+ * puede quedar montado sobre la primera fila al hacer scroll, en vez de
+ * respetar el borde entre ambos. border-collapse: separate + border-spacing: 0
+ * es el fix estándar — visualmente idéntico acá porque ninguna tabla del
+ * proyecto usa la variante "bordered" (la única que dibuja bordes verticales,
+ * donde "separate" sí duplicaría el grosor del borde compartido).
+ */
+.itc-table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
 
 .app-sidebar-menu.itc-menu-wrapper {
   background-color: var(--sidebar);

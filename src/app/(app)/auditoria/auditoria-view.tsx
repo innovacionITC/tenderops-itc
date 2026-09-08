@@ -220,7 +220,7 @@ export function AuditoriaView({
     },
     {
       key: "acciones",
-      title: "",
+      title: "Acciones",
       width: 50,
       align: "right",
       render: (r) => (
