@@ -188,7 +188,7 @@ export function SeguimientoView({
                 <DropdownMenuTrigger asChild>
                   <button
                     type="button"
-                    className="inline-flex h-7 items-center gap-1 rounded-lg border border-input bg-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                    className="inline-flex h-7 cursor-pointer items-center gap-1 rounded-lg border border-input bg-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
                     Marcar
                     <ChevronDown className="h-3.5 w-3.5" />
