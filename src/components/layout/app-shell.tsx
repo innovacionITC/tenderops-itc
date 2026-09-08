@@ -13,6 +13,7 @@ import { ItcMenu, type MenuItem as ItcMenuItem } from "@/components/itc";
 import { isMenuItemVisible, menuGroups } from "./nav-config";
 import { NotificationsBell } from "./notifications-bell";
 import { OrganizationSwitcher } from "./organization-switcher";
+import { version as appVersion } from "../../../package.json";
 
 export function AppShell({
   children,
@@ -138,7 +139,7 @@ export function AppShell({
         }
         footer={
           collapsed ? undefined : (
-            <div className="text-[11px] text-sidebar-foreground/60">Fase 1 · Base Next.js</div>
+            <div className="text-[11px] text-sidebar-foreground/60">TenderOps v{appVersion}</div>
           )
         }
       />
