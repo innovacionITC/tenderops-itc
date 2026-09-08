@@ -189,6 +189,7 @@ export function ProcesosHistoricosView({
       key: "estadoFinal",
       title: <SortButton columnKey="estadoFinal" label="Estado final" activeSortBy={filtros.sortBy} onSort={handleSort} />,
       width: "8%",
+      align: "center",
       render: (r) => {
         const tone = r.estadoFinal === "Perdido" ? "danger" : r.estadoFinal === "Descartado" ? "muted" : "info";
         return <StatusBadge tone={tone}>{r.estadoFinal}</StatusBadge>;
@@ -217,6 +218,7 @@ export function ProcesosHistoricosView({
       key: "fechaCierre",
       title: <SortButton columnKey="fechaCierre" label="Fecha cierre" activeSortBy={filtros.sortBy} onSort={handleSort} />,
       width: "8%",
+      align: "center",
       render: (r) => (
         <span className="text-sm text-muted-foreground">{formatDate(r.fechaCierre)}</span>
       ),
@@ -225,17 +227,18 @@ export function ProcesosHistoricosView({
       key: "fechaUltimaActualizacion",
       title: <span className="text-xs text-muted-foreground">Últ. actualización</span>,
       width: "9%",
+      align: "center",
       render: (r) => (
         <span className="text-sm text-muted-foreground">{formatDate(r.fechaUltimaActualizacion)}</span>
       ),
     },
     {
       key: "acciones",
-      title: "",
+      title: "Acciones",
       width: 80,
-      align: "right",
+      align: "center",
       render: (r) => (
-        <div className="flex items-center justify-end gap-1">
+        <div className="flex items-center justify-center gap-1">
           <RowActionButton
             icon={<Info className="h-3.5 w-3.5" />}
             title="Ver detalle"

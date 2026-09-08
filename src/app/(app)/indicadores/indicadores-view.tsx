@@ -375,7 +375,7 @@ export function IndicadoresView({
       ? [
           {
             key: "acciones",
-            title: "",
+            title: "Acciones",
             align: "right" as const,
             render: (r: IndicadorRow) => (
               <div className="flex justify-end gap-1">

@@ -302,7 +302,7 @@ export function BusquedaEnVivoView({
     },
     {
       key: "acciones",
-      title: "",
+      title: "Acciones",
       width: 120,
       align: "right",
       render: (r) => (

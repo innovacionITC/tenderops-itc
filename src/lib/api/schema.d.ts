@@ -21,6 +21,11 @@ export interface paths {
                     to?: string;
                     page?: number | string;
                     pageSize?: number | string;
+                    role?: string;
+                    operationType?: string;
+                    result?: string;
+                    sortBy?: string;
+                    sortDir?: string;
                 };
                 header?: never;
                 path?: never;
@@ -306,7 +311,14 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    fechaDesde?: string;
+                    fechaHasta?: string;
+                    responsableUserId?: string;
+                    estado?: string;
+                    tipo?: string;
+                    procesoId?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -319,9 +331,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["CalendarItemResponse"][];
-                        "application/json": components["schemas"]["CalendarItemResponse"][];
-                        "text/json": components["schemas"]["CalendarItemResponse"][];
+                        "text/plain": components["schemas"]["ActividadResponse"][];
+                        "application/json": components["schemas"]["ActividadResponse"][];
+                        "text/json": components["schemas"]["ActividadResponse"][];
                     };
                 };
             };
@@ -1153,7 +1165,6 @@ export interface paths {
         };
         trace?: never;
     };
-
     "/estados-secop": {
         parameters: {
             query?: never;
@@ -1224,6 +1235,257 @@ export interface paths {
                         "text/plain": components["schemas"]["QuickAddEstadoSecopResponse"];
                         "application/json": components["schemas"]["QuickAddEstadoSecopResponse"];
                         "text/json": components["schemas"]["QuickAddEstadoSecopResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/indicadores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    anio?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["IndicadoresConsultaResponse"];
+                        "application/json": components["schemas"]["IndicadoresConsultaResponse"];
+                        "text/json": components["schemas"]["IndicadoresConsultaResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateIndicadorRequest"];
+                    "text/json": components["schemas"]["CreateIndicadorRequest"];
+                    "application/*+json": components["schemas"]["CreateIndicadorRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["IndicadorFinancieroResponse"];
+                        "application/json": components["schemas"]["IndicadorFinancieroResponse"];
+                        "text/json": components["schemas"]["IndicadorFinancieroResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/indicadores/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateIndicadorRequest"];
+                    "text/json": components["schemas"]["UpdateIndicadorRequest"];
+                    "application/*+json": components["schemas"]["UpdateIndicadorRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/indicadores/{id}/estado": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetIndicadorEstadoRequest"];
+                    "text/json": components["schemas"]["SetIndicadorEstadoRequest"];
+                    "application/*+json": components["schemas"]["SetIndicadorEstadoRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/indicadores/valores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: {
+                    anio?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetValoresIndicadorRequest"];
+                    "text/json": components["schemas"]["SetValoresIndicadorRequest"];
+                    "application/*+json": components["schemas"]["SetValoresIndicadorRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/indicadores/calculadora-plural": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CalculadoraPluralRequest"];
+                    "text/json": components["schemas"]["CalculadoraPluralRequest"];
+                    "application/*+json": components["schemas"]["CalculadoraPluralRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CalculadoraPluralResponse"];
+                        "application/json": components["schemas"]["CalculadoraPluralResponse"];
+                        "text/json": components["schemas"]["CalculadoraPluralResponse"];
                     };
                 };
             };
@@ -1399,9 +1661,6 @@ export interface paths {
         };
         trace?: never;
     };
-
-
-
     "/notificaciones": {
         parameters: {
             query?: never;
@@ -2156,6 +2415,528 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/procesos-seguimiento": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProcesoSeguimientoResponse"][];
+                        "application/json": components["schemas"]["ProcesoSeguimientoResponse"][];
+                        "text/json": components["schemas"]["ProcesoSeguimientoResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/historicos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    numeroProceso?: string;
+                    entidad?: string;
+                    responsableUserId?: string;
+                    estadoFinal?: string;
+                    fechaDesde?: string;
+                    fechaHasta?: string;
+                    palabraClave?: string;
+                    sortBy?: string;
+                    sortDir?: string;
+                    page?: number | string;
+                    pageSize?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProcesoHistoricoListResponse"];
+                        "application/json": components["schemas"]["ProcesoHistoricoListResponse"];
+                        "text/json": components["schemas"]["ProcesoHistoricoListResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/logrados": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    numeroProceso?: string;
+                    entidad?: string;
+                    responsableUserId?: string;
+                    fechaDesde?: string;
+                    fechaHasta?: string;
+                    valorAdjudicadoMin?: number | string;
+                    valorAdjudicadoMax?: number | string;
+                    palabraClave?: string;
+                    sortBy?: string;
+                    sortDir?: string;
+                    page?: number | string;
+                    pageSize?: number | string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProcesoLogradoListResponse"];
+                        "application/json": components["schemas"]["ProcesoLogradoListResponse"];
+                        "text/json": components["schemas"]["ProcesoLogradoListResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProcesoSeguimientoResponse"];
+                        "application/json": components["schemas"]["ProcesoSeguimientoResponse"];
+                        "text/json": components["schemas"]["ProcesoSeguimientoResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}/marcar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["MarcarProcesoRequest"];
+                    "text/json": components["schemas"]["MarcarProcesoRequest"];
+                    "application/*+json": components["schemas"]["MarcarProcesoRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}/cerrar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}/analisis-ia": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AnalisisIaResponse"];
+                        "application/json": components["schemas"]["AnalisisIaResponse"];
+                        "text/json": components["schemas"]["AnalisisIaResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["EjecutarAnalisisIaRequest"];
+                    "text/json": components["schemas"]["EjecutarAnalisisIaRequest"];
+                    "application/*+json": components["schemas"]["EjecutarAnalisisIaRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AnalisisIaResponse"];
+                        "application/json": components["schemas"]["AnalisisIaResponse"];
+                        "text/json": components["schemas"]["AnalisisIaResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}/asistente-ia/sesion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AsistenteIaSesionResponse"];
+                        "application/json": components["schemas"]["AsistenteIaSesionResponse"];
+                        "text/json": components["schemas"]["AsistenteIaSesionResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}/asistente-ia/sesion/refrescar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["RefrescarSesionRequest"];
+                    "text/json": components["schemas"]["RefrescarSesionRequest"];
+                    "application/*+json": components["schemas"]["RefrescarSesionRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["AsistenteIaTokenResponse"];
+                        "application/json": components["schemas"]["AsistenteIaTokenResponse"];
+                        "text/json": components["schemas"]["AsistenteIaTokenResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}/crm/oportunidad": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CrearOportunidadCrmRequest"];
+                    "text/json": components["schemas"]["CrearOportunidadCrmRequest"];
+                    "application/*+json": components["schemas"]["CrearOportunidadCrmRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CrmOportunidadResponse"];
+                        "application/json": components["schemas"]["CrmOportunidadResponse"];
+                        "text/json": components["schemas"]["CrmOportunidadResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}/crm/documentos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["OportunidadDocumentoResponse"][];
+                        "application/json": components["schemas"]["OportunidadDocumentoResponse"][];
+                        "text/json": components["schemas"]["OportunidadDocumentoResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}/crm/documentos/reintentar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/secop/procesos": {
         parameters: {
             query?: never;
@@ -2179,7 +2960,6 @@ export interface paths {
                     detectadoDesde?: string;
                     detectadoHasta?: string;
                     soloPromovidos?: boolean;
-                    entidadesMonitoreadas?: boolean;
                     page?: number | string;
                     pageSize?: number | string;
                 };
@@ -2366,6 +3146,84 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/secop/buscar-en-vivo/promover": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["PromoverProcesoEnVivoRequest"];
+                    "text/json": components["schemas"]["PromoverProcesoEnVivoRequest"];
+                    "application/*+json": components["schemas"]["PromoverProcesoEnVivoRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/secop/buscar-en-vivo/descartar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["DescartarProcesoEnVivoRequest"];
+                    "text/json": components["schemas"]["DescartarProcesoEnVivoRequest"];
+                    "application/*+json": components["schemas"]["DescartarProcesoEnVivoRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/secop/sincronizaciones": {
         parameters: {
             query?: never;
@@ -2443,7 +3301,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/tareas": {
+    "/suborganizaciones": {
         parameters: {
             query?: never;
             header?: never;
@@ -2465,6 +3323,173 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
+                        "text/plain": components["schemas"]["SuborganizacionResponse"][];
+                        "application/json": components["schemas"]["SuborganizacionResponse"][];
+                        "text/json": components["schemas"]["SuborganizacionResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateSuborganizacionRequest"];
+                    "text/json": components["schemas"]["CreateSuborganizacionRequest"];
+                    "application/*+json": components["schemas"]["CreateSuborganizacionRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SuborganizacionResponse"];
+                        "application/json": components["schemas"]["SuborganizacionResponse"];
+                        "text/json": components["schemas"]["SuborganizacionResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/suborganizaciones/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateSuborganizacionRequest"];
+                    "text/json": components["schemas"]["UpdateSuborganizacionRequest"];
+                    "application/*+json": components["schemas"]["UpdateSuborganizacionRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/suborganizaciones/{id}/estado": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetSuborganizacionEstadoRequest"];
+                    "text/json": components["schemas"]["SetSuborganizacionEstadoRequest"];
+                    "application/*+json": components["schemas"]["SetSuborganizacionEstadoRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/tareas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    processId?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
                         "text/plain": components["schemas"]["TareaResponse"][];
                         "application/json": components["schemas"]["TareaResponse"][];
                         "text/json": components["schemas"]["TareaResponse"][];
@@ -2473,7 +3498,34 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CrearTareaRequest"];
+                    "text/json": components["schemas"]["CrearTareaRequest"];
+                    "application/*+json": components["schemas"]["CrearTareaRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["TareaResponse"];
+                        "application/json": components["schemas"]["TareaResponse"];
+                        "text/json": components["schemas"]["TareaResponse"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -2549,7 +3601,34 @@ export interface paths {
             };
         };
         put?: never;
-        post?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateUsuarioRequest"];
+                    "text/json": components["schemas"]["CreateUsuarioRequest"];
+                    "application/*+json": components["schemas"]["CreateUsuarioRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["UsuarioResponse"];
+                        "application/json": components["schemas"]["UsuarioResponse"];
+                        "text/json": components["schemas"]["UsuarioResponse"];
+                    };
+                };
+            };
+        };
         delete?: never;
         options?: never;
         head?: never;
@@ -2638,13 +3717,186 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/usuarios/organizaciones-disponibles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["OrganizacionDisponibleResponse"][];
+                        "application/json": components["schemas"]["OrganizacionDisponibleResponse"][];
+                        "text/json": components["schemas"]["OrganizacionDisponibleResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/usuarios/{id}/organizaciones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateUsuarioOrganizacionesRequest"];
+                    "text/json": components["schemas"]["UpdateUsuarioOrganizacionesRequest"];
+                    "application/*+json": components["schemas"]["UpdateUsuarioOrganizacionesRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/usuarios/asignables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["UsuarioAsignableResponse"][];
+                        "application/json": components["schemas"]["UsuarioAsignableResponse"][];
+                        "text/json": components["schemas"]["UsuarioAsignableResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ActividadResponse: {
+            id: string;
+            title: string;
+            /** Format: date-time */
+            startDate: string;
+            /** Format: date-time */
+            endDate: null | string;
+            eventType: null | string;
+            source: string;
+            /** Format: uuid */
+            processId: null | string;
+            numeroProceso: null | string;
+            entidad: null | string;
+            /** Format: uuid */
+            responsableUserId: null | string;
+            responsableNombre: null | string;
+            prioridad: null | string;
+            estado: string;
+        };
         AddMembershipRequest: {
             /** Format: uuid */
             userId: string;
+        };
+        AnalisisIaResponse: {
+            /** Format: uuid */
+            id: string;
+            summary: null | string;
+            opportunityLevel: null | string;
+            riskLevel: null | string;
+            complexityLevel: null | string;
+            fit: null | string;
+            criticalRequirements: null | string;
+            alerts: null | string;
+            recommendation: null | string;
+            justification: null | string;
+            suggestedModality: null | string;
+            /** Format: int32 */
+            matrixTotal: null | number | string;
+            /** Format: int32 */
+            matrixCumplidos: null | number | string;
+            /** Format: int32 */
+            matrixPendientes: null | number | string;
+            /** Format: int32 */
+            matrixNoCumple: null | number | string;
+            /** Format: int32 */
+            matrixRiesgoAlto: null | number | string;
+            /** Format: date-time */
+            createdAt: string;
+        };
+        AsistenteIaSesionResponse: {
+            conversationId: string;
+            token: string;
+            /** Format: int32 */
+            expiresIn: number | string;
+            streamUrl: null | string;
+            fromId: string;
+        };
+        AsistenteIaTokenResponse: {
+            token: string;
+            /** Format: int32 */
+            expiresIn: number | string;
         };
         AuditoriaItemResponse: {
             /** Format: uuid */
@@ -2661,6 +3913,11 @@ export interface components {
             result: null | string;
             /** Format: date-time */
             createdAt: string;
+            role: null | string;
+            ipAddress: null | string;
+            observations: null | string;
+            operationType: string;
+            description: string;
         };
         AuditoriaListResponse: {
             items: components["schemas"]["AuditoriaItemResponse"][];
@@ -2673,10 +3930,20 @@ export interface components {
         };
         BuscarEnVivoRequest: {
             dataset: string;
+            keyword: null | string;
             entidad: null | string;
+            nit: null | string;
+            numeroProceso: null | string;
             objeto: null | string;
             modalidad: null | string;
             estado: null | string;
+            departamento: null | string;
+            ciudad: null | string;
+            unspsc: null | string;
+            /** Format: date-time */
+            publicadoDesde: null | string;
+            /** Format: date-time */
+            publicadoHasta: null | string;
             /** Format: double */
             cuantiaMin: null | number | string;
             /** Format: double */
@@ -2710,17 +3977,27 @@ export interface components {
             phase: null | string;
             secopUrl: null | string;
         };
-        CalendarItemResponse: {
-            id: string;
-            title: string;
-            /** Format: date-time */
-            startDate: string;
-            /** Format: date-time */
-            endDate: null | string;
-            eventType: null | string;
-            source: string;
+        CalculadoraPluralRequest: {
+            /** Format: int32 */
+            anio: number | string;
+            metodo: string;
+            participaciones: components["schemas"]["ParticipacionRequest"][];
+        };
+        CalculadoraPluralResponse: {
+            indicadores: components["schemas"]["CalculadoraPluralRowResponse"][];
+        };
+        CalculadoraPluralRowResponse: {
             /** Format: uuid */
-            processId: null | string;
+            id: string;
+            nombre: string;
+            categoria: string;
+            unidad: string;
+            tipo: string;
+            /** Format: double */
+            valorOrganizacionPrincipal: null | number | string;
+            valoresSuborganizaciones: components["schemas"]["ValorPorSuborganizacionResponse"][];
+            /** Format: double */
+            valorPlural: null | number | string;
         };
         CiudadRecordResponse: {
             /** Format: uuid */
@@ -2754,6 +4031,20 @@ export interface components {
             ok: boolean;
             already: boolean;
         };
+        CrearOportunidadCrmRequest: {
+            tema: string;
+        };
+        CrearTareaRequest: {
+            title: string;
+            description: null | string;
+            /** Format: uuid */
+            processId: null | string;
+            /** Format: uuid */
+            assignedTo: null | string;
+            priority: null | string;
+            /** Format: date-time */
+            dueAt: null | string;
+        };
         CreateCiudadRequest: {
             name: string;
             /** Format: uuid */
@@ -2774,19 +4065,38 @@ export interface components {
         CreateEntidadRequest: {
             name: string;
             nit: string;
-            dv?: string | null;
+            dv: null | string;
+        };
+        CreateIndicadorRequest: {
+            nombre: string;
+            categoria: string;
+            unidad: string;
+            tipo: string;
+            formulaNumeradorIds: null | string[];
+            formulaDenominadorIds: null | string[];
+            /** Format: double */
+            formulaMultiplicador: null | number | string;
         };
         CreateModalidadRequest: {
             description: string;
             code: null | string;
         };
-
         CreateOrganizacionRequest: {
             name: string;
             code: string;
             taxId: null | string;
             email: null | string;
             phone: null | string;
+        };
+        CreateSuborganizacionRequest: {
+            name: string;
+        };
+        CreateUsuarioRequest: {
+            fullName: string;
+            email: string;
+            password: null | string;
+            role: string;
+            organizacionIds: string[];
         };
         CredencialResponse: {
             /** Format: uuid */
@@ -2796,6 +4106,10 @@ export interface components {
             description: null | string;
             /** Format: date-time */
             updatedAt: string;
+        };
+        CrmOportunidadResponse: {
+            opportunityId: string;
+            opportunityUrl: null | string;
         };
         DashboardCountsResponse: {
             /** Format: int32 */
@@ -2830,16 +4144,39 @@ export interface components {
             /** Format: int32 */
             cityCount: number | string;
         };
+        DescartarProcesoEnVivoRequest: {
+            dataset: string;
+            secopId: string;
+            title: null | string;
+            entityName: null | string;
+            entityNit: null | string;
+            subject: null | string;
+            modality: null | string;
+            status: null | string;
+            /** Format: double */
+            value: null | number | string;
+            /** Format: date-time */
+            publicationDate: null | string;
+            /** Format: date-time */
+            closingDate: null | string;
+            phase: null | string;
+            secopUrl: null | string;
+            motivo: null | string;
+        };
         DescartarProcesoRequest: {
             motivo: null | string;
+        };
+        EjecutarAnalisisIaRequest: {
+            /** Format: uuid */
+            empresaId: null | string;
         };
         EntidadResponse: {
             /** Format: uuid */
             id: string;
             name: string;
             isActive: boolean;
-            nit: string | null;
-            dv: string | null;
+            nit: null | string;
+            dv: null | string;
         };
         EstadoSecopResponse: {
             /** Format: uuid */
@@ -2849,9 +4186,50 @@ export interface components {
         };
         /** Format: binary */
         IFormFile: string;
+        IndicadorConsultaResponse: {
+            /** Format: uuid */
+            id: string;
+            nombre: string;
+            categoria: string;
+            unidad: string;
+            tipo: string;
+            /** Format: double */
+            valorOrganizacionPrincipal: null | number | string;
+            valoresSuborganizaciones: components["schemas"]["ValorPorSuborganizacionResponse"][];
+            isActive: boolean;
+            formulaNumeradorIds: null | string[];
+            formulaDenominadorIds: null | string[];
+            /** Format: double */
+            formulaMultiplicador: null | number | string;
+        };
+        IndicadorFinancieroResponse: {
+            /** Format: uuid */
+            id: string;
+            nombre: string;
+            categoria: string;
+            unidad: string;
+            tipo: string;
+            isActive: boolean;
+            formulaNumeradorIds: null | string[];
+            formulaDenominadorIds: null | string[];
+            /** Format: double */
+            formulaMultiplicador: null | number | string;
+        };
+        IndicadoresConsultaResponse: {
+            indicadores: components["schemas"]["IndicadorConsultaResponse"][];
+            suborganizaciones: components["schemas"]["SuborganizacionColumnResponse"][];
+        };
         LoginRequest: {
             email: string;
             password: string;
+        };
+        MarcarProcesoRequest: {
+            resultado: string;
+            motivo: null | string;
+            /** Format: double */
+            valorAdjudicado: null | number | string;
+            /** Format: date-time */
+            fechaAdjudicacion: null | string;
         };
         MeResponse: {
             /** Format: uuid */
@@ -2883,7 +4261,6 @@ export interface components {
             code: null | string;
             isActive: boolean;
         };
-
         NotificacionResponse: {
             /** Format: uuid */
             id: string;
@@ -2893,6 +4270,22 @@ export interface components {
             isRead: boolean;
             /** Format: date-time */
             createdAt: string;
+        };
+        OportunidadDocumentoResponse: {
+            documentoId: string;
+            nombreArchivo: string;
+            extension: string;
+            /** Format: int64 */
+            tamannoBytes: number | string;
+            estado: string;
+            errorMensaje: null | string;
+            /** Format: date-time */
+            creadoEn: string;
+        };
+        OrganizacionDisponibleResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
         };
         OrganizacionResponse: {
             /** Format: uuid */
@@ -2933,6 +4326,12 @@ export interface components {
             unspscCodeIds: string[];
             departmentIds: string[];
             cityIds: string[];
+        };
+        ParticipacionRequest: {
+            /** Format: uuid */
+            participanteId: string;
+            /** Format: double */
+            porcentaje: number | string;
         };
         PlantillaResponse: {
             /** Format: uuid */
@@ -2994,6 +4393,109 @@ export interface components {
             lastDetectedAt: string;
             entidadRegistrada: boolean;
         };
+        ProcesoHistoricoListResponse: {
+            items: components["schemas"]["ProcesoHistoricoResponse"][];
+            /** Format: int32 */
+            total: number | string;
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            pageSize: number | string;
+        };
+        ProcesoHistoricoResponse: {
+            /** Format: uuid */
+            id: string;
+            numeroProceso: null | string;
+            entidad: null | string;
+            objeto: null | string;
+            responsableNombre: null | string;
+            estadoFinal: string;
+            motivoCierre: string;
+            /** Format: double */
+            valorEstimado: null | number | string;
+            /** Format: date-time */
+            fechaCierre: string;
+            /** Format: date-time */
+            fechaUltimaActualizacion: string;
+        };
+        ProcesoLogradoListResponse: {
+            items: components["schemas"]["ProcesoLogradoResponse"][];
+            /** Format: int32 */
+            total: number | string;
+            /** Format: int32 */
+            page: number | string;
+            /** Format: int32 */
+            pageSize: number | string;
+        };
+        ProcesoLogradoResponse: {
+            /** Format: uuid */
+            id: string;
+            numeroProceso: null | string;
+            entidad: null | string;
+            objeto: null | string;
+            responsableNombre: null | string;
+            estado: string;
+            /** Format: double */
+            valorAdjudicado: null | number | string;
+            /** Format: double */
+            valorEstimado: null | number | string;
+            /** Format: date-time */
+            fechaAdjudicacion: null | string;
+            /** Format: date-time */
+            fechaUltimaActualizacion: string;
+        };
+        ProcesoSeguimientoResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            detectedProcessId: null | string;
+            secopId: null | string;
+            dataset: null | string;
+            titulo: null | string;
+            entidad: null | string;
+            objeto: null | string;
+            modalidad: null | string;
+            /** Format: double */
+            valor: null | number | string;
+            /** Format: date-time */
+            fechaPresentacionOferta: null | string;
+            url: null | string;
+            estado: string;
+            resultado: null | string;
+            /** Format: uuid */
+            responsableUserId: null | string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+            crmOpportunityId: null | string;
+            crmOpportunityUrl: null | string;
+            /** Format: date-time */
+            crmCreatedAt: null | string;
+            motivoDescarte: null | string;
+            /** Format: double */
+            valorAdjudicado: null | number | string;
+            /** Format: date-time */
+            fechaAdjudicacion: null | string;
+        };
+        PromoverProcesoEnVivoRequest: {
+            dataset: string;
+            secopId: string;
+            title: null | string;
+            entityName: null | string;
+            entityNit: null | string;
+            subject: null | string;
+            modality: null | string;
+            status: null | string;
+            /** Format: double */
+            value: null | number | string;
+            /** Format: date-time */
+            publicationDate: null | string;
+            /** Format: date-time */
+            closingDate: null | string;
+            phase: null | string;
+            secopUrl: null | string;
+        };
         QuickAddEstadoSecopRequest: {
             name: string;
         };
@@ -3001,6 +4503,9 @@ export interface components {
             /** Format: uuid */
             id: string;
             label: string;
+        };
+        RefrescarSesionRequest: {
+            token: string;
         };
         RefreshRequest: {
             refreshToken: string;
@@ -3076,25 +4581,43 @@ export interface components {
         SetEntidadEstadoRequest: {
             isActive: boolean;
         };
-
+        SetIndicadorEstadoRequest: {
+            isActive: boolean;
+        };
         SetMembershipEstadoRequest: {
             isActive: boolean;
         };
         SetModalidadEstadoRequest: {
             isActive: boolean;
         };
-
         SetOrganizacionEstadoRequest: {
             isActive: boolean;
         };
         SetPlantillaEstadoRequest: {
             isActive: boolean;
         };
+        SetSuborganizacionEstadoRequest: {
+            isActive: boolean;
+        };
         SetUsuarioEstadoRequest: {
             active: boolean;
         };
+        SetValoresIndicadorRequest: {
+            valores: components["schemas"]["ValorIndicadorRequest"][];
+        };
         SsoRequest: {
             idToken: string;
+        };
+        SuborganizacionColumnResponse: {
+            /** Format: uuid */
+            id: string;
+            nombre: string;
+        };
+        SuborganizacionResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            isActive: boolean;
         };
         SwitchOrganizationRequest: {
             refreshToken: string;
@@ -3105,6 +4628,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             title: string;
+            description: null | string;
             /** Format: uuid */
             processId: null | string;
             processTitle: null | string;
@@ -3154,13 +4678,22 @@ export interface components {
         UpdateEntidadRequest: {
             name: string;
             nit: string;
-            dv?: string | null;
+            dv: null | string;
+        };
+        UpdateIndicadorRequest: {
+            nombre: string;
+            categoria: string;
+            unidad: string;
+            tipo: string;
+            formulaNumeradorIds: null | string[];
+            formulaDenominadorIds: null | string[];
+            /** Format: double */
+            formulaMultiplicador: null | number | string;
         };
         UpdateModalidadRequest: {
             description: string;
             code: null | string;
         };
-
         UpdateOrganizacionRequest: {
             name: string;
             code: string;
@@ -3168,8 +4701,19 @@ export interface components {
             email: null | string;
             phone: null | string;
         };
+        UpdateSuborganizacionRequest: {
+            name: string;
+        };
+        UpdateUsuarioOrganizacionesRequest: {
+            organizacionIds: string[];
+        };
         UpdateUsuarioRolRequest: {
             role: string;
+        };
+        UsuarioAsignableResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
         };
         UsuarioOrganizacionResponse: {
             /** Format: uuid */
@@ -3190,6 +4734,21 @@ export interface components {
             createdAt: string;
             role: null | string;
             organizaciones: components["schemas"]["UsuarioOrganizacionResponse"][];
+        };
+        ValorIndicadorRequest: {
+            /** Format: uuid */
+            indicadorId: string;
+            /** Format: uuid */
+            suborganizacionId: null | string;
+            /** Format: double */
+            valor: number | string;
+        };
+        ValorPorSuborganizacionResponse: {
+            /** Format: uuid */
+            suborganizacionId: string;
+            suborganizacionNombre: string;
+            /** Format: double */
+            valor: null | number | string;
         };
     };
     responses: never;

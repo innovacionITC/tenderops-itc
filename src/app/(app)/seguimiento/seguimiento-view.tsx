@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition, useState } from "react";
-import { ExternalLink, MoreHorizontal, ChevronRight } from "lucide-react";
+import { ExternalLink, ChevronDown, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { ItcTable, type TableColumn, ItcModal, ItcInput } from "@/components/itc";
 import { StatusBadge } from "@/components/layout/status-badge";
@@ -130,6 +130,7 @@ export function SeguimientoView({
       key: "fechaPresentacionOferta",
       title: "Presentación",
       width: "10%",
+      align: "center",
       render: (r) => (
         <span className="block truncate text-sm text-muted-foreground" title={r.fechaPresentacionOferta ?? undefined}>
           {formatDate(r.fechaPresentacionOferta)}
@@ -140,6 +141,7 @@ export function SeguimientoView({
       key: "estado",
       title: "Estado",
       width: "11%",
+      align: "center",
       render: (r) => (
         <StatusBadge tone={ESTADO_TONE[r.estado]}>{ESTADO_LABEL[r.estado]}</StatusBadge>
       ),
@@ -148,6 +150,7 @@ export function SeguimientoView({
       key: "resultado",
       title: "Resultado",
       width: "11%",
+      align: "center",
       render: (r) => {
         if (!r.resultado) return <span className="text-muted-foreground">—</span>;
         const tone =
@@ -161,13 +164,13 @@ export function SeguimientoView({
     },
     {
       key: "acciones",
-      title: "",
+      title: "Acciones",
       width: 120,
-      align: "right",
+      align: "center",
       render: (r) => {
         const opciones = opcionesMarcarDisponibles(r.estado, r.resultado);
         return (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center justify-center gap-1">
             <RowActionButton
               icon={<ChevronRight className="h-3.5 w-3.5" />}
               title="Abrir"
@@ -183,8 +186,12 @@ export function SeguimientoView({
             {opciones.length > 0 && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <button className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground">
-                    <MoreHorizontal className="h-3.5 w-3.5" />
+                  <button
+                    type="button"
+                    className="inline-flex h-7 cursor-pointer items-center gap-1 rounded-lg border border-input bg-transparent px-2 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                  >
+                    Marcar
+                    <ChevronDown className="h-3.5 w-3.5" />
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">

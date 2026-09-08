@@ -77,6 +77,41 @@
               ],
               "format": "int32"
             }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "operationType",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "result",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortDir",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -365,6 +400,54 @@
         "tags": [
           "Calendario"
         ],
+        "parameters": [
+          {
+            "name": "fechaDesde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "fechaHasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "responsableUserId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "estado",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tipo",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "procesoId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",
@@ -373,7 +456,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/CalendarItemResponse"
+                    "$ref": "#/components/schemas/ActividadResponse"
                   }
                 }
               },
@@ -381,7 +464,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/CalendarItemResponse"
+                    "$ref": "#/components/schemas/ActividadResponse"
                   }
                 }
               },
@@ -389,7 +472,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/CalendarItemResponse"
+                    "$ref": "#/components/schemas/ActividadResponse"
                   }
                 }
               }
@@ -1348,49 +1431,6 @@
         }
       }
     },
-    "/entidades/{id}/monitoreo": {
-      "patch": {
-        "tags": [
-          "Entidades"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetEntidadMonitoreoRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetEntidadMonitoreoRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetEntidadMonitoreoRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/estados-secop": {
       "get": {
         "tags": [
@@ -1471,6 +1511,298 @@
               "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/QuickAddEstadoSecopResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/indicadores": {
+      "get": {
+        "tags": [
+          "IndicadoresFinancieros"
+        ],
+        "parameters": [
+          {
+            "name": "anio",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndicadoresConsultaResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndicadoresConsultaResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndicadoresConsultaResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "IndicadoresFinancieros"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIndicadorRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIndicadorRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateIndicadorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndicadorFinancieroResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndicadorFinancieroResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndicadorFinancieroResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/indicadores/{id}": {
+      "put": {
+        "tags": [
+          "IndicadoresFinancieros"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateIndicadorRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateIndicadorRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateIndicadorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "IndicadoresFinancieros"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/indicadores/{id}/estado": {
+      "patch": {
+        "tags": [
+          "IndicadoresFinancieros"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetIndicadorEstadoRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetIndicadorEstadoRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetIndicadorEstadoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/indicadores/valores": {
+      "put": {
+        "tags": [
+          "IndicadoresFinancieros"
+        ],
+        "parameters": [
+          {
+            "name": "anio",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetValoresIndicadorRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetValoresIndicadorRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetValoresIndicadorRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/indicadores/calculadora-plural": {
+      "post": {
+        "tags": [
+          "IndicadoresFinancieros"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CalculadoraPluralRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CalculadoraPluralRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CalculadoraPluralRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalculadoraPluralResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalculadoraPluralResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalculadoraPluralResponse"
                 }
               }
             }
@@ -1658,198 +1990,6 @@
             "application/*+json": {
               "schema": {
                 "$ref": "#/components/schemas/SetModalidadEstadoRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/nits": {
-      "get": {
-        "tags": [
-          "Nits"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NitResponse"
-                  }
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NitResponse"
-                  }
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/NitResponse"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Nits"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateNitRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateNitRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateNitRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/NitResponse"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NitResponse"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/NitResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/nits/{id}": {
-      "put": {
-        "tags": [
-          "Nits"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateNitRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateNitRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateNitRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Nits"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/nits/{id}/estado": {
-      "patch": {
-        "tags": [
-          "Nits"
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetNitEstadoRequest"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetNitEstadoRequest"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/SetNitEstadoRequest"
               }
             }
           },
@@ -2652,6 +2792,739 @@
         }
       }
     },
+    "/procesos-seguimiento": {
+      "get": {
+        "tags": [
+          "ProcesosSeguimiento"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProcesoSeguimientoResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProcesoSeguimientoResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProcesoSeguimientoResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/procesos-seguimiento/historicos": {
+      "get": {
+        "tags": [
+          "ProcesosSeguimiento"
+        ],
+        "parameters": [
+          {
+            "name": "numeroProceso",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entidad",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "responsableUserId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "estadoFinal",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fechaDesde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "fechaHasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "palabraClave",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortDir",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcesoHistoricoListResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcesoHistoricoListResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcesoHistoricoListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/procesos-seguimiento/logrados": {
+      "get": {
+        "tags": [
+          "ProcesosSeguimiento"
+        ],
+        "parameters": [
+          {
+            "name": "numeroProceso",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entidad",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "responsableUserId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "fechaDesde",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "fechaHasta",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "valorAdjudicadoMin",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            }
+          },
+          {
+            "name": "valorAdjudicadoMax",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+              "type": [
+                "number",
+                "string"
+              ],
+              "format": "double"
+            }
+          },
+          {
+            "name": "palabraClave",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBy",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortDir",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcesoLogradoListResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcesoLogradoListResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcesoLogradoListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/procesos-seguimiento/{id}": {
+      "get": {
+        "tags": [
+          "ProcesosSeguimiento"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcesoSeguimientoResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcesoSeguimientoResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcesoSeguimientoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/procesos-seguimiento/{id}/marcar": {
+      "patch": {
+        "tags": [
+          "ProcesosSeguimiento"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarcarProcesoRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarcarProcesoRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/MarcarProcesoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/procesos-seguimiento/{id}/cerrar": {
+      "patch": {
+        "tags": [
+          "ProcesosSeguimiento"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/procesos-seguimiento/{id}/analisis-ia": {
+      "get": {
+        "tags": [
+          "ProcesosSeguimiento"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalisisIaResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalisisIaResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalisisIaResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "ProcesosSeguimiento"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EjecutarAnalisisIaRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EjecutarAnalisisIaRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/EjecutarAnalisisIaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalisisIaResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalisisIaResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalisisIaResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/procesos-seguimiento/{id}/asistente-ia/sesion": {
+      "post": {
+        "tags": [
+          "ProcesosSeguimiento"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsistenteIaSesionResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsistenteIaSesionResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsistenteIaSesionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/procesos-seguimiento/{id}/asistente-ia/sesion/refrescar": {
+      "post": {
+        "tags": [
+          "ProcesosSeguimiento"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefrescarSesionRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefrescarSesionRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefrescarSesionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsistenteIaTokenResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsistenteIaTokenResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AsistenteIaTokenResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/procesos-seguimiento/{id}/crm/oportunidad": {
+      "post": {
+        "tags": [
+          "ProcesosSeguimiento"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearOportunidadCrmRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearOportunidadCrmRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearOportunidadCrmRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmOportunidadResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmOportunidadResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CrmOportunidadResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/procesos-seguimiento/{id}/crm/documentos": {
+      "get": {
+        "tags": [
+          "ProcesosSeguimiento"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OportunidadDocumentoResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OportunidadDocumentoResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OportunidadDocumentoResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/procesos-seguimiento/{id}/crm/documentos/reintentar": {
+      "post": {
+        "tags": [
+          "ProcesosSeguimiento"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/secop/procesos": {
       "get": {
         "tags": [
@@ -2756,13 +3629,6 @@
           },
           {
             "name": "soloPromovidos",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "entidadesMonitoreadas",
             "in": "query",
             "schema": {
               "type": "boolean"
@@ -2961,6 +3827,70 @@
         }
       }
     },
+    "/secop/buscar-en-vivo/promover": {
+      "post": {
+        "tags": [
+          "SecopSync"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromoverProcesoEnVivoRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromoverProcesoEnVivoRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/PromoverProcesoEnVivoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/secop/buscar-en-vivo/descartar": {
+      "post": {
+        "tags": [
+          "SecopSync"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DescartarProcesoEnVivoRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DescartarProcesoEnVivoRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/DescartarProcesoEnVivoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/secop/sincronizaciones": {
       "get": {
         "tags": [
@@ -3045,10 +3975,212 @@
         }
       }
     },
+    "/suborganizaciones": {
+      "get": {
+        "tags": [
+          "Suborganizaciones"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuborganizacionResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuborganizacionResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SuborganizacionResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Suborganizaciones"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSuborganizacionRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSuborganizacionRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSuborganizacionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuborganizacionResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuborganizacionResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuborganizacionResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/suborganizaciones/{id}": {
+      "put": {
+        "tags": [
+          "Suborganizaciones"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuborganizacionRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuborganizacionRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSuborganizacionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Suborganizaciones"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/suborganizaciones/{id}/estado": {
+      "patch": {
+        "tags": [
+          "Suborganizaciones"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSuborganizacionEstadoRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSuborganizacionEstadoRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetSuborganizacionEstadoRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/tareas": {
       "get": {
         "tags": [
           "Tareas"
+        ],
+        "parameters": [
+          {
+            "name": "processId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -3076,6 +4208,53 @@
                   "items": {
                     "$ref": "#/components/schemas/TareaResponse"
                   }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tareas"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearTareaRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearTareaRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CrearTareaRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/TareaResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TareaResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TareaResponse"
                 }
               }
             }
@@ -3124,6 +4303,53 @@
       }
     },
     "/usuarios": {
+      "post": {
+        "tags": [
+          "Usuarios"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUsuarioRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUsuarioRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUsuarioRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioResponse"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioResponse"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UsuarioResponse"
+                }
+              }
+            }
+          }
+        }
+      },
       "get": {
         "tags": [
           "Usuarios"
@@ -3246,10 +4472,216 @@
           }
         }
       }
+    },
+    "/usuarios/organizaciones-disponibles": {
+      "get": {
+        "tags": [
+          "Usuarios"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrganizacionDisponibleResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrganizacionDisponibleResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OrganizacionDisponibleResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/usuarios/{id}/organizaciones": {
+      "put": {
+        "tags": [
+          "Usuarios"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUsuarioOrganizacionesRequest"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUsuarioOrganizacionesRequest"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUsuarioOrganizacionesRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/usuarios/asignables": {
+      "get": {
+        "tags": [
+          "Usuarios"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioAsignableResponse"
+                  }
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioAsignableResponse"
+                  }
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UsuarioAsignableResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "ActividadResponse": {
+        "required": [
+          "id",
+          "title",
+          "startDate",
+          "endDate",
+          "eventType",
+          "source",
+          "processId",
+          "numeroProceso",
+          "entidad",
+          "responsableUserId",
+          "responsableNombre",
+          "prioridad",
+          "estado"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "eventType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "source": {
+            "type": "string"
+          },
+          "processId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "numeroProceso": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "entidad": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsableUserId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "responsableNombre": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "prioridad": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "estado": {
+            "type": "string"
+          }
+        }
+      },
       "AddMembershipRequest": {
         "required": [
           "userId"
@@ -3259,6 +4691,198 @@
           "userId": {
             "type": "string",
             "format": "uuid"
+          }
+        }
+      },
+      "AnalisisIaResponse": {
+        "required": [
+          "id",
+          "summary",
+          "opportunityLevel",
+          "riskLevel",
+          "complexityLevel",
+          "fit",
+          "criticalRequirements",
+          "alerts",
+          "recommendation",
+          "justification",
+          "suggestedModality",
+          "matrixTotal",
+          "matrixCumplidos",
+          "matrixPendientes",
+          "matrixNoCumple",
+          "matrixRiesgoAlto",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "summary": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "opportunityLevel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "riskLevel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "complexityLevel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "fit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "criticalRequirements": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "alerts": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "recommendation": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "justification": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "suggestedModality": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "matrixTotal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "matrixCumplidos": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "matrixPendientes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "matrixNoCumple": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "matrixRiesgoAlto": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "AsistenteIaSesionResponse": {
+        "required": [
+          "conversationId",
+          "token",
+          "expiresIn",
+          "streamUrl",
+          "fromId"
+        ],
+        "type": "object",
+        "properties": {
+          "conversationId": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "streamUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "fromId": {
+            "type": "string"
+          }
+        }
+      },
+      "AsistenteIaTokenResponse": {
+        "required": [
+          "token",
+          "expiresIn"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
           }
         }
       },
@@ -3273,7 +4897,12 @@
           "entityId",
           "metadata",
           "result",
-          "createdAt"
+          "createdAt",
+          "role",
+          "ipAddress",
+          "observations",
+          "operationType",
+          "description"
         ],
         "type": "object",
         "properties": {
@@ -3328,6 +4957,30 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "role": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ipAddress": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "observations": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "operationType": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
           }
         }
       },
@@ -3375,10 +5028,18 @@
       "BuscarEnVivoRequest": {
         "required": [
           "dataset",
+          "keyword",
           "entidad",
+          "nit",
+          "numeroProceso",
           "objeto",
           "modalidad",
           "estado",
+          "departamento",
+          "ciudad",
+          "unspsc",
+          "publicadoDesde",
+          "publicadoHasta",
           "cuantiaMin",
           "cuantiaMax",
           "page",
@@ -3389,7 +5050,25 @@
           "dataset": {
             "type": "string"
           },
+          "keyword": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
           "entidad": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "numeroProceso": {
             "type": [
               "null",
               "string"
@@ -3412,6 +5091,38 @@
               "null",
               "string"
             ]
+          },
+          "departamento": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "ciudad": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "unspsc": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "publicadoDesde": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "publicadoHasta": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           },
           "cuantiaMin": {
             "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
@@ -3488,6 +5199,7 @@
           "secopId",
           "title",
           "entityName",
+          "entityNit",
           "subject",
           "modality",
           "status",
@@ -3509,6 +5221,12 @@
             ]
           },
           "entityName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "entityNit": {
             "type": [
               "null",
               "string"
@@ -3569,50 +5287,99 @@
           }
         }
       },
-      "CalendarItemResponse": {
+      "CalculadoraPluralRequest": {
+        "required": [
+          "anio",
+          "metodo",
+          "participaciones"
+        ],
+        "type": "object",
+        "properties": {
+          "anio": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "metodo": {
+            "type": "string"
+          },
+          "participaciones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ParticipacionRequest"
+            }
+          }
+        }
+      },
+      "CalculadoraPluralResponse": {
+        "required": [
+          "indicadores"
+        ],
+        "type": "object",
+        "properties": {
+          "indicadores": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CalculadoraPluralRowResponse"
+            }
+          }
+        }
+      },
+      "CalculadoraPluralRowResponse": {
         "required": [
           "id",
-          "title",
-          "startDate",
-          "endDate",
-          "eventType",
-          "source",
-          "processId"
+          "nombre",
+          "categoria",
+          "unidad",
+          "tipo",
+          "valorOrganizacionPrincipal",
+          "valoresSuborganizaciones",
+          "valorPlural"
         ],
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "startDate": {
             "type": "string",
-            "format": "date-time"
+            "format": "uuid"
           },
-          "endDate": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "date-time"
-          },
-          "eventType": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "source": {
+          "nombre": {
             "type": "string"
           },
-          "processId": {
+          "categoria": {
+            "type": "string"
+          },
+          "unidad": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "valorOrganizacionPrincipal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
             "type": [
               "null",
+              "number",
               "string"
             ],
-            "format": "uuid"
+            "format": "double"
+          },
+          "valoresSuborganizaciones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValorPorSuborganizacionResponse"
+            }
+          },
+          "valorPlural": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
           }
         }
       },
@@ -3733,6 +5500,66 @@
           }
         }
       },
+      "CrearOportunidadCrmRequest": {
+        "required": [
+          "tema"
+        ],
+        "type": "object",
+        "properties": {
+          "tema": {
+            "type": "string"
+          }
+        }
+      },
+      "CrearTareaRequest": {
+        "required": [
+          "title",
+          "description",
+          "processId",
+          "assignedTo",
+          "priority",
+          "dueAt"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "processId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "assignedTo": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "priority": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "dueAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
       "CreateCiudadRequest": {
         "required": [
           "name",
@@ -3802,12 +5629,78 @@
       },
       "CreateEntidadRequest": {
         "required": [
-          "name"
+          "name",
+          "nit",
+          "dv"
         ],
         "type": "object",
         "properties": {
           "name": {
             "type": "string"
+          },
+          "nit": {
+            "type": "string"
+          },
+          "dv": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CreateIndicadorRequest": {
+        "required": [
+          "nombre",
+          "categoria",
+          "unidad",
+          "tipo",
+          "formulaNumeradorIds",
+          "formulaDenominadorIds",
+          "formulaMultiplicador"
+        ],
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "categoria": {
+            "type": "string"
+          },
+          "unidad": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "formulaNumeradorIds": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "formulaDenominadorIds": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "formulaMultiplicador": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
           }
         }
       },
@@ -3822,24 +5715,6 @@
             "type": "string"
           },
           "code": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        }
-      },
-      "CreateNitRequest": {
-        "required": [
-          "nit",
-          "description"
-        ],
-        "type": "object",
-        "properties": {
-          "nit": {
-            "type": "string"
-          },
-          "description": {
             "type": [
               "null",
               "string"
@@ -3883,6 +5758,51 @@
           }
         }
       },
+      "CreateSuborganizacionRequest": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "CreateUsuarioRequest": {
+        "required": [
+          "fullName",
+          "email",
+          "password",
+          "role",
+          "organizacionIds"
+        ],
+        "type": "object",
+        "properties": {
+          "fullName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "role": {
+            "type": "string"
+          },
+          "organizacionIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
       "CredencialResponse": {
         "required": [
           "id",
@@ -3912,6 +5832,24 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "CrmOportunidadResponse": {
+        "required": [
+          "opportunityId",
+          "opportunityUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "opportunityId": {
+            "type": "string"
+          },
+          "opportunityUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -4050,6 +5988,110 @@
           }
         }
       },
+      "DescartarProcesoEnVivoRequest": {
+        "required": [
+          "dataset",
+          "secopId",
+          "title",
+          "entityName",
+          "entityNit",
+          "subject",
+          "modality",
+          "status",
+          "value",
+          "publicationDate",
+          "closingDate",
+          "phase",
+          "secopUrl",
+          "motivo"
+        ],
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string"
+          },
+          "secopId": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "entityName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "entityNit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "subject": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "modality": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "value": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "publicationDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "closingDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "phase": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "secopUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "motivo": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "DescartarProcesoRequest": {
         "required": [
           "motivo"
@@ -4064,12 +6106,28 @@
           }
         }
       },
+      "EjecutarAnalisisIaRequest": {
+        "required": [
+          "empresaId"
+        ],
+        "type": "object",
+        "properties": {
+          "empresaId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          }
+        }
+      },
       "EntidadResponse": {
         "required": [
           "id",
           "name",
           "isActive",
-          "isMonitored"
+          "nit",
+          "dv"
         ],
         "type": "object",
         "properties": {
@@ -4083,8 +6141,17 @@
           "isActive": {
             "type": "boolean"
           },
-          "isMonitored": {
-            "type": "boolean"
+          "nit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "dv": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -4112,6 +6179,172 @@
         "type": "string",
         "format": "binary"
       },
+      "IndicadorConsultaResponse": {
+        "required": [
+          "id",
+          "nombre",
+          "categoria",
+          "unidad",
+          "tipo",
+          "valorOrganizacionPrincipal",
+          "valoresSuborganizaciones",
+          "isActive",
+          "formulaNumeradorIds",
+          "formulaDenominadorIds",
+          "formulaMultiplicador"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "categoria": {
+            "type": "string"
+          },
+          "unidad": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "valorOrganizacionPrincipal": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "valoresSuborganizaciones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValorPorSuborganizacionResponse"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "formulaNumeradorIds": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "formulaDenominadorIds": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "formulaMultiplicador": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "IndicadorFinancieroResponse": {
+        "required": [
+          "id",
+          "nombre",
+          "categoria",
+          "unidad",
+          "tipo",
+          "isActive",
+          "formulaNumeradorIds",
+          "formulaDenominadorIds",
+          "formulaMultiplicador"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string"
+          },
+          "categoria": {
+            "type": "string"
+          },
+          "unidad": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "formulaNumeradorIds": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "formulaDenominadorIds": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "formulaMultiplicador": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "IndicadoresConsultaResponse": {
+        "required": [
+          "indicadores",
+          "suborganizaciones"
+        ],
+        "type": "object",
+        "properties": {
+          "indicadores": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/IndicadorConsultaResponse"
+            }
+          },
+          "suborganizaciones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SuborganizacionColumnResponse"
+            }
+          }
+        }
+      },
       "LoginRequest": {
         "required": [
           "email",
@@ -4124,6 +6357,42 @@
           },
           "password": {
             "type": "string"
+          }
+        }
+      },
+      "MarcarProcesoRequest": {
+        "required": [
+          "resultado",
+          "motivo",
+          "valorAdjudicado",
+          "fechaAdjudicacion"
+        ],
+        "type": "object",
+        "properties": {
+          "resultado": {
+            "type": "string"
+          },
+          "motivo": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "valorAdjudicado": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "fechaAdjudicacion": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
           }
         }
       },
@@ -4244,33 +6513,6 @@
           }
         }
       },
-      "NitResponse": {
-        "required": [
-          "id",
-          "nit",
-          "description",
-          "isActive"
-        ],
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "nit": {
-            "type": "string"
-          },
-          "description": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "isActive": {
-            "type": "boolean"
-          }
-        }
-      },
       "NotificacionResponse": {
         "required": [
           "id",
@@ -4307,6 +6549,66 @@
           "createdAt": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "OportunidadDocumentoResponse": {
+        "required": [
+          "documentoId",
+          "nombreArchivo",
+          "extension",
+          "tamannoBytes",
+          "estado",
+          "errorMensaje",
+          "creadoEn"
+        ],
+        "type": "object",
+        "properties": {
+          "documentoId": {
+            "type": "string"
+          },
+          "nombreArchivo": {
+            "type": "string"
+          },
+          "extension": {
+            "type": "string"
+          },
+          "tamannoBytes": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "estado": {
+            "type": "string"
+          },
+          "errorMensaje": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "creadoEn": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "OrganizacionDisponibleResponse": {
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
           }
         }
       },
@@ -4391,7 +6693,6 @@
           "entityIds",
           "secopStatusIds",
           "unspscCodeIds",
-          "nitIds",
           "departmentIds",
           "cityIds"
         ],
@@ -4486,13 +6787,6 @@
               "format": "uuid"
             }
           },
-          "nitIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
           "departmentIds": {
             "type": "array",
             "items": {
@@ -4506,6 +6800,27 @@
               "type": "string",
               "format": "uuid"
             }
+          }
+        }
+      },
+      "ParticipacionRequest": {
+        "required": [
+          "participanteId",
+          "porcentaje"
+        ],
+        "type": "object",
+        "properties": {
+          "participanteId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "porcentaje": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
           }
         }
       },
@@ -4664,7 +6979,8 @@
           "promotedToFollowup",
           "isDiscarded",
           "firstDetectedAt",
-          "lastDetectedAt"
+          "lastDetectedAt",
+          "entidadRegistrada"
         ],
         "type": "object",
         "properties": {
@@ -4759,6 +7075,496 @@
           "lastDetectedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "entidadRegistrada": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ProcesoHistoricoListResponse": {
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProcesoHistoricoResponse"
+            }
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ProcesoHistoricoResponse": {
+        "required": [
+          "id",
+          "numeroProceso",
+          "entidad",
+          "objeto",
+          "responsableNombre",
+          "estadoFinal",
+          "motivoCierre",
+          "valorEstimado",
+          "fechaCierre",
+          "fechaUltimaActualizacion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "numeroProceso": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "entidad": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "objeto": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsableNombre": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "estadoFinal": {
+            "type": "string"
+          },
+          "motivoCierre": {
+            "type": "string"
+          },
+          "valorEstimado": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "fechaCierre": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "fechaUltimaActualizacion": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ProcesoLogradoListResponse": {
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize"
+        ],
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProcesoLogradoResponse"
+            }
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "page": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "pageSize": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          }
+        }
+      },
+      "ProcesoLogradoResponse": {
+        "required": [
+          "id",
+          "numeroProceso",
+          "entidad",
+          "objeto",
+          "responsableNombre",
+          "estado",
+          "valorAdjudicado",
+          "valorEstimado",
+          "fechaAdjudicacion",
+          "fechaUltimaActualizacion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "numeroProceso": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "entidad": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "objeto": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsableNombre": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "estado": {
+            "type": "string"
+          },
+          "valorAdjudicado": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "valorEstimado": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "fechaAdjudicacion": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "fechaUltimaActualizacion": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ProcesoSeguimientoResponse": {
+        "required": [
+          "id",
+          "detectedProcessId",
+          "secopId",
+          "dataset",
+          "titulo",
+          "entidad",
+          "objeto",
+          "modalidad",
+          "valor",
+          "fechaPresentacionOferta",
+          "url",
+          "estado",
+          "resultado",
+          "responsableUserId",
+          "createdAt",
+          "updatedAt",
+          "crmOpportunityId",
+          "crmOpportunityUrl",
+          "crmCreatedAt",
+          "motivoDescarte",
+          "valorAdjudicado",
+          "fechaAdjudicacion"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "detectedProcessId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "secopId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "dataset": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "titulo": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "entidad": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "objeto": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "modalidad": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "valor": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "fechaPresentacionOferta": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "url": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "estado": {
+            "type": "string"
+          },
+          "resultado": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "responsableUserId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "crmOpportunityId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "crmOpportunityUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "crmCreatedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "motivoDescarte": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "valorAdjudicado": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "fechaAdjudicacion": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "PromoverProcesoEnVivoRequest": {
+        "required": [
+          "dataset",
+          "secopId",
+          "title",
+          "entityName",
+          "entityNit",
+          "subject",
+          "modality",
+          "status",
+          "value",
+          "publicationDate",
+          "closingDate",
+          "phase",
+          "secopUrl"
+        ],
+        "type": "object",
+        "properties": {
+          "dataset": {
+            "type": "string"
+          },
+          "secopId": {
+            "type": "string"
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "entityName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "entityNit": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "subject": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "modality": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "status": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "value": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "publicationDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "closingDate": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "phase": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "secopUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },
@@ -4789,6 +7595,17 @@
           }
         }
       },
+      "RefrescarSesionRequest": {
+        "required": [
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        }
+      },
       "RefreshRequest": {
         "required": [
           "refreshToken"
@@ -4815,7 +7632,6 @@
           "entityIds",
           "secopStatusIds",
           "unspscCodeIds",
-          "nitIds",
           "departmentIds",
           "cityIds"
         ],
@@ -4900,13 +7716,6 @@
             }
           },
           "unspscCodeIds": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          "nitIds": {
             "type": "array",
             "items": {
               "type": "string",
@@ -5137,13 +7946,13 @@
           }
         }
       },
-      "SetEntidadMonitoreoRequest": {
+      "SetIndicadorEstadoRequest": {
         "required": [
-          "isMonitored"
+          "isActive"
         ],
         "type": "object",
         "properties": {
-          "isMonitored": {
+          "isActive": {
             "type": "boolean"
           }
         }
@@ -5160,17 +7969,6 @@
         }
       },
       "SetModalidadEstadoRequest": {
-        "required": [
-          "isActive"
-        ],
-        "type": "object",
-        "properties": {
-          "isActive": {
-            "type": "boolean"
-          }
-        }
-      },
-      "SetNitEstadoRequest": {
         "required": [
           "isActive"
         ],
@@ -5203,6 +8001,17 @@
           }
         }
       },
+      "SetSuborganizacionEstadoRequest": {
+        "required": [
+          "isActive"
+        ],
+        "type": "object",
+        "properties": {
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
       "SetUsuarioEstadoRequest": {
         "required": [
           "active"
@@ -5214,6 +8023,20 @@
           }
         }
       },
+      "SetValoresIndicadorRequest": {
+        "required": [
+          "valores"
+        ],
+        "type": "object",
+        "properties": {
+          "valores": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValorIndicadorRequest"
+            }
+          }
+        }
+      },
       "SsoRequest": {
         "required": [
           "idToken"
@@ -5222,6 +8045,42 @@
         "properties": {
           "idToken": {
             "type": "string"
+          }
+        }
+      },
+      "SuborganizacionColumnResponse": {
+        "required": [
+          "id",
+          "nombre"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "nombre": {
+            "type": "string"
+          }
+        }
+      },
+      "SuborganizacionResponse": {
+        "required": [
+          "id",
+          "name",
+          "isActive"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "isActive": {
+            "type": "boolean"
           }
         }
       },
@@ -5245,6 +8104,7 @@
         "required": [
           "id",
           "title",
+          "description",
           "processId",
           "processTitle",
           "assignedTo",
@@ -5261,6 +8121,12 @@
           },
           "title": {
             "type": "string"
+          },
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
           "processId": {
             "type": [
@@ -5463,12 +8329,78 @@
       },
       "UpdateEntidadRequest": {
         "required": [
-          "name"
+          "name",
+          "nit",
+          "dv"
         ],
         "type": "object",
         "properties": {
           "name": {
             "type": "string"
+          },
+          "nit": {
+            "type": "string"
+          },
+          "dv": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "UpdateIndicadorRequest": {
+        "required": [
+          "nombre",
+          "categoria",
+          "unidad",
+          "tipo",
+          "formulaNumeradorIds",
+          "formulaDenominadorIds",
+          "formulaMultiplicador"
+        ],
+        "type": "object",
+        "properties": {
+          "nombre": {
+            "type": "string"
+          },
+          "categoria": {
+            "type": "string"
+          },
+          "unidad": {
+            "type": "string"
+          },
+          "tipo": {
+            "type": "string"
+          },
+          "formulaNumeradorIds": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "formulaDenominadorIds": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "formulaMultiplicador": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
           }
         }
       },
@@ -5483,24 +8415,6 @@
             "type": "string"
           },
           "code": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        }
-      },
-      "UpdateNitRequest": {
-        "required": [
-          "nit",
-          "description"
-        ],
-        "type": "object",
-        "properties": {
-          "nit": {
-            "type": "string"
-          },
-          "description": {
             "type": [
               "null",
               "string"
@@ -5544,6 +8458,32 @@
           }
         }
       },
+      "UpdateSuborganizacionRequest": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "UpdateUsuarioOrganizacionesRequest": {
+        "required": [
+          "organizacionIds"
+        ],
+        "type": "object",
+        "properties": {
+          "organizacionIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
       "UpdateUsuarioRolRequest": {
         "required": [
           "role"
@@ -5551,6 +8491,22 @@
         "type": "object",
         "properties": {
           "role": {
+            "type": "string"
+          }
+        }
+      },
+      "UsuarioAsignableResponse": {
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
             "type": "string"
           }
         }
@@ -5638,6 +8594,61 @@
             }
           }
         }
+      },
+      "ValorIndicadorRequest": {
+        "required": [
+          "indicadorId",
+          "suborganizacionId",
+          "valor"
+        ],
+        "type": "object",
+        "properties": {
+          "indicadorId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "suborganizacionId": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "uuid"
+          },
+          "valor": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "ValorPorSuborganizacionResponse": {
+        "required": [
+          "suborganizacionId",
+          "suborganizacionNombre",
+          "valor"
+        ],
+        "type": "object",
+        "properties": {
+          "suborganizacionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "suborganizacionNombre": {
+            "type": "string"
+          },
+          "valor": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
       }
     }
   },
@@ -5673,10 +8684,10 @@
       "name": "EstadosSecop"
     },
     {
-      "name": "Modalidades"
+      "name": "IndicadoresFinancieros"
     },
     {
-      "name": "Nits"
+      "name": "Modalidades"
     },
     {
       "name": "Notificaciones"
@@ -5697,7 +8708,13 @@
       "name": "PowerBi"
     },
     {
+      "name": "ProcesosSeguimiento"
+    },
+    {
       "name": "SecopSync"
+    },
+    {
+      "name": "Suborganizaciones"
     },
     {
       "name": "Tareas"

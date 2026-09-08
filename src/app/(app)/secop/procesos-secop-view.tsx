@@ -295,7 +295,7 @@ export function ProcesosSecopView({
     },
     {
       key: "acciones",
-      title: "",
+      title: "Acciones",
       width: 130,
       align: "right",
       render: (r) => (

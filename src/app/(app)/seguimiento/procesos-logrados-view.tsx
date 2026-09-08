@@ -191,12 +191,14 @@ export function ProcesosLogradosView({
       key: "estado",
       title: <span className="text-xs text-muted-foreground">Estado</span>,
       width: "7%",
+      align: "center",
       render: () => <StatusBadge tone="success">Logrado</StatusBadge>,
     },
     {
       key: "fechaAdjudicacion",
       title: <SortButton columnKey="fechaAdjudicacion" label="F. adjudicación" activeSortBy={filtros.sortBy} onSort={handleSort} />,
       width: "9%",
+      align: "center",
       render: (r) => (
         <span className="text-sm text-muted-foreground">{formatDate(r.fechaAdjudicacion)}</span>
       ),
@@ -223,17 +225,18 @@ export function ProcesosLogradosView({
       key: "fechaUltimaActualizacion",
       title: <SortButton columnKey="fechaUltimaActualizacion" label="Últ. actualización" activeSortBy={filtros.sortBy} onSort={handleSort} />,
       width: "9%",
+      align: "center",
       render: (r) => (
         <span className="text-sm text-muted-foreground">{formatDate(r.fechaUltimaActualizacion)}</span>
       ),
     },
     {
       key: "acciones",
-      title: "",
+      title: "Acciones",
       width: 80,
-      align: "right",
+      align: "center",
       render: (r) => (
-        <div className="flex items-center justify-end gap-1">
+        <div className="flex items-center justify-center gap-1">
           <RowActionButton
             icon={<ChevronRight className="h-3.5 w-3.5" />}
             title="Abrir seguimiento"
