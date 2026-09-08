@@ -5,6 +5,7 @@ import { z } from "zod";
 import { apiFetch } from "@/lib/api/client";
 import { APP_ROLES } from "@/lib/auth/roles";
 import { requireAuth } from "@/lib/auth/session";
+import { createUsuarioSchema } from "./schema";
 
 // Los guardarraíles ("no puedes cambiar tu propio rol/desactivarte") ahora los
 // aplica la API como 409 (rol_propio_protegido / cuenta_propia_protegida) con
@@ -40,6 +41,25 @@ export async function updateUserOrganizaciones(userId: string, organizacionIds: 
   await apiFetch<unknown>(`/usuarios/${id}/organizaciones`, {
     method: "PUT",
     body: { organizacionIds: orgIds },
+  });
+
+  revalidatePath("/admin/usuarios");
+  return { ok: true };
+}
+
+export async function createUsuario(input: unknown) {
+  await requireAuth(["administrador"]);
+  const parsed = createUsuarioSchema.parse(input);
+
+  await apiFetch<unknown>("/usuarios", {
+    method: "POST",
+    body: {
+      fullName: parsed.fullName,
+      email: parsed.email,
+      password: parsed.password || null,
+      role: parsed.role,
+      organizacionIds: parsed.organizacionIds,
+    },
   });
 
   revalidatePath("/admin/usuarios");

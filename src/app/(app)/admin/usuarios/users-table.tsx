@@ -1,21 +1,24 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Pencil } from "lucide-react";
-import { ItcModal, ItcTable, type TableColumn } from "@/components/itc";
+import { Pencil, Plus } from "lucide-react";
+import { ItcButton, ItcInput, ItcModal, ItcTable, type TableColumn } from "@/components/itc";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { RowActionButton } from "@/components/layout/row-action-button";
+import { useFieldErrors, zodIssuesToFieldErrors } from "@/lib/form-errors";
 import { formatDateTime } from "@/lib/format";
 import { roleLabels } from "@/lib/format";
 import type { AppRole } from "@/lib/auth/roles";
 import type { OrganizacionDisponible, UserRow } from "@/lib/users";
 import { CatalogPicker } from "@/app/(app)/admin/parametrica/catalog-picker";
-import { setUserStatus, updateUserOrganizaciones, updateUserRole } from "./actions";
+import { createUsuario, setUserStatus, updateUserOrganizaciones, updateUserRole } from "./actions";
+import { createUsuarioSchema } from "./schema";
 
 const ROLE_OPTIONS = Object.keys(roleLabels) as AppRole[];
 
@@ -36,6 +39,19 @@ export function UsersTable({
   const [deactivateTarget, setDeactivateTarget] = useState<UserRow | null>(null);
   const [orgDialogUser, setOrgDialogUser] = useState<UserRow | null>(null);
   const [selectedOrgIds, setSelectedOrgIds] = useState<Set<string>>(new Set());
+  const [createOpen, setCreateOpen] = useState(false);
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState<AppRole>("lectura");
+  const [createOrgIds, setCreateOrgIds] = useState<Set<string>>(new Set());
+  const { fieldErrors, setFieldErrors, clearFieldError } = useFieldErrors();
+  // El Select de Radix porta su dropdown a document.body por defecto, pero
+  // ItcModal usa <dialog>.showModal(): todo lo de fuera del <dialog> queda
+  // inerte y el dropdown no recibe clicks. Apuntamos el container al propio
+  // <dialog> vía ref (ver comentario en components/ui/select.tsx).
+  const createModalRef = useRef<HTMLDialogElement>(null);
 
   // Solo un superadmin puede otorgar el rol superadmin a otro usuario (la API
   // lo exige igual con un 403; esto solo evita ofrecer una opción condenada).
@@ -91,6 +107,52 @@ export function UsersTable({
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
+    });
+  };
+
+  const toggleCreateOrgId = (id: string) => {
+    setCreateOrgIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const openCreate = () => {
+    setFullName("");
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setRole("lectura");
+    setCreateOrgIds(new Set());
+    setFieldErrors({});
+    setCreateOpen(true);
+  };
+
+  const handleCreate = () => {
+    const result = createUsuarioSchema.safeParse({
+      fullName,
+      email,
+      password: password || undefined,
+      confirmPassword: confirmPassword || undefined,
+      role,
+      organizacionIds: [...createOrgIds],
+    });
+    if (!result.success) {
+      setFieldErrors(zodIssuesToFieldErrors(result.error));
+      return;
+    }
+    setFieldErrors({});
+    startTransition(async () => {
+      try {
+        await createUsuario(result.data);
+        toast.success("Usuario creado");
+        setCreateOpen(false);
+        router.refresh();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "No se pudo crear el usuario");
+      }
     });
   };
 
@@ -214,6 +276,12 @@ export function UsersTable({
 
   return (
     <>
+      <div className="flex justify-end">
+        <ItcButton onClick={openCreate}>
+          <Plus className="h-4 w-4" /> Crear usuario
+        </ItcButton>
+      </div>
+
       {users.length === 0 ? (
         <div className="rounded-2xl border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">
           Sin usuarios registrados.
@@ -266,6 +334,89 @@ export function UsersTable({
         }
         variant="form"
         confirmText="Guardar"
+        disabled={isPending}
+      />
+
+      <ItcModal
+        ref={createModalRef}
+        open={createOpen}
+        onClose={() => setCreateOpen(false)}
+        onConfirm={handleCreate}
+        title="Crear usuario"
+        content={
+          <div className="space-y-3">
+            <div>
+              <Label className="mb-1.5">Nombre <span className="text-destructive">*</span></Label>
+              <ItcInput
+                value={fullName}
+                onChange={(e: any) => { setFullName(e.target.value); clearFieldError("fullName"); }}
+                placeholder="Nombre completo"
+                aria-invalid={!!fieldErrors.fullName}
+              />
+              {fieldErrors.fullName && <p className="mt-1 text-xs text-destructive">{fieldErrors.fullName}</p>}
+            </div>
+            <div>
+              <Label className="mb-1.5">Correo <span className="text-destructive">*</span></Label>
+              <ItcInput
+                value={email}
+                onChange={(e: any) => { setEmail(e.target.value); clearFieldError("email"); }}
+                placeholder="correo@ejemplo.com"
+                type="email"
+                aria-invalid={!!fieldErrors.email}
+              />
+              {fieldErrors.email && <p className="mt-1 text-xs text-destructive">{fieldErrors.email}</p>}
+            </div>
+            <div>
+              <Label className="mb-1.5">Contraseña</Label>
+              <ItcInput
+                value={password}
+                onChange={(e: any) => { setPassword(e.target.value); clearFieldError("password"); }}
+                type="password"
+                autoComplete="new-password"
+                aria-invalid={!!fieldErrors.password}
+              />
+              {fieldErrors.password && <p className="mt-1 text-xs text-destructive">{fieldErrors.password}</p>}
+              <p className="mt-1 text-xs text-muted-foreground">Déjalo en blanco para que el usuario solo entre con Microsoft</p>
+            </div>
+            <div>
+              <Label className="mb-1.5">Confirmar contraseña</Label>
+              <ItcInput
+                value={confirmPassword}
+                onChange={(e: any) => { setConfirmPassword(e.target.value); clearFieldError("confirmPassword"); }}
+                type="password"
+                autoComplete="new-password"
+                aria-invalid={!!fieldErrors.confirmPassword}
+              />
+              {fieldErrors.confirmPassword && <p className="mt-1 text-xs text-destructive">{fieldErrors.confirmPassword}</p>}
+            </div>
+            <div>
+              <Label className="mb-1.5">Rol <span className="text-destructive">*</span></Label>
+              <Select value={role} onValueChange={(v) => { setRole(v as AppRole); clearFieldError("role"); }}>
+                <SelectTrigger aria-invalid={!!fieldErrors.role}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent container={createModalRef.current}>
+                  {roleOptions.map((r) => (
+                    <SelectItem key={r} value={r}>{roleLabels[r]}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {fieldErrors.role && <p className="mt-1 text-xs text-destructive">{fieldErrors.role}</p>}
+            </div>
+            <div>
+              <Label className="mb-1.5">Organizaciones <span className="text-destructive">*</span></Label>
+              <CatalogPicker
+                title=""
+                items={organizacionesDisponibles.map((o) => ({ id: o.id, label: o.nombre }))}
+                selectedIds={createOrgIds}
+                onToggle={toggleCreateOrgId}
+              />
+              {fieldErrors.organizacionIds && <p className="mt-1 text-xs text-destructive">{fieldErrors.organizacionIds}</p>}
+            </div>
+          </div>
+        }
+        variant="form"
+        confirmText="Crear"
         disabled={isPending}
       />
     </>
