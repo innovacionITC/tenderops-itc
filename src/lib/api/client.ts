@@ -164,13 +164,34 @@ async function fetchWithAuth(path: string, options: ApiFetchOptions): Promise<Re
     });
 
   const { accessToken, refreshToken } = await currentTokens();
-  let res = await doFetch(accessToken);
+  let res: Response;
+  try {
+    res = await doFetch(accessToken);
+  } catch (e) {
+    console.error(`[api] ${method} ${path} -> network error`, e);
+    throw new ApiError(503, {
+      status: 503,
+      title: "Error del servidor",
+      detail: "No se pudo establecer comunicación con el servidor. Intenta de nuevo en unos minutos.",
+      code: "error_comunicacion_servidor",
+    });
+  }
 
   if (res.status === 401 && refreshToken) {
     const refreshed = await dedupedRefresh(refreshToken);
     if (refreshed) {
       await adoptTokens(refreshed);
-      res = await doFetch(refreshed.accessToken);
+      try {
+        res = await doFetch(refreshed.accessToken);
+      } catch (e) {
+        console.error(`[api] ${method} ${path} -> network error (retry)`, e);
+        throw new ApiError(503, {
+          status: 503,
+          title: "Error del servidor",
+          detail: "No se pudo establecer comunicación con el servidor. Intenta de nuevo en unos minutos.",
+          code: "error_comunicacion_servidor",
+        });
+      }
     }
   }
 
