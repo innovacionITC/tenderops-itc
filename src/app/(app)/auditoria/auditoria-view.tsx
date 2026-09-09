@@ -200,7 +200,7 @@ export function AuditoriaView({
     },
     {
       key: "action",
-      title: <SortButton columnKey="action" label="Acción" activeSortBy={filtros.sortBy} onSort={handleSort} />,
+      title: <SortButton columnKey="action" label="Detalle" activeSortBy={filtros.sortBy} onSort={handleSort} />,
       width: "15%",
       render: (r) => (
         <span className="block truncate text-sm font-mono" title={r.action}>
@@ -221,7 +221,7 @@ export function AuditoriaView({
     {
       key: "acciones",
       title: "Acciones",
-      width: 50,
+      width: "6%",
       align: "right",
       render: (r) => (
         <RowActionButton
