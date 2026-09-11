@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { RowActionButton } from "@/components/layout/row-action-button";
-import { formatCOP, formatDate } from "@/lib/format";
+import { formatCOP, formatDate, formatMilesInput, parseMilesInput } from "@/lib/format";
 import {
   LOGRADOS_MENSAJE_VACIO,
   type ProcesoLogradoRow,
@@ -307,10 +307,11 @@ export function ProcesosLogradosView({
           <div>
             <Label className="mb-1.5">Valor adjudicado mín.</Label>
             <ItcInput
-              type="number"
-              value={valorAdjudicadoMin}
+              type="text"
+              inputMode="numeric"
+              value={formatMilesInput(valorAdjudicadoMin)}
               onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                setValorAdjudicadoMin(e.target.value)
+                setValorAdjudicadoMin(parseMilesInput(e.target.value))
               }
               onKeyDown={(e: React.KeyboardEvent) => {
                 if (e.key === "Enter") aplicar({ valorAdjudicadoMin });
@@ -321,10 +322,11 @@ export function ProcesosLogradosView({
           <div>
             <Label className="mb-1.5">Valor adjudicado máx.</Label>
             <ItcInput
-              type="number"
-              value={valorAdjudicadoMax}
+              type="text"
+              inputMode="numeric"
+              value={formatMilesInput(valorAdjudicadoMax)}
               onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                setValorAdjudicadoMax(e.target.value)
+                setValorAdjudicadoMax(parseMilesInput(e.target.value))
               }
               onKeyDown={(e: React.KeyboardEvent) => {
                 if (e.key === "Enter") aplicar({ valorAdjudicadoMax });

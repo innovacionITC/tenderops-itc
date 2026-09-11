@@ -10,6 +10,14 @@ export const formatCOP = (v: number | string | null | undefined) => {
   }).format(n);
 };
 
+export const formatMilesInput = (raw: string | number | null | undefined) => {
+  const digits = String(raw ?? "").replace(/\D/g, "");
+  if (!digits) return "";
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
+export const parseMilesInput = (display: string) => display.replace(/\D/g, "");
+
 export const formatDate = (d: string | Date | null | undefined) => {
   if (!d) return "—";
   const date = typeof d === "string" ? new Date(d) : d;

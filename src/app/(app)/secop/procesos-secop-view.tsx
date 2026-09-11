@@ -30,7 +30,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { StatusBadge, type Tone } from "@/components/layout/status-badge";
 import { LoadingOverlay } from "@/components/layout/loading-overlay";
 import { RowActionButton } from "@/components/layout/row-action-button";
-import { formatCOP, formatDate, formatDateTime } from "@/lib/format";
+import { formatCOP, formatDate, formatDateTime, formatMilesInput, parseMilesInput } from "@/lib/format";
 import {
   datasetLabels,
   type Paginado,
@@ -466,14 +466,15 @@ export function ProcesosSecopView({
           <div>
             <Label className="mb-1.5">Cuantía mínima</Label>
             <ItcInput
-              type="number"
-              value={cuantiaMin}
+              type="text"
+              inputMode="numeric"
+              value={formatMilesInput(cuantiaMin)}
               placeholder="$0"
               onChange={(
                 e: ChangeEvent<
                   HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
                 >,
-              ) => setCuantiaMin(e.target.value)}
+              ) => setCuantiaMin(parseMilesInput(e.target.value))}
               onKeyDown={(e: React.KeyboardEvent) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
@@ -486,14 +487,15 @@ export function ProcesosSecopView({
           <div>
             <Label className="mb-1.5">Cuantía máxima</Label>
             <ItcInput
-              type="number"
-              value={cuantiaMax}
+              type="text"
+              inputMode="numeric"
+              value={formatMilesInput(cuantiaMax)}
               placeholder="Sin límite"
               onChange={(
                 e: ChangeEvent<
                   HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
                 >,
-              ) => setCuantiaMax(e.target.value)}
+              ) => setCuantiaMax(parseMilesInput(e.target.value))}
               onKeyDown={(e: React.KeyboardEvent) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
