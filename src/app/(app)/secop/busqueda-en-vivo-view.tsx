@@ -26,7 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { LoadingOverlay } from "@/components/layout/loading-overlay";
 import { RowActionButton } from "@/components/layout/row-action-button";
-import { formatCOP, formatDate } from "@/lib/format";
+import { formatCOP, formatDate, formatMilesInput, parseMilesInput } from "@/lib/format";
 import type { BuscarEnVivoRow, SecopFiltros } from "@/lib/secop-shared";
 import {
   buscarEnVivoAction,
@@ -519,11 +519,12 @@ export function BusquedaEnVivoView({
               <div>
                 <Label className="mb-1.5">Cuantía mínima</Label>
                 <ItcInput
-                  type="number"
-                  value={criterios.cuantiaMin}
+                  type="text"
+                  inputMode="numeric"
+                  value={formatMilesInput(criterios.cuantiaMin)}
                   placeholder="$0"
                   onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                    setCriterios((c) => ({ ...c, cuantiaMin: e.target.value }))
+                    setCriterios((c) => ({ ...c, cuantiaMin: parseMilesInput(e.target.value) }))
                   }
                 />
               </div>
@@ -531,11 +532,12 @@ export function BusquedaEnVivoView({
               <div>
                 <Label className="mb-1.5">Cuantía máxima</Label>
                 <ItcInput
-                  type="number"
-                  value={criterios.cuantiaMax}
+                  type="text"
+                  inputMode="numeric"
+                  value={formatMilesInput(criterios.cuantiaMax)}
                   placeholder="Sin límite"
                   onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                    setCriterios((c) => ({ ...c, cuantiaMax: e.target.value }))
+                    setCriterios((c) => ({ ...c, cuantiaMax: parseMilesInput(e.target.value) }))
                   }
                 />
               </div>

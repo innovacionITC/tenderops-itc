@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { StatusBadge } from "@/components/layout/status-badge";
 import Link from "next/link";
 import type { ParametricaConfig, CatalogItem } from "@/lib/parametrica";
+import { formatMilesInput, parseMilesInput } from "@/lib/format";
 import type { UnspscRow } from "@/lib/unspsc";
 import { CatalogPicker, type PickerItem } from "./catalog-picker";
 import { saveParametricaConfig } from "./actions";
@@ -161,17 +162,19 @@ export function ParametricaForm({
             <div>
               <Label className="mb-1.5">Valor mínimo</Label>
               <ItcInput
-                type="number"
-                value={valorMinimo}
-                onChange={(e) => setValorMinimo(e.target.value)}
+                type="text"
+                inputMode="numeric"
+                value={formatMilesInput(valorMinimo)}
+                onChange={(e) => setValorMinimo(parseMilesInput(e.target.value))}
               />
             </div>
             <div>
               <Label className="mb-1.5">Valor máximo</Label>
               <ItcInput
-                type="number"
-                value={valorMaximo}
-                onChange={(e) => setValorMaximo(e.target.value)}
+                type="text"
+                inputMode="numeric"
+                value={formatMilesInput(valorMaximo)}
+                onChange={(e) => setValorMaximo(parseMilesInput(e.target.value))}
               />
             </div>
           </div>

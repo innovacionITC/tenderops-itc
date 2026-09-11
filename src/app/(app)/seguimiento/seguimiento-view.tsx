@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { formatCOP, formatDate } from "@/lib/format";
+import { formatCOP, formatDate, formatMilesInput, parseMilesInput } from "@/lib/format";
 import { RESULTADO_OPCIONES, opcionesMarcarDisponibles, type ProcesoSeguimientoRow } from "@/lib/seguimiento-shared";
 import { marcarProceso } from "./actions";
 
@@ -268,12 +268,13 @@ export function SeguimientoView({
                 <div>
                   <Label className="mb-1.5">Valor adjudicado</Label>
                   <ItcInput
-                    type="number"
-                    value={valorAdjudicado}
+                    type="text"
+                    inputMode="numeric"
+                    value={formatMilesInput(valorAdjudicado)}
                     onChange={(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                      setValorAdjudicado(e.target.value)
+                      setValorAdjudicado(parseMilesInput(e.target.value))
                     }
-                    placeholder="Ej: 500000000"
+                    placeholder="Ej: 500.000.000"
                   />
                 </div>
                 <div>
