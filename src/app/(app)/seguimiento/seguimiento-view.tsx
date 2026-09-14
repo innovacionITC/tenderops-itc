@@ -97,20 +97,11 @@ export function SeguimientoView({
   };
 
   const columns: TableColumn<ProcesoSeguimientoRow>[] = [
-    {
-      key: "titulo",
-      title: "Proceso",
-      width: "25%",
-      render: (r) => (
-        <span className="block truncate font-medium" title={r.titulo ?? r.secopId ?? undefined}>
-          {r.titulo ?? r.secopId}
-        </span>
-      ),
-    },
+    
     {
       key: "entidad",
       title: "Entidad",
-      width: "18%",
+      width: "13%",
       render: (r) => (
         <span className="block truncate text-sm text-muted-foreground" title={r.entidad ?? undefined}>
           {r.entidad ?? "—"}
@@ -118,9 +109,39 @@ export function SeguimientoView({
       ),
     },
     {
-      key: "valor",
-      title: "Valor",
+      key: "objeto",
+      title: "Objeto",
+      width: "18%",
+      render: (r) => (
+        <span className="block truncate text-sm text-muted-foreground" title={r.objeto ?? undefined}>
+          {r.objeto ?? "—"}
+        </span>
+      ),
+    },
+    {
+      key: "modalidad",
+      title: "Modalidad",
       width: "10%",
+      render: (r) => (
+        <span className="block truncate text-sm text-muted-foreground" title={r.modalidad ?? undefined}>
+          {r.modalidad ?? "—"}
+        </span>
+      ),
+    },
+    {
+      key: "titulo",
+      title: "Proceso",
+      width: "16%",
+      render: (r) => (
+        <span className="block truncate font-medium" title={r.titulo ?? r.secopId ?? undefined}>
+          {r.titulo ?? r.secopId}
+        </span>
+      ),
+    },
+    {
+      key: "valor",
+      title: "Cuantía",
+      width: "9%",
       align: "right",
       render: (r) => (
         <span className="text-sm tabular-nums">{formatCOP(r.valor)}</span>
@@ -129,7 +150,7 @@ export function SeguimientoView({
     {
       key: "fechaPresentacionOferta",
       title: "Presentación",
-      width: "10%",
+      width: "9%",
       align: "center",
       render: (r) => (
         <span className="block truncate text-sm text-muted-foreground" title={r.fechaPresentacionOferta ?? undefined}>
