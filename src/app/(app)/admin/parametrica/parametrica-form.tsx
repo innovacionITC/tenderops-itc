@@ -15,7 +15,8 @@ import type { ParametricaConfig, CatalogItem } from "@/lib/parametrica";
 import { formatMilesInput, parseMilesInput } from "@/lib/format";
 import type { UnspscRow } from "@/lib/unspsc";
 import { CatalogPicker, type PickerItem } from "./catalog-picker";
-import { saveParametricaConfig } from "./actions";
+import { deleteEstadoSecop } from "../estados-secop/actions";
+import { quickAddEstadoSecop, saveParametricaConfig } from "./actions";
 
 function toPickerItems(items: CatalogItem[]): PickerItem[] {
   return items.map((i) => ({ id: i.id, label: i.label }));
@@ -58,10 +59,14 @@ export function ParametricaForm({
     id: c.id,
     label: c.descripcion ? `${c.codigo} — ${c.descripcion}` : c.codigo,
   }));
+  const estadoSecopItems: PickerItem[] = catalogs.estadosSecop.map((e) => ({
+    id: e.id,
+    label: e.label,
+  }));
 
   const [modalidadIds] = useState(new Set(config?.modalidadIds ?? []));
   const [entidadIds] = useState(new Set(config?.entidadIds ?? []));
-  const [estadoSecopIds] = useState(new Set(config?.estadoSecopIds ?? []));
+  const [estadoSecopIds, setEstadoSecopIds] = useState(new Set(config?.estadoSecopIds ?? []));
   const [unspscIds, setUnspscIds] = useState(new Set(config?.unspscIds ?? []));
   const [departamentoIds] = useState(new Set(config?.departamentoIds ?? []));
   // Ciudades guarda items completos (id + label): el catálogo no está en el
@@ -73,6 +78,22 @@ export function ParametricaForm({
     if (next.has(id)) next.delete(id);
     else next.add(id);
     setter(next);
+  };
+
+  const handleQuickAddEstadoSecop = async (label: string): Promise<PickerItem> => {
+    const created = await quickAddEstadoSecop({ nombre: label });
+    router.refresh();
+    return created;
+  };
+
+  const handleDeleteEstadoSecop = async (id: string) => {
+    await deleteEstadoSecop(id);
+    setEstadoSecopIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+    router.refresh();
   };
 
   const addKeyword = () => {
@@ -240,6 +261,15 @@ export function ParametricaForm({
                 </Link>
               </p>
             }
+          />
+          <CatalogPicker
+            title="Estados SECOP"
+            items={estadoSecopItems}
+            selectedIds={estadoSecopIds}
+            onToggle={(id) => toggle(estadoSecopIds, setEstadoSecopIds, id)}
+            onQuickAdd={handleQuickAddEstadoSecop}
+            onDelete={handleDeleteEstadoSecop}
+            emptyHint={<p className="p-2 text-xs text-muted-foreground">Sin estados SECOP.</p>}
           />
         </CardContent>
       </Card>

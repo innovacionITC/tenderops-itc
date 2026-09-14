@@ -1245,6 +1245,107 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/estados-secop/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateEstadoSecopRequest"];
+                    "text/json": components["schemas"]["UpdateEstadoSecopRequest"];
+                    "application/*+json": components["schemas"]["UpdateEstadoSecopRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        post?: never;
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/estados-secop/{id}/estado": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["SetEstadoSecopEstadoRequest"];
+                    "text/json": components["schemas"]["SetEstadoSecopEstadoRequest"];
+                    "application/*+json": components["schemas"]["SetEstadoSecopEstadoRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
     "/indicadores": {
         parameters: {
             query?: never;
@@ -4581,6 +4682,9 @@ export interface components {
         SetEntidadEstadoRequest: {
             isActive: boolean;
         };
+        SetEstadoSecopEstadoRequest: {
+            isActive: boolean;
+        };
         SetIndicadorEstadoRequest: {
             isActive: boolean;
         };
@@ -4679,6 +4783,9 @@ export interface components {
             name: string;
             nit: string;
             dv: null | string;
+        };
+        UpdateEstadoSecopRequest: {
+            name: string;
         };
         UpdateIndicadorRequest: {
             nombre: string;
