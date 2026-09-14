@@ -276,51 +276,20 @@ html:root {
   background-color: oklch(0.577 0.245 27.325 / 0.85) !important;
   color: white !important;
 }
-:is(.dark) .rbc-event-vencida {
-  background-color: oklch(0.704 0.191 22.216 / 0.85) !important;
-}
 
 .rbc-event-proxima {
   background-color: oklch(0.769 0.188 70.082 / 0.85) !important;
   color: oklch(0.269 0.058 70.082) !important;
-}
-:is(.dark) .rbc-event-proxima {
-  background-color: oklch(0.769 0.188 70.082 / 0.65) !important;
-  color: oklch(0.922 0.012 95.277) !important;
 }
 
 .rbc-event-completada {
   background-color: oklch(0.627 0.194 149.214 / 0.7) !important;
   color: oklch(0.269 0.046 149.214) !important;
 }
-:is(.dark) .rbc-event-completada {
-  background-color: oklch(0.627 0.194 149.214 / 0.5) !important;
-  color: oklch(0.922 0.012 95.277) !important;
-}
 
-.rbc-event-secop {
-  background-color: oklch(0.577 0.245 27.325 / 0.7) !important;
-  color: white !important;
-}
-:is(.dark) .rbc-event-secop {
-  background-color: oklch(0.704 0.191 22.216 / 0.7) !important;
-}
-
-.rbc-event-tarea {
-  background-color: oklch(0.769 0.188 70.082 / 0.7) !important;
-  color: oklch(0.269 0.058 70.082) !important;
-}
-:is(.dark) .rbc-event-tarea {
-  background-color: oklch(0.769 0.188 70.082 / 0.5) !important;
-  color: oklch(0.922 0.012 95.277) !important;
-}
-
-.rbc-event-evento {
+.rbc-event-pendiente {
   background-color: oklch(0.682 0.157 220.066 / 0.7) !important;
   color: white !important;
-}
-:is(.dark) .rbc-event-evento {
-  background-color: oklch(0.682 0.157 220.066 / 0.5) !important;
 }
 
 .rbc-toolbar button {

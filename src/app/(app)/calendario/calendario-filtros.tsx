@@ -88,10 +88,11 @@ export function CalendarioFiltrosBar({
       {isPending && (
         <Spinner className="mb-2 size-3.5 self-end text-muted-foreground" aria-label="Actualizando" />
       )}
-      <div>
+      <div className="w-36">
         <Label className="mb-1.5">Responsable</Label>
         <ItcInput
           type="select"
+          className="w-full"
           value={filtros.responsableUserId}
           onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
             aplicar({ responsableUserId: e.target.value })
@@ -103,10 +104,11 @@ export function CalendarioFiltrosBar({
           ))}
         </ItcInput>
       </div>
-      <div>
+      <div className="w-36">
         <Label className="mb-1.5">Estado</Label>
         <ItcInput
           type="select"
+          className="w-full"
           value={filtros.estado}
           onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
             aplicar({ estado: e.target.value })
@@ -118,10 +120,11 @@ export function CalendarioFiltrosBar({
           ))}
         </ItcInput>
       </div>
-      <div>
+      <div className="w-36">
         <Label className="mb-1.5">Tipo</Label>
         <ItcInput
           type="select"
+          className="w-full"
           value={filtros.tipo}
           onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
             aplicar({ tipo: e.target.value })
@@ -133,10 +136,11 @@ export function CalendarioFiltrosBar({
           ))}
         </ItcInput>
       </div>
-      <div>
+      <div className="w-48">
         <Label className="mb-1.5">Oportunidad</Label>
         <ItcInput
           type="select"
+          className="w-full"
           value={filtros.procesoId}
           onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
             aplicar({ procesoId: e.target.value })
@@ -150,7 +154,7 @@ export function CalendarioFiltrosBar({
           ))}
         </ItcInput>
       </div>
-      <div>
+      <div className="w-56">
         <Label className="mb-1.5">Rango de fechas</Label>
         <ItcDateRangePicker
           value={dateRange}

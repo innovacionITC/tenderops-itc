@@ -4,13 +4,14 @@ import { useRouter } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { ItcModal } from "@/components/itc";
 import { ItcButton } from "@/components/itc";
+import { formatDateTime } from "@/lib/format";
 import type { Actividad } from "@/lib/calendar";
 
 export function ActividadDetalleModal({
   actividad,
   onClose,
 }: {
-  actividad: Actividad;
+  actividad: Actividad | null;
   onClose: () => void;
 }) {
   const router = useRouter();
@@ -37,78 +38,80 @@ export function ActividadDetalleModal({
 
   return (
     <ItcModal
-      open={true}
+      open={actividad !== null}
       onClose={onClose}
-      title={actividad.title}
+      title={actividad?.title}
       content={
-        <div className="space-y-3 text-sm">
-          <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
-            <span className="text-muted-foreground">Tipo</span>
-            <span>{SOURCE_LABELS[actividad.source] ?? actividad.source}</span>
+        actividad && (
+          <div className="space-y-3 text-sm">
+            <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2">
+              <span className="text-muted-foreground">Tipo</span>
+              <span>{SOURCE_LABELS[actividad.source] ?? actividad.source}</span>
 
-            <span className="text-muted-foreground">Estado</span>
-            <span className={ESTADO_COLORS[actividad.estado] ?? ""}>
-              {ESTADO_LABELS[actividad.estado] ?? actividad.estado}
-            </span>
+              <span className="text-muted-foreground">Estado</span>
+              <span className={ESTADO_COLORS[actividad.estado] ?? ""}>
+                {ESTADO_LABELS[actividad.estado] ?? actividad.estado}
+              </span>
 
-            <span className="text-muted-foreground">Inicio</span>
-            <span>{new Date(actividad.startDate).toLocaleDateString("es-CO")}</span>
+              <span className="text-muted-foreground">Inicio</span>
+              <span>{formatDateTime(actividad.startDate)}</span>
 
-            {actividad.endDate && (
-              <>
-                <span className="text-muted-foreground">Fin</span>
-                <span>{new Date(actividad.endDate).toLocaleDateString("es-CO")}</span>
-              </>
-            )}
+              {actividad.endDate && (
+                <>
+                  <span className="text-muted-foreground">Fin</span>
+                  <span>{formatDateTime(actividad.endDate)}</span>
+                </>
+              )}
 
-            {actividad.numeroProceso && (
-              <>
-                <span className="text-muted-foreground">N° proceso</span>
-                <span className="font-mono">{actividad.numeroProceso}</span>
-              </>
-            )}
+              {actividad.numeroProceso && (
+                <>
+                  <span className="text-muted-foreground">N° proceso</span>
+                  <span className="font-mono">{actividad.numeroProceso}</span>
+                </>
+              )}
 
-            {actividad.entidad && (
-              <>
-                <span className="text-muted-foreground">Entidad</span>
-                <span>{actividad.entidad}</span>
-              </>
-            )}
+              {actividad.entidad && (
+                <>
+                  <span className="text-muted-foreground">Entidad</span>
+                  <span>{actividad.entidad}</span>
+                </>
+              )}
 
-            {actividad.responsableNombre && (
-              <>
-                <span className="text-muted-foreground">Responsable</span>
-                <span>{actividad.responsableNombre}</span>
-              </>
-            )}
+              {actividad.responsableNombre && (
+                <>
+                  <span className="text-muted-foreground">Responsable</span>
+                  <span>{actividad.responsableNombre}</span>
+                </>
+              )}
 
-            {actividad.prioridad && (
-              <>
-                <span className="text-muted-foreground">Prioridad</span>
-                <span className="capitalize">{actividad.prioridad}</span>
-              </>
-            )}
+              {actividad.prioridad && (
+                <>
+                  <span className="text-muted-foreground">Prioridad</span>
+                  <span className="capitalize">{actividad.prioridad}</span>
+                </>
+              )}
 
-            {actividad.eventType && (
-              <>
-                <span className="text-muted-foreground">Tipo de evento</span>
-                <span className="capitalize">{actividad.eventType}</span>
-              </>
+              {actividad.eventType && (
+                <>
+                  <span className="text-muted-foreground">Tipo de evento</span>
+                  <span className="capitalize">{actividad.eventType}</span>
+                </>
+              )}
+            </div>
+
+            {actividad.processId && (
+              <div className="pt-2">
+                <ItcButton
+                  variant="secondary"
+                  onClick={() => router.push(`/seguimiento/${actividad.processId}`)}
+                >
+                  <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
+                  Ver proceso completo
+                </ItcButton>
+              </div>
             )}
           </div>
-
-          {actividad.processId && (
-            <div className="pt-2">
-              <ItcButton
-                variant="secondary"
-                onClick={() => router.push(`/seguimiento/${actividad.processId}`)}
-              >
-                <ExternalLink className="mr-1.5 h-3.5 w-3.5" />
-                Ver proceso completo
-              </ItcButton>
-            </div>
-          )}
-        </div>
+        )
       }
     />
   );
