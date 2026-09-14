@@ -45,6 +45,16 @@ function toIsoDate(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
+// El título completo ya se ve en el modal de detalle (ActividadDetalleModal):
+// en la grilla basta un texto corto, así las columnas del calendario no
+// necesitan ensancharse para mostrarlo completo.
+const TITULO_GRILLA_MAX = 26;
+function toTituloGrilla(title: string): string {
+  return title.length > TITULO_GRILLA_MAX
+    ? `${title.slice(0, TITULO_GRILLA_MAX - 1)}…`
+    : title;
+}
+
 export function CalendarView({
   actividades,
   tasks,
@@ -104,25 +114,20 @@ export function CalendarView({
         actividad: a,
         start: new Date(a.startDate),
         end: a.endDate ? new Date(a.endDate) : new Date(a.startDate),
-        title: a.title,
+        title: toTituloGrilla(a.title),
       })),
     [actividades],
   );
 
-  const eventPropGetter = useCallback(
-    (event: CalendarEvent) => {
-      const { estado, source } = event.actividad;
-      let className = "";
-      if (estado === "vencida") className = "rbc-event-vencida";
-      else if (estado === "proxima_a_vencer") className = "rbc-event-proxima";
-      else if (estado === "completada") className = "rbc-event-completada";
-      else if (source === "secop_closing") className = "rbc-event-secop";
-      else if (source === "task") className = "rbc-event-tarea";
-      else className = "rbc-event-evento";
-      return { className };
-    },
-    [],
-  );
+  const eventPropGetter = useCallback((event: CalendarEvent) => {
+    const { estado } = event.actividad;
+    let className = "";
+    if (estado === "vencida") className = "rbc-event-vencida";
+    else if (estado === "proxima_a_vencer") className = "rbc-event-proxima";
+    else if (estado === "completada") className = "rbc-event-completada";
+    else className = "rbc-event-pendiente";
+    return { className };
+  }, []);
 
   const handleSelectEvent = useCallback((event: CalendarEvent) => {
     setSelectedActividad(event.actividad);
@@ -180,13 +185,13 @@ export function CalendarView({
         />
         <div className="mt-3 flex items-center gap-3 text-[11px] text-muted-foreground">
           <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-sm bg-destructive/60" /> Cierre SECOP
+            <span className="h-2 w-2 rounded-sm bg-destructive/60" /> Vencida
           </span>
           <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-sm bg-amber-500/60" /> Tarea
+            <span className="h-2 w-2 rounded-sm bg-amber-500/60" /> Próxima a vencer
           </span>
           <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-sm bg-sky-500/60" /> Evento
+            <span className="h-2 w-2 rounded-sm bg-sky-500/60" /> Pendiente
           </span>
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-sm bg-emerald-500/60" /> Completada
@@ -265,12 +270,10 @@ export function CalendarView({
         </div>
       </aside>
 
-      {selectedActividad && (
-        <ActividadDetalleModal
-          actividad={selectedActividad}
-          onClose={() => setSelectedActividad(null)}
-        />
-      )}
+      <ActividadDetalleModal
+        actividad={selectedActividad}
+        onClose={() => setSelectedActividad(null)}
+      />
     </div>
   );
 }
