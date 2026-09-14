@@ -60,17 +60,15 @@ function DocumentosSecopStatus({
       <div className="flex items-center justify-between gap-2">
         <h4 className="text-sm font-medium">Documentos de SECOP</h4>
         <div className="flex items-center gap-2">
-          {documentosCrm.length > 0 && (
-            <ItcButton
-              variant={errores > 0 ? "warning" : "secondary"}
-              size="sm"
-              iconLeft={<RotateCcw className="h-3.5 w-3.5" />}
-              loading={isRetrying}
-              onClick={handleReintentar}
-            >
-              Reintentar sincronización
-            </ItcButton>
-          )}
+          <ItcButton
+            variant={errores > 0 ? "warning" : "secondary"}
+            size="sm"
+            iconLeft={<RotateCcw className="h-3.5 w-3.5" />}
+            loading={isRetrying}
+            onClick={handleReintentar}
+          >
+            Reintentar sincronización
+          </ItcButton>
           <ItcButton
             variant="secondary"
             size="sm"
