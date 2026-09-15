@@ -21,6 +21,14 @@ export type ProcesoSeguimientoRow = {
   motivoDescarte: string | null;
   valorAdjudicado: number | null;
   fechaAdjudicacion: string | null;
+  fase: string | null;
+  detectadoEl: string | null;
+};
+
+export type SeguimientoFiltrosDisponibles = {
+  entidades: string[];
+  modalidades: string[];
+  fases: string[];
 };
 
 export const RESULTADO_OPCIONES = [

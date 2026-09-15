@@ -1,6 +1,6 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { requireAuth } from "@/lib/auth/session";
-import { listProcesosSeguimiento } from "@/lib/seguimiento";
+import { listProcesosSeguimiento, getSeguimientoFiltros } from "@/lib/seguimiento";
 import { listProcesosHistoricos } from "@/lib/seguimiento-historicos";
 import { listProcesosLogrados } from "@/lib/seguimiento-logrados";
 import { listUsuariosAsignables } from "@/lib/usuarios-asignables";
@@ -18,7 +18,7 @@ import type { LogradosFiltrosDisponibles } from "@/lib/seguimiento-logrados-shar
 import type { Paginado } from "@/lib/secop-shared";
 import type { ProcesoHistoricoRow } from "@/lib/seguimiento-historicos-shared";
 import type { ProcesoLogradoRow } from "@/lib/seguimiento-logrados-shared";
-import type { ProcesoSeguimientoRow } from "@/lib/seguimiento-shared";
+import type { ProcesoSeguimientoRow, SeguimientoFiltrosDisponibles } from "@/lib/seguimiento-shared";
 
 export default async function SeguimientoPage({
   searchParams,
@@ -38,6 +38,18 @@ export default async function SeguimientoPage({
     sortDir?: string;
     page?: string;
     pageSize?: string;
+    buscar?: string;
+    objeto?: string;
+    modalidad?: string;
+    fase?: string;
+    cuantiaMin?: string;
+    cuantiaMax?: string;
+    detectadoDesde?: string;
+    detectadoHasta?: string;
+    presentacionDesde?: string;
+    presentacionHasta?: string;
+    estado?: string;
+    resultado?: string;
   }>;
 }) {
   await requireAuth(["administrador", "director", "gestor"]);
@@ -208,7 +220,31 @@ export default async function SeguimientoPage({
     );
   }
 
-  const procesos: ProcesoSeguimientoRow[] = await listProcesosSeguimiento();
+  const buscar = params.buscar?.trim() || undefined;
+  const entidad = params.entidad?.trim() || undefined;
+  const objeto = params.objeto?.trim() || undefined;
+  const modalidad = params.modalidad || undefined;
+  const fase = params.fase || undefined;
+  const cuantiaMin = params.cuantiaMin ? Number(params.cuantiaMin) : undefined;
+  const cuantiaMax = params.cuantiaMax ? Number(params.cuantiaMax) : undefined;
+  const detectadoDesde = params.detectadoDesde || undefined;
+  const detectadoHasta = params.detectadoHasta || undefined;
+  const presentacionDesde = params.presentacionDesde || undefined;
+  const presentacionHasta = params.presentacionHasta || undefined;
+  const estado = params.estado || undefined;
+  const resultado = params.resultado || undefined;
+
+  const [procesos, filtrosDisponibles]: [ProcesoSeguimientoRow[], SeguimientoFiltrosDisponibles] =
+    await Promise.all([
+      listProcesosSeguimiento({
+        buscar, entidad, objeto, modalidad, fase,
+        cuantiaMin, cuantiaMax,
+        detectadoDesde, detectadoHasta,
+        presentacionDesde, presentacionHasta,
+        estado, resultado,
+      }),
+      getSeguimientoFiltros(),
+    ]);
   const activos = procesos.filter((p) => p.estado !== "cerrado");
 
   return (
@@ -216,7 +252,25 @@ export default async function SeguimientoPage({
       {header}
       <div className="space-y-4 p-4 sm:p-6 lg:p-8">
         <SeguimientoTabsNav vista={vista} />
-        <SeguimientoView procesos={activos} />
+        <SeguimientoView
+          procesos={activos}
+          filtros={{
+            buscar: buscar ?? "",
+            entidad: entidad ?? "",
+            objeto: objeto ?? "",
+            modalidad: modalidad ?? "",
+            fase: fase ?? "",
+            cuantiaMin: params.cuantiaMin ?? "",
+            cuantiaMax: params.cuantiaMax ?? "",
+            detectadoDesde: detectadoDesde ?? "",
+            detectadoHasta: detectadoHasta ?? "",
+            presentacionDesde: presentacionDesde ?? "",
+            presentacionHasta: presentacionHasta ?? "",
+            estado: estado ?? "",
+            resultado: resultado ?? "",
+          }}
+          filtrosDisponibles={filtrosDisponibles}
+        />
       </div>
     </>
   );
