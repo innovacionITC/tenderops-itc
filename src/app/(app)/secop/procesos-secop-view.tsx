@@ -11,6 +11,7 @@ import {
   XCircle,
   Info,
   Star,
+  SlidersHorizontal,
 } from "lucide-react";
 import {
   ItcTable,
@@ -113,6 +114,12 @@ export function ProcesosSecopView({
   const [objeto, setObjeto] = useState(filtros.objeto);
   const [cuantiaMin, setCuantiaMin] = useState(filtros.cuantiaMin);
   const [cuantiaMax, setCuantiaMax] = useState(filtros.cuantiaMax);
+  const hasFiltrosAvanzadosActivos = Boolean(
+    filtros.entidad || filtros.objeto || filtros.modalidad || filtros.estado ||
+    filtros.fase || filtros.cuantiaMin || filtros.cuantiaMax ||
+    filtros.detectadoDesde || filtros.detectadoHasta,
+  );
+  const [mostrarFiltros, setMostrarFiltros] = useState(hasFiltrosAvanzadosActivos);
   const [promoverTarget, setPromoverTarget] = useState<ProcesoRow | null>(null);
   const [descartarTarget, setDescartarTarget] = useState<ProcesoRow | null>(null);
   const [descartarMotivo, setDescartarMotivo] = useState("");
@@ -156,6 +163,16 @@ export function ProcesosSecopView({
 
     startBuscar(() => {
       router.push(qs.size > 0 ? `${pathname}?${qs}` : pathname);
+    });
+  };
+
+  const limpiarFiltros = () => {
+    setBuscar("");
+    setObjeto("");
+    setCuantiaMin("");
+    setCuantiaMax("");
+    startBuscar(() => {
+      router.push(pathname);
     });
   };
 
@@ -358,182 +375,212 @@ export function ProcesosSecopView({
             </ItcButton>
           )}
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="lg:col-span-2">
-            <Label className="mb-1.5">Buscar</Label>
-            <div className="flex gap-1.5">
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <Label className="mb-1.5">Buscar</Label>
+              <div className="flex gap-1.5">
+                <ItcInput
+                  value={buscar}
+                  placeholder="Título, entidad u objeto…"
+                  onChange={(
+                    e: ChangeEvent<
+                      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+                    >,
+                  ) => setBuscar(e.target.value)}
+                  onKeyDown={(e: React.KeyboardEvent) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      aplicar({ buscar });
+                    }
+                  }}
+                />
+                <ItcButton
+                  type="button"
+                  variant="secondary"
+                  onClick={() => aplicar({ buscar })}
+                >
+                  <Search className="h-4 w-4" />
+                </ItcButton>
+              </div>
+            </div>
+
+            <div>
+              <Label className="mb-1.5">Fuente</Label>
               <ItcInput
-                value={buscar}
-                placeholder="Título, entidad u objeto…"
-                onChange={(
-                  e: ChangeEvent<
-                    HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                  >,
-                ) => setBuscar(e.target.value)}
-                onKeyDown={(e: React.KeyboardEvent) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    aplicar({ buscar });
-                  }
-                }}
-              />
+                type="select"
+                value={filtros.dataset || TODOS}
+                onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+                  aplicar({ dataset: e.target.value === TODOS ? "" : e.target.value })
+                }
+              >
+                <option value={TODOS}>Todas</option>
+                <option value="secop_i">SECOP I</option>
+                <option value="secop_ii">SECOP II</option>
+              </ItcInput>
+            </div>
+
+            <div className="flex items-end">
+              <label className="flex items-center gap-2 text-sm">
+                <Switch
+                  checked={filtros.soloNuevos}
+                  onCheckedChange={(checked) => aplicar({ soloNuevos: checked })}
+                />
+                Solo nuevos
+              </label>
+            </div>
+
+            <div className="flex items-end gap-2">
               <ItcButton
                 type="button"
                 variant="secondary"
-                onClick={() => aplicar({ buscar })}
+                onClick={() => setMostrarFiltros(!mostrarFiltros)}
+                className="gap-1.5"
               >
-                <Search className="h-4 w-4" />
+                <SlidersHorizontal className="h-4 w-4" />
+                {mostrarFiltros ? "Ocultar filtros" : "Filtros avanzados"}
               </ItcButton>
             </div>
           </div>
 
-          <SelectConOtro
-            label="Entidad"
-            value={filtros.entidad}
-            opciones={entidadesDisponibles}
-            placeholderTodos="Todas"
-            onChange={(value) => aplicar({ entidad: value })}
-          />
-
-          <div>
-            <Label className="mb-1.5">Objeto</Label>
-            <ItcInput
-              value={objeto}
-              placeholder="Filtrar por objeto…"
-              onChange={(
-                e: ChangeEvent<
-                  HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                >,
-              ) => setObjeto(e.target.value)}
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  aplicar({ objeto });
-                }
-              }}
-            />
-          </div>
-
-          <div>
-            <Label className="mb-1.5">Fuente</Label>
-            <ItcInput
-              type="select"
-              value={filtros.dataset || TODOS}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                aplicar({ dataset: e.target.value === TODOS ? "" : e.target.value })
-              }
-            >
-              <option value={TODOS}>Todas</option>
-              <option value="secop_i">SECOP I</option>
-              <option value="secop_ii">SECOP II</option>
-            </ItcInput>
-          </div>
-
-          <SelectConOtro
-            label="Modalidad"
-            value={filtros.modalidad}
-            opciones={filtrosDisponibles.modalidades}
-            placeholderTodos="Todas"
-            onChange={(value) => aplicar({ modalidad: value })}
-          />
-
-          <SelectConOtro
-            label="Estado"
-            value={filtros.estado}
-            opciones={filtrosDisponibles.estados}
-            placeholderTodos="Todos"
-            onChange={(value) => aplicar({ estado: value })}
-          />
-
-          <div>
-            <Label className="mb-1.5">Fase</Label>
-            <ItcInput
-              type="select"
-              value={filtros.fase || TODOS}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                aplicar({ fase: e.target.value === TODOS ? "" : e.target.value })
-              }
-            >
-              <option value={TODOS}>Todas</option>
-              {filtrosDisponibles.fases.map((f) => (
-                <option key={f} value={f}>
-                  {f}
-                </option>
-              ))}
-            </ItcInput>
-          </div>
-
-          <div>
-            <Label className="mb-1.5">Cuantía mínima</Label>
-            <ItcInput
-              type="text"
-              inputMode="numeric"
-              value={formatMilesInput(cuantiaMin)}
-              placeholder="$0"
-              onChange={(
-                e: ChangeEvent<
-                  HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                >,
-              ) => setCuantiaMin(parseMilesInput(e.target.value))}
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  aplicar({ cuantiaMin });
-                }
-              }}
-            />
-          </div>
-
-          <div>
-            <Label className="mb-1.5">Cuantía máxima</Label>
-            <ItcInput
-              type="text"
-              inputMode="numeric"
-              value={formatMilesInput(cuantiaMax)}
-              placeholder="Sin límite"
-              onChange={(
-                e: ChangeEvent<
-                  HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                >,
-              ) => setCuantiaMax(parseMilesInput(e.target.value))}
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  aplicar({ cuantiaMax });
-                }
-              }}
-            />
-          </div>
-
-          <div className="lg:col-span-2">
-            <ItcDateRangePicker
-              label="Detectado"
-              placeholder="Rango de fechas…"
-              clearable
-              value={
-                {
-                  from: fromIsoDate(filtros.detectadoDesde),
-                  to: fromIsoDate(filtros.detectadoHasta),
-                } as DateRange
-              }
-              onChange={(range) =>
-                aplicar({
-                  detectadoDesde: toIsoDate(range?.from),
-                  detectadoHasta: toIsoDate(range?.to),
-                })
-              }
-            />
-          </div>
-
-          <div className="flex items-end">
-            <label className="flex items-center gap-2 text-sm">
-              <Switch
-                checked={filtros.soloNuevos}
-                onCheckedChange={(checked) => aplicar({ soloNuevos: checked })}
+          {mostrarFiltros && (
+            <div className="grid grid-cols-1 gap-4 border-t pt-4 sm:grid-cols-2 lg:grid-cols-4">
+              <SelectConOtro
+                label="Entidad"
+                value={filtros.entidad}
+                opciones={entidadesDisponibles}
+                placeholderTodos="Todas"
+                onChange={(value) => aplicar({ entidad: value })}
               />
-              Solo nuevos
-            </label>
-          </div>
+
+              <div>
+                <Label className="mb-1.5">Objeto</Label>
+                <ItcInput
+                  value={objeto}
+                  placeholder="Filtrar por objeto…"
+                  onChange={(
+                    e: ChangeEvent<
+                      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+                    >,
+                  ) => setObjeto(e.target.value)}
+                  onKeyDown={(e: React.KeyboardEvent) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      aplicar({ objeto });
+                    }
+                  }}
+                />
+              </div>
+
+              <SelectConOtro
+                label="Modalidad"
+                value={filtros.modalidad}
+                opciones={filtrosDisponibles.modalidades}
+                placeholderTodos="Todas"
+                onChange={(value) => aplicar({ modalidad: value })}
+              />
+
+              <SelectConOtro
+                label="Estado"
+                value={filtros.estado}
+                opciones={filtrosDisponibles.estados}
+                placeholderTodos="Todos"
+                onChange={(value) => aplicar({ estado: value })}
+              />
+
+              <div>
+                <Label className="mb-1.5">Fase</Label>
+                <ItcInput
+                  type="select"
+                  value={filtros.fase || TODOS}
+                  onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+                    aplicar({ fase: e.target.value === TODOS ? "" : e.target.value })
+                  }
+                >
+                  <option value={TODOS}>Todas</option>
+                  {filtrosDisponibles.fases.map((f) => (
+                    <option key={f} value={f}>
+                      {f}
+                    </option>
+                  ))}
+                </ItcInput>
+              </div>
+
+              <div>
+                <Label className="mb-1.5">Cuantía mínima</Label>
+                <ItcInput
+                  type="text"
+                  inputMode="numeric"
+                  value={formatMilesInput(cuantiaMin)}
+                  placeholder="$0"
+                  onChange={(
+                    e: ChangeEvent<
+                      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+                    >,
+                  ) => setCuantiaMin(parseMilesInput(e.target.value))}
+                  onKeyDown={(e: React.KeyboardEvent) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      aplicar({ cuantiaMin });
+                    }
+                  }}
+                />
+              </div>
+
+              <div>
+                <Label className="mb-1.5">Cuantía máxima</Label>
+                <ItcInput
+                  type="text"
+                  inputMode="numeric"
+                  value={formatMilesInput(cuantiaMax)}
+                  placeholder="Sin límite"
+                  onChange={(
+                    e: ChangeEvent<
+                      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+                    >,
+                  ) => setCuantiaMax(parseMilesInput(e.target.value))}
+                  onKeyDown={(e: React.KeyboardEvent) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      aplicar({ cuantiaMax });
+                    }
+                  }}
+                />
+              </div>
+
+              <div className="lg:col-span-2">
+                <ItcDateRangePicker
+                  label="Detectado"
+                  placeholder="Rango de fechas…"
+                  clearable
+                  value={
+                    {
+                      from: fromIsoDate(filtros.detectadoDesde),
+                      to: fromIsoDate(filtros.detectadoHasta),
+                    } as DateRange
+                  }
+                  onChange={(range) =>
+                    aplicar({
+                      detectadoDesde: toIsoDate(range?.from),
+                      detectadoHasta: toIsoDate(range?.to),
+                    })
+                  }
+                />
+              </div>
+
+              <div className="flex items-end">
+                <ItcButton
+                  type="button"
+                  variant="secondary"
+                  onClick={limpiarFiltros}
+                  className="w-full"
+                  disabled={isBuscando}
+                >
+                  Limpiar filtros
+                </ItcButton>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
