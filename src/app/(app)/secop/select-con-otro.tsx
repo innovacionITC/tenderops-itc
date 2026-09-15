@@ -45,6 +45,7 @@ export function SelectConOtro({
                 onChange(otroTexto.trim());
               }
             }}
+            onBlur={() => onChange(otroTexto.trim())}
           />
           <ItcButton
             type="button"
@@ -67,6 +68,8 @@ export function SelectConOtro({
             const v = e.target.value;
             if (v === OTRO) {
               setMostrarOtro(true);
+              setOtroTexto("");
+              onChange("");
               return;
             }
             onChange(v === TODOS ? "" : v);
