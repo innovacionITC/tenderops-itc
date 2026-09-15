@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import { ItcInput, ItcDateRangePicker } from "@/components/itc";
+import { ItcInput, ItcDateRangePicker, ItcButton } from "@/components/itc";
 import type { UsuarioAsignableRow } from "@/lib/usuarios-asignables";
 import type { ProcesoSeguimientoRow } from "@/lib/seguimiento-shared";
 
@@ -81,6 +81,12 @@ export function CalendarioFiltrosBar({
     const to = range?.to ? toIsoDate(range.to) : "";
     onDateRangeChange?.(from, to);
     aplicar({ fechaDesde: from, fechaHasta: to });
+  };
+
+  const limpiarFiltros = () => {
+    startTransition(() => {
+      router.push(pathname);
+    });
   };
 
   return (
@@ -160,6 +166,11 @@ export function CalendarioFiltrosBar({
           value={dateRange}
           onChange={handleDateRangeChange}
         />
+      </div>
+      <div className="flex items-end">
+        <ItcButton type="button" variant="secondary" onClick={limpiarFiltros} disabled={isPending}>
+          Limpiar filtros
+        </ItcButton>
       </div>
     </div>
   );
