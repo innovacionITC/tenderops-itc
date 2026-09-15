@@ -1,6 +1,6 @@
 import "server-only";
 import { apiFetch } from "@/lib/api/client";
-import type { ProcesoSeguimientoRow } from "./seguimiento-shared";
+import type { ProcesoSeguimientoRow, SeguimientoFiltrosDisponibles } from "./seguimiento-shared";
 
 type ProcesoSeguimientoResponse = {
   id: string;
@@ -25,6 +25,30 @@ type ProcesoSeguimientoResponse = {
   motivoDescarte: string | null;
   valorAdjudicado: number | string | null;
   fechaAdjudicacion: string | null;
+  fase: string | null;
+  detectado: string | null;
+};
+
+type SeguimientoFiltrosResponse = {
+  entidades: string[];
+  modalidades: string[];
+  fases: string[];
+};
+
+export type SeguimientoFiltros = {
+  buscar?: string;
+  entidad?: string;
+  objeto?: string;
+  modalidad?: string;
+  fase?: string;
+  cuantiaMin?: number;
+  cuantiaMax?: number;
+  detectadoDesde?: string;
+  detectadoHasta?: string;
+  presentacionDesde?: string;
+  presentacionHasta?: string;
+  estado?: string;
+  resultado?: string;
 };
 
 function toNumber(v: number | string | null | undefined): number | null {
@@ -57,15 +81,42 @@ function toProcesoSeguimientoRow(r: ProcesoSeguimientoResponse): ProcesoSeguimie
     motivoDescarte: r.motivoDescarte ?? null,
     valorAdjudicado: toNumber(r.valorAdjudicado),
     fechaAdjudicacion: r.fechaAdjudicacion ?? null,
+    fase: r.fase ?? null,
+    detectadoEl: r.detectado ?? null,
   };
 }
 
-export async function listProcesosSeguimiento(): Promise<ProcesoSeguimientoRow[]> {
-  const rows = await apiFetch<ProcesoSeguimientoResponse[]>("/procesos-seguimiento");
+export async function listProcesosSeguimiento(filtros: SeguimientoFiltros = {}): Promise<ProcesoSeguimientoRow[]> {
+  const qs = new URLSearchParams();
+  if (filtros.buscar?.trim()) qs.set("buscar", filtros.buscar.trim());
+  if (filtros.entidad?.trim()) qs.set("entidad", filtros.entidad.trim());
+  if (filtros.objeto?.trim()) qs.set("objeto", filtros.objeto.trim());
+  if (filtros.modalidad) qs.set("modalidad", filtros.modalidad);
+  if (filtros.fase) qs.set("fase", filtros.fase);
+  if (filtros.cuantiaMin != null) qs.set("cuantiaMin", String(filtros.cuantiaMin));
+  if (filtros.cuantiaMax != null) qs.set("cuantiaMax", String(filtros.cuantiaMax));
+  if (filtros.detectadoDesde) qs.set("detectadoDesde", filtros.detectadoDesde);
+  if (filtros.detectadoHasta) qs.set("detectadoHasta", filtros.detectadoHasta);
+  if (filtros.presentacionDesde) qs.set("presentacionDesde", filtros.presentacionDesde);
+  if (filtros.presentacionHasta) qs.set("presentacionHasta", filtros.presentacionHasta);
+  if (filtros.estado) qs.set("estado", filtros.estado);
+  if (filtros.resultado) qs.set("resultado", filtros.resultado);
+
+  const path = qs.size > 0 ? `/procesos-seguimiento?${qs}` : "/procesos-seguimiento";
+  const rows = await apiFetch<ProcesoSeguimientoResponse[]>(path);
   return rows.map(toProcesoSeguimientoRow);
 }
 
 export async function getProcesoSeguimiento(id: string): Promise<ProcesoSeguimientoRow> {
   const r = await apiFetch<ProcesoSeguimientoResponse>(`/procesos-seguimiento/${id}`);
   return toProcesoSeguimientoRow(r);
+}
+
+export async function getSeguimientoFiltros(): Promise<SeguimientoFiltrosDisponibles> {
+  const r = await apiFetch<SeguimientoFiltrosResponse>("/procesos-seguimiento/filtros");
+  return {
+    entidades: r.entidades,
+    modalidades: r.modalidades,
+    fases: r.fases,
+  };
 }
