@@ -24,3 +24,16 @@ export async function marcarProceso(
   revalidatePath("/dashboard");
   return { ok: true as const };
 }
+
+export async function reactivarProceso(id: string) {
+  await requireAuth(["administrador", "director", "gestor"]);
+  const procesoId = z.uuid().parse(id);
+
+  await apiFetch<unknown>(`/procesos-seguimiento/${procesoId}/reactivar`, {
+    method: "PATCH",
+  });
+
+  revalidatePath("/seguimiento");
+  revalidatePath("/dashboard");
+  return { ok: true as const };
+}
