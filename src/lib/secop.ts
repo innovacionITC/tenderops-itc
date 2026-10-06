@@ -44,6 +44,11 @@ function toProcesoRow(r: ProcesoResponse): ProcesoRow {
     descartado: r.isDiscarded,
     entidadRegistrada: r.entidadRegistrada,
     detectadoEl: r.firstDetectedAt,
+    semaforo: r.semaforo ?? null,
+    semaforoScore: toNumber(r.semaforoScore),
+    semaforoJustificacion: r.semaforoJustificacion ?? null,
+    semaforoEstado: r.semaforoEstado ?? null,
+    semaforoError: r.semaforoError ?? null,
   };
 }
 
@@ -76,6 +81,7 @@ export async function listProcesosSecop(params: {
   detectadoDesde?: string;
   detectadoHasta?: string;
   soloPromovidos?: boolean;
+  semaforo?: string;
   page?: number;
   pageSize?: number;
 }): Promise<Paginado<ProcesoRow>> {
@@ -94,6 +100,7 @@ export async function listProcesosSecop(params: {
       detectadoDesde: params.detectadoDesde,
       detectadoHasta: params.detectadoHasta,
       soloPromovidos: params.soloPromovidos ? "true" : undefined,
+      semaforo: params.semaforo,
       page: params.page ?? 1,
       pageSize: params.pageSize ?? PAGE_SIZE,
     },
@@ -113,6 +120,22 @@ export async function listSincronizacionesSecop(limit = 10): Promise<Sincronizac
   });
 
   return res.items.map(toSincronizacionRow);
+}
+
+export async function listSincronizacionesSecopPaginado(
+  page = 1,
+  pageSize = 25,
+): Promise<Paginado<SincronizacionRow>> {
+  const res = await apiFetch<SyncRunListResponse>("/secop/sincronizaciones", {
+    query: { page, pageSize },
+  });
+
+  return {
+    items: res.items.map(toSincronizacionRow),
+    total: toNumber(res.total) ?? 0,
+    page: toNumber(res.page) ?? page,
+    pageSize: toNumber(res.pageSize) ?? pageSize,
+  };
 }
 
 export async function getSecopFiltros(): Promise<SecopFiltros> {

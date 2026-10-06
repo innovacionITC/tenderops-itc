@@ -14,6 +14,15 @@ export const datasetLabels: Record<string, string> = {
 /** Debe coincidir con el pageSize que pide listProcesosSecop. */
 export const PAGE_SIZE = 25;
 
+export const SEMAFOROS = ["verde", "amarillo", "rojo"] as const;
+export type Semaforo = (typeof SEMAFOROS)[number];
+
+export const semaforoLabels: Record<string, string> = {
+  verde: "Verde",
+  amarillo: "Amarillo",
+  rojo: "Rojo",
+};
+
 export type ProcesoRow = {
   id: string;
   secopId: string;
@@ -33,6 +42,11 @@ export type ProcesoRow = {
   descartado: boolean;
   entidadRegistrada: boolean;
   detectadoEl: string;
+  semaforo: string | null;
+  semaforoScore: number | null;
+  semaforoJustificacion: string | null;
+  semaforoEstado: string | null;
+  semaforoError: string | null;
 };
 
 export type SincronizacionRow = {

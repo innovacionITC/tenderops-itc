@@ -43,6 +43,18 @@ export async function descartarProceso(id: string, motivo?: string) {
   return { ok: true as const };
 }
 
+export async function reintentarSemaforo(id: string) {
+  await requireAuth();
+  const procesoId = z.uuid().parse(id);
+
+  await apiFetch<unknown>(`/secop/procesos/${procesoId}/semaforo/reintentar`, {
+    method: "POST",
+  });
+
+  revalidatePath("/secop");
+  return { ok: true as const };
+}
+
 export async function buscarEnVivoAction(params: {
   dataset: string;
   keyword?: string;
