@@ -8,7 +8,6 @@ import {
   Info,
   Eye,
   XCircle,
-  SlidersHorizontal,
 } from "lucide-react";
 import {
   ItcTable,
@@ -16,17 +15,15 @@ import {
   ItcButton,
   ItcInput,
   ItcModal,
-  ItcDateRangePicker,
 } from "@/components/itc";
-import type { DateRange } from "react-day-picker";
 import { DetalleProcesoModal } from "./detalle-proceso-modal";
-import { SelectConOtro } from "./select-con-otro";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { LoadingOverlay } from "@/components/layout/loading-overlay";
 import { RowActionButton } from "@/components/layout/row-action-button";
-import { formatCOP, formatDate, formatMilesInput, parseMilesInput } from "@/lib/format";
+import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
+import { formatCOP, formatDate } from "@/lib/format";
 import type { BuscarEnVivoRow, SecopFiltros } from "@/lib/secop-shared";
 import {
   buscarEnVivoAction,
@@ -72,21 +69,6 @@ const CRITERIOS_INICIALES: Criterios = {
   cuantiaMax: "",
 };
 
-function toIsoDate(d: Date | undefined): string {
-  if (!d) return "";
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function fromIsoDate(s: string): Date | undefined {
-  if (!s) return undefined;
-  const [y, m, d] = s.split("-").map(Number);
-  if (!y || !m || !d) return undefined;
-  return new Date(y, m - 1, d);
-}
-
 export function BusquedaEnVivoView({
   filtrosDisponibles,
   entidadesDisponibles,
@@ -109,7 +91,6 @@ export function BusquedaEnVivoView({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [buscada, setBuscada] = useState(false);
-  const [mostrarFiltros, setMostrarFiltros] = useState(false);
   const [detalleTarget, setDetalleTarget] = useState<BuscarEnVivoRow | null>(null);
   const [promoverTarget, setPromoverTarget] = useState<BuscarEnVivoRow | null>(null);
   const [descartarTarget, setDescartarTarget] = useState<BuscarEnVivoRow | null>(null);
@@ -119,27 +100,31 @@ export function BusquedaEnVivoView({
   const [isPending, startTransition] = useTransition();
   const [isActionPending, startActionTransition] = useTransition();
 
-  const ejecutarBusqueda = (paginaDestino: number, tamañoDestino?: number) => {
+  const ejecutarBusqueda = (
+    paginaDestino: number,
+    tamañoDestino?: number,
+    base: Criterios = criterios,
+  ) => {
     const tamaño = tamañoDestino ?? pageSize;
-    const datasetUsado = criterios.dataset;
+    const datasetUsado = base.dataset;
     startTransition(async () => {
       try {
         const res = await buscarEnVivoAction({
           dataset: datasetUsado,
-          keyword: criterios.keyword.trim() || undefined,
-          entidad: criterios.entidad.trim() || undefined,
-          nit: criterios.nit.trim() || undefined,
-          numeroProceso: criterios.numeroProceso.trim() || undefined,
-          objeto: criterios.objeto.trim() || undefined,
-          modalidad: criterios.modalidad.trim() || undefined,
-          estado: criterios.estado.trim() || undefined,
-          departamento: criterios.departamento.trim() || undefined,
-          ciudad: criterios.ciudad.trim() || undefined,
-          unspsc: criterios.unspsc.trim() || undefined,
-          publicadoDesde: criterios.publicadoDesde || undefined,
-          publicadoHasta: criterios.publicadoHasta || undefined,
-          cuantiaMin: criterios.cuantiaMin ? Number(criterios.cuantiaMin) : undefined,
-          cuantiaMax: criterios.cuantiaMax ? Number(criterios.cuantiaMax) : undefined,
+          keyword: base.keyword.trim() || undefined,
+          entidad: base.entidad.trim() || undefined,
+          nit: base.nit.trim() || undefined,
+          numeroProceso: base.numeroProceso.trim() || undefined,
+          objeto: base.objeto.trim() || undefined,
+          modalidad: base.modalidad.trim() || undefined,
+          estado: base.estado.trim() || undefined,
+          departamento: base.departamento.trim() || undefined,
+          ciudad: base.ciudad.trim() || undefined,
+          unspsc: base.unspsc.trim() || undefined,
+          publicadoDesde: base.publicadoDesde || undefined,
+          publicadoHasta: base.publicadoHasta || undefined,
+          cuantiaMin: base.cuantiaMin ? Number(base.cuantiaMin) : undefined,
+          cuantiaMax: base.cuantiaMax ? Number(base.cuantiaMax) : undefined,
           page: paginaDestino,
           pageSize: tamaño,
         });
@@ -225,6 +210,101 @@ export function BusquedaEnVivoView({
   const limpiarFiltros = () => {
     setCriterios(CRITERIOS_INICIALES);
   };
+
+  const campos: CampoFiltro[] = [
+    {
+      tipo: "seleccion-libre",
+      clave: "entidad",
+      etiqueta: "Entidad",
+      seccion: "Contratación",
+      opciones: entidadesDisponibles,
+      placeholderTodos: "Todas las entidades",
+    },
+    { tipo: "texto", clave: "nit", etiqueta: "NIT", seccion: "Contratación", placeholder: "Identificador exacto…" },
+    {
+      tipo: "texto",
+      clave: "numeroProceso",
+      etiqueta: "N. proceso",
+      seccion: "Contratación",
+      placeholder: "ID del proceso (exacto)…",
+    },
+    { tipo: "texto", clave: "objeto", etiqueta: "Objeto", seccion: "Contratación", placeholder: "Palabras del objeto…" },
+    {
+      tipo: "seleccion-libre",
+      clave: "modalidad",
+      etiqueta: "Modalidad",
+      seccion: "Contratación",
+      opciones: filtrosDisponibles.modalidades,
+      placeholderTodos: "Todas las modalidades",
+    },
+    {
+      tipo: "seleccion-libre",
+      clave: "estado",
+      etiqueta: "Estado",
+      seccion: "Contratación",
+      opciones: filtrosDisponibles.estados,
+      placeholderTodos: "Todos los estados",
+    },
+    {
+      tipo: "seleccion-libre",
+      clave: "departamento",
+      etiqueta: "Departamento",
+      seccion: "Ubicación",
+      opciones: departamentosDisponibles,
+      placeholderTodos: "Todos los departamentos",
+    },
+    {
+      tipo: "seleccion-libre",
+      clave: "ciudad",
+      etiqueta: "Ciudad",
+      seccion: "Ubicación",
+      opciones: ciudadesDisponibles,
+      placeholderTodos: "Todas las ciudades",
+    },
+    { tipo: "texto", clave: "unspsc", etiqueta: "UNSPSC", seccion: "Contratación", placeholder: "Código UNSPSC…" },
+    { tipo: "moneda", clave: "cuantiaMin", etiqueta: "Cuantía mínima", seccion: "Financiera", placeholder: "$0" },
+    { tipo: "moneda", clave: "cuantiaMax", etiqueta: "Cuantía máxima", seccion: "Financiera", placeholder: "Sin límite" },
+    {
+      tipo: "fechas",
+      claveDesde: "publicadoDesde",
+      claveHasta: "publicadoHasta",
+      etiqueta: "Publicación",
+      seccion: "Fechas",
+    },
+  ];
+
+  const valoresFiltro: ValoresFiltro = {
+    entidad: criterios.entidad,
+    nit: criterios.nit,
+    numeroProceso: criterios.numeroProceso,
+    objeto: criterios.objeto,
+    modalidad: criterios.modalidad,
+    estado: criterios.estado,
+    departamento: criterios.departamento,
+    ciudad: criterios.ciudad,
+    unspsc: criterios.unspsc,
+    cuantiaMin: criterios.cuantiaMin,
+    cuantiaMax: criterios.cuantiaMax,
+    publicadoDesde: criterios.publicadoDesde,
+    publicadoHasta: criterios.publicadoHasta,
+  };
+
+  const fusionarFiltros = (v: ValoresFiltro): Criterios => ({
+    ...criterios,
+    entidad: v.entidad,
+    nit: v.nit,
+    numeroProceso: v.numeroProceso,
+    objeto: v.objeto,
+    modalidad: v.modalidad,
+    estado: v.estado,
+    departamento: v.departamento,
+    ciudad: v.ciudad,
+    unspsc: v.unspsc,
+    cuantiaMin: v.cuantiaMin,
+    cuantiaMax: v.cuantiaMax,
+    publicadoDesde: v.publicadoDesde,
+    publicadoHasta: v.publicadoHasta,
+  });
 
   const columns: TableColumn<BuscarEnVivoRow>[] = [
     {
@@ -351,209 +431,64 @@ export function BusquedaEnVivoView({
         <CardHeader>
           <CardTitle>Criterios de búsqueda</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <Label className="mb-1.5">Palabras clave</Label>
-              <ItcInput
-                value={criterios.keyword}
-                placeholder="Buscar en título y objeto…"
-                onKeyDown={(e: React.KeyboardEvent) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    ejecutarBusqueda(1);
-                  }
-                }}
-                onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                  setCriterios((c) => ({ ...c, keyword: e.target.value }))
-                }
-              />
-            </div>
+        <CardContent>
+          <FiltrosPanel
+            campos={campos}
+            valores={valoresFiltro}
+            onAplicar={(v) => {
+              const next = fusionarFiltros(v);
+              setCriterios(next);
+              ejecutarBusqueda(1, undefined, next);
+            }}
+            onQuitar={(v) => setCriterios(fusionarFiltros(v))}
+            onLimpiar={limpiarFiltros}
+            deshabilitado={isPending}
+            descripcion="Define los criterios y busca directamente en SECOP."
+            buscador={
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="sm:col-span-2">
+                  <Label className="mb-1.5">Palabras clave</Label>
+                  <ItcInput
+                    value={criterios.keyword}
+                    placeholder="Buscar en título y objeto…"
+                    onKeyDown={(e: React.KeyboardEvent) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        ejecutarBusqueda(1);
+                      }
+                    }}
+                    onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+                      setCriterios((c) => ({ ...c, keyword: e.target.value }))
+                    }
+                  />
+                </div>
 
-            <div>
-              <Label className="mb-1.5">Fuente</Label>
-              <ItcInput
-                type="select"
-                value={criterios.dataset}
-                onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                  setCriterios((c) => ({ ...c, dataset: e.target.value }))
-                }
-              >
-                <option value="secop_i">SECOP I</option>
-                <option value="secop_ii">SECOP II</option>
-              </ItcInput>
-            </div>
-
-            <div className="flex items-end gap-2">
-              <ItcButton
-                type="button"
-                variant="secondary"
-                onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                className="gap-1.5"
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                {mostrarFiltros ? "Ocultar filtros" : "Filtros avanzados"}
-              </ItcButton>
-            </div>
-
-            <div className="flex items-end">
+                <div>
+                  <Label className="mb-1.5">Fuente</Label>
+                  <ItcInput
+                    type="select"
+                    value={criterios.dataset}
+                    onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+                      setCriterios((c) => ({ ...c, dataset: e.target.value }))
+                    }
+                  >
+                    <option value="secop_i">SECOP I</option>
+                    <option value="secop_ii">SECOP II</option>
+                  </ItcInput>
+                </div>
+              </div>
+            }
+            acciones={
               <ItcButton
                 type="button"
                 onClick={() => ejecutarBusqueda(1)}
                 disabled={isPending}
-                className="w-full"
               >
                 {isPending ? <Spinner className="size-3.5" /> : <Search className="h-4 w-4" />}
                 Buscar en SECOP
               </ItcButton>
-            </div>
-          </div>
-
-          {mostrarFiltros && (
-            <div className="grid grid-cols-1 gap-4 border-t pt-4 sm:grid-cols-2 lg:grid-cols-4">
-              <SelectConOtro
-                label="Entidad"
-                value={criterios.entidad}
-                opciones={entidadesDisponibles}
-                placeholderTodos="Todas las entidades"
-                onChange={(v) => setCriterios((c) => ({ ...c, entidad: v }))}
-              />
-
-              <div>
-                <Label className="mb-1.5">NIT</Label>
-                <ItcInput
-                  value={criterios.nit}
-                  placeholder="Identificador exacto…"
-                  onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                    setCriterios((c) => ({ ...c, nit: e.target.value }))
-                  }
-                />
-              </div>
-
-              <div>
-                <Label className="mb-1.5">N. proceso</Label>
-                <ItcInput
-                  value={criterios.numeroProceso}
-                  placeholder="ID del proceso (exacto)…"
-                  onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                    setCriterios((c) => ({ ...c, numeroProceso: e.target.value }))
-                  }
-                />
-              </div>
-
-              <div>
-                <Label className="mb-1.5">Objeto</Label>
-                <ItcInput
-                  value={criterios.objeto}
-                  placeholder="Palabras del objeto…"
-                  onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                    setCriterios((c) => ({ ...c, objeto: e.target.value }))
-                  }
-                />
-              </div>
-
-              <SelectConOtro
-                label="Modalidad"
-                value={criterios.modalidad}
-                opciones={filtrosDisponibles.modalidades}
-                placeholderTodos="Todas las modalidades"
-                onChange={(v) => setCriterios((c) => ({ ...c, modalidad: v }))}
-              />
-
-              <SelectConOtro
-                label="Estado"
-                value={criterios.estado}
-                opciones={filtrosDisponibles.estados}
-                placeholderTodos="Todos los estados"
-                onChange={(v) => setCriterios((c) => ({ ...c, estado: v }))}
-              />
-
-              <SelectConOtro
-                label="Departamento"
-                value={criterios.departamento}
-                opciones={departamentosDisponibles}
-                placeholderTodos="Todos los departamentos"
-                onChange={(v) => setCriterios((c) => ({ ...c, departamento: v }))}
-              />
-
-              <SelectConOtro
-                label="Ciudad"
-                value={criterios.ciudad}
-                opciones={ciudadesDisponibles}
-                placeholderTodos="Todas las ciudades"
-                onChange={(v) => setCriterios((c) => ({ ...c, ciudad: v }))}
-              />
-
-              <div>
-                <Label className="mb-1.5">UNSPSC</Label>
-                <ItcInput
-                  value={criterios.unspsc}
-                  placeholder="Código UNSPSC…"
-                  onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                    setCriterios((c) => ({ ...c, unspsc: e.target.value }))
-                  }
-                />
-              </div>
-
-              <div className="sm:col-span-2">
-                <Label className="mb-1.5">Publicación</Label>
-                <ItcDateRangePicker
-                  value={
-                    criterios.publicadoDesde || criterios.publicadoHasta
-                      ? {
-                          from: fromIsoDate(criterios.publicadoDesde),
-                          to: fromIsoDate(criterios.publicadoHasta),
-                        }
-                      : undefined
-                  }
-                  onChange={(range: DateRange | undefined) => {
-                    setCriterios((c) => ({
-                      ...c,
-                      publicadoDesde: toIsoDate(range?.from),
-                      publicadoHasta: toIsoDate(range?.to),
-                    }));
-                  }}
-                />
-              </div>
-
-              <div>
-                <Label className="mb-1.5">Cuantía mínima</Label>
-                <ItcInput
-                  type="text"
-                  inputMode="numeric"
-                  value={formatMilesInput(criterios.cuantiaMin)}
-                  placeholder="$0"
-                  onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                    setCriterios((c) => ({ ...c, cuantiaMin: parseMilesInput(e.target.value) }))
-                  }
-                />
-              </div>
-
-              <div>
-                <Label className="mb-1.5">Cuantía máxima</Label>
-                <ItcInput
-                  type="text"
-                  inputMode="numeric"
-                  value={formatMilesInput(criterios.cuantiaMax)}
-                  placeholder="Sin límite"
-                  onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                    setCriterios((c) => ({ ...c, cuantiaMax: parseMilesInput(e.target.value) }))
-                  }
-                />
-              </div>
-
-              <div className="flex items-end">
-                <ItcButton
-                  type="button"
-                  variant="secondary"
-                  onClick={limpiarFiltros}
-                  className="w-full"
-                >
-                  Limpiar filtros
-                </ItcButton>
-              </div>
-            </div>
-          )}
+            }
+          />
         </CardContent>
       </Card>
 
