@@ -11,7 +11,7 @@ import {
   XCircle,
   Info,
   Star,
-  SlidersHorizontal,
+  RotateCcw,
 } from "lucide-react";
 import {
   ItcTable,
@@ -19,58 +19,27 @@ import {
   ItcButton,
   ItcInput,
   ItcModal,
-  ItcDateRangePicker,
 } from "@/components/itc";
-import type { DateRange } from "react-day-picker";
 import { DetalleProcesoModal } from "./detalle-proceso-modal";
-import { SelectConOtro, TODOS } from "./select-con-otro";
+import { SemaforoBadge } from "./semaforo-badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Spinner } from "@/components/ui/spinner";
-import { StatusBadge, type Tone } from "@/components/layout/status-badge";
+import { StatusBadge } from "@/components/layout/status-badge";
 import { LoadingOverlay } from "@/components/layout/loading-overlay";
 import { RowActionButton } from "@/components/layout/row-action-button";
-import { formatCOP, formatDate, formatDateTime, formatMilesInput, parseMilesInput } from "@/lib/format";
+import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
+import { formatCOP, formatFechaCorta } from "@/lib/format";
 import {
-  datasetLabels,
+  SEMAFOROS,
+  semaforoLabels,
   type Paginado,
   type ProcesoRow,
-  type SincronizacionRow,
   type SecopFiltros,
 } from "@/lib/secop-shared";
-import { sincronizarSecop, promoverProceso, descartarProceso } from "./actions";
+import { sincronizarSecop, promoverProceso, descartarProceso, reintentarSemaforo } from "./actions";
 
 const PAGE_SIZES = [10, 25, 50, 100] as const;
-
-function toIsoDate(d: Date | undefined): string {
-  if (!d) return "";
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function fromIsoDate(s: string): Date | undefined {
-  if (!s) return undefined;
-  const [y, m, d] = s.split("-").map(Number);
-  if (!y || !m || !d) return undefined;
-  return new Date(y, m - 1, d);
-}
-
-const estadoTone: Record<string, Tone> = {
-  ok: "success",
-  sin_novedades: "muted",
-  error: "danger",
-  running: "info",
-};
-
-const estadoLabel: Record<string, string> = {
-  ok: "Completada",
-  sin_novedades: "Sin novedades",
-  error: "Con error",
-  running: "En curso",
-};
 
 type FiltrosState = {
   dataset: string;
@@ -81,6 +50,7 @@ type FiltrosState = {
   modalidad: string;
   estado: string;
   fase: string;
+  semaforo: string;
   cuantiaMin: string;
   cuantiaMax: string;
   detectadoDesde: string;
@@ -90,14 +60,12 @@ type FiltrosState = {
 
 export function ProcesosSecopView({
   procesos,
-  sincronizaciones,
   filtros,
   filtrosDisponibles,
   entidadesDisponibles,
   esAdmin,
 }: {
   procesos: Paginado<ProcesoRow>;
-  sincronizaciones: SincronizacionRow[];
   filtros: FiltrosState;
   filtrosDisponibles: SecopFiltros;
   entidadesDisponibles: string[];
@@ -111,19 +79,125 @@ export function ProcesosSecopView({
   const [isPending, startTransition] = useTransition();
   const [isSyncing, startSync] = useTransition();
   const [buscar, setBuscar] = useState(filtros.buscar);
-  const [objeto, setObjeto] = useState(filtros.objeto);
-  const [cuantiaMin, setCuantiaMin] = useState(filtros.cuantiaMin);
-  const [cuantiaMax, setCuantiaMax] = useState(filtros.cuantiaMax);
-  const hasFiltrosAvanzadosActivos = Boolean(
-    filtros.entidad || filtros.objeto || filtros.modalidad || filtros.estado ||
-    filtros.fase || filtros.cuantiaMin || filtros.cuantiaMax ||
-    filtros.detectadoDesde || filtros.detectadoHasta,
-  );
-  const [mostrarFiltros, setMostrarFiltros] = useState(hasFiltrosAvanzadosActivos);
   const [promoverTarget, setPromoverTarget] = useState<ProcesoRow | null>(null);
   const [descartarTarget, setDescartarTarget] = useState<ProcesoRow | null>(null);
   const [descartarMotivo, setDescartarMotivo] = useState("");
   const [detalleTarget, setDetalleTarget] = useState<ProcesoRow | null>(null);
+  const [reintentandoId, setReintentandoId] = useState<string | null>(null);
+
+  const campos: CampoFiltro[] = [
+    {
+      tipo: "select",
+      clave: "dataset",
+      etiqueta: "Fuente",
+      seccion: "Contratación",
+      placeholderTodos: "Todas",
+      opciones: [
+        { value: "secop_i", label: "SECOP I" },
+        { value: "secop_ii", label: "SECOP II" },
+      ],
+    },
+    { tipo: "switch", clave: "soloNuevos", etiqueta: "Solo nuevos", seccion: "Contratación" },
+    {
+      tipo: "seleccion-libre",
+      clave: "entidad",
+      etiqueta: "Entidad",
+      seccion: "Contratación",
+      opciones: entidadesDisponibles,
+      placeholderTodos: "Todas",
+    },
+    {
+      tipo: "seleccion-libre",
+      clave: "modalidad",
+      etiqueta: "Modalidad",
+      seccion: "Contratación",
+      opciones: filtrosDisponibles.modalidades,
+      placeholderTodos: "Todas",
+    },
+    {
+      tipo: "seleccion-libre",
+      clave: "estado",
+      etiqueta: "Estado",
+      seccion: "Contratación",
+      opciones: filtrosDisponibles.estados,
+      placeholderTodos: "Todos",
+    },
+    {
+      tipo: "select",
+      clave: "fase",
+      etiqueta: "Fase",
+      seccion: "Contratación",
+      placeholderTodos: "Todas",
+      opciones: filtrosDisponibles.fases.map((f) => ({ value: f, label: f })),
+    },
+    {
+      tipo: "select",
+      clave: "semaforo",
+      etiqueta: "Semáforo",
+      seccion: "Contratación",
+      placeholderTodos: "Todos",
+      opciones: SEMAFOROS.map((s) => ({ value: s, label: semaforoLabels[s] })),
+    },
+    {
+      tipo: "texto",
+      clave: "objeto",
+      etiqueta: "Objeto",
+      seccion: "Contratación",
+      placeholder: "Filtrar por objeto…",
+    },
+    {
+      tipo: "moneda",
+      clave: "cuantiaMin",
+      etiqueta: "Cuantía mínima",
+      seccion: "Financiera",
+      placeholder: "$0",
+    },
+    {
+      tipo: "moneda",
+      clave: "cuantiaMax",
+      etiqueta: "Cuantía máxima",
+      seccion: "Financiera",
+      placeholder: "Sin límite",
+    },
+    {
+      tipo: "fechas",
+      claveDesde: "detectadoDesde",
+      claveHasta: "detectadoHasta",
+      etiqueta: "Detectado",
+      seccion: "Fechas",
+    },
+  ];
+
+  const valoresFiltro: ValoresFiltro = {
+    dataset: filtros.dataset,
+    soloNuevos: filtros.soloNuevos ? "1" : "",
+    entidad: filtros.entidad,
+    modalidad: filtros.modalidad,
+    estado: filtros.estado,
+    fase: filtros.fase,
+    semaforo: filtros.semaforo,
+    objeto: filtros.objeto,
+    cuantiaMin: filtros.cuantiaMin,
+    cuantiaMax: filtros.cuantiaMax,
+    detectadoDesde: filtros.detectadoDesde,
+    detectadoHasta: filtros.detectadoHasta,
+  };
+
+  const aplicarFiltros = (v: ValoresFiltro) =>
+    aplicar({
+      dataset: v.dataset,
+      soloNuevos: v.soloNuevos === "1",
+      entidad: v.entidad,
+      modalidad: v.modalidad,
+      estado: v.estado,
+      fase: v.fase,
+      semaforo: v.semaforo,
+      objeto: v.objeto,
+      cuantiaMin: v.cuantiaMin,
+      cuantiaMax: v.cuantiaMax,
+      detectadoDesde: v.detectadoDesde,
+      detectadoHasta: v.detectadoHasta,
+    });
 
   const aplicar = (
     cambios: Partial<FiltrosState & { page: number }>,
@@ -133,12 +207,13 @@ export function ProcesosSecopView({
       nuevos: cambios.soloNuevos ?? filtros.soloNuevos,
       buscar: cambios.buscar ?? buscar,
       entidad: cambios.entidad ?? filtros.entidad,
-      objeto: cambios.objeto ?? objeto,
+      objeto: cambios.objeto ?? filtros.objeto,
       modalidad: cambios.modalidad ?? filtros.modalidad,
       estado: cambios.estado ?? filtros.estado,
       fase: cambios.fase ?? filtros.fase,
-      cuantiaMin: cambios.cuantiaMin ?? cuantiaMin,
-      cuantiaMax: cambios.cuantiaMax ?? cuantiaMax,
+      semaforo: cambios.semaforo ?? filtros.semaforo,
+      cuantiaMin: cambios.cuantiaMin ?? filtros.cuantiaMin,
+      cuantiaMax: cambios.cuantiaMax ?? filtros.cuantiaMax,
       detectadoDesde: cambios.detectadoDesde ?? filtros.detectadoDesde,
       detectadoHasta: cambios.detectadoHasta ?? filtros.detectadoHasta,
       pageSize: cambios.pageSize ?? filtros.pageSize,
@@ -154,6 +229,7 @@ export function ProcesosSecopView({
     if (next.modalidad) qs.set("modalidad", next.modalidad);
     if (next.estado) qs.set("estado", next.estado);
     if (next.fase) qs.set("fase", next.fase);
+    if (next.semaforo) qs.set("semaforo", next.semaforo);
     if (next.cuantiaMin.trim()) qs.set("cuantiaMin", next.cuantiaMin.trim());
     if (next.cuantiaMax.trim()) qs.set("cuantiaMax", next.cuantiaMax.trim());
     if (next.detectadoDesde) qs.set("detectadoDesde", next.detectadoDesde);
@@ -168,9 +244,6 @@ export function ProcesosSecopView({
 
   const limpiarFiltros = () => {
     setBuscar("");
-    setObjeto("");
-    setCuantiaMin("");
-    setCuantiaMax("");
     startBuscar(() => {
       router.push(pathname);
     });
@@ -182,7 +255,7 @@ export function ProcesosSecopView({
         await sincronizarSecop();
         toast.success("Sincronización iniciada", {
           description:
-            "El proceso corre en segundo plano y puede tardar unos minutos. Revisa 'Últimas sincronizaciones' para ver el resultado.",
+            "El proceso corre en segundo plano y puede tardar unos minutos. Revisa la pestaña 'Sincronizaciones' para ver el resultado.",
         });
         router.refresh();
       } catch (e) {
@@ -228,15 +301,44 @@ export function ProcesosSecopView({
     });
   };
 
+  const handleReintentarSemaforo = (id: string) => {
+    setReintentandoId(id);
+    startTransition(async () => {
+      try {
+        await reintentarSemaforo(id);
+        toast.success("Reintento de clasificación encolado");
+        setReintentandoId(null);
+        router.refresh();
+      } catch (e) {
+        toast.error(
+          e instanceof Error ? e.message : "No se pudo reintentar la clasificación",
+        );
+        setReintentandoId(null);
+      }
+    });
+  };
+
   // tableLayout="fixed" + un ancho por columna: así el texto largo trunca con
   // "…" (ver className="truncate") en vez de ensanchar la tabla y forzar
   // scroll horizontal. "Proceso" (título) y "Fuente" no son columnas propias
   // del requerimiento de negocio; quedan disponibles en el modal de detalle.
   const columns: TableColumn<ProcesoRow>[] = [
     {
+      key: "semaforo",
+      title: "Semáforo",
+      width: "11%",
+      render: (r) => (
+        <SemaforoBadge
+          semaforo={r.semaforo}
+          semaforoScore={r.semaforoScore}
+          semaforoEstado={r.semaforoEstado}
+        />
+      ),
+    },
+    {
       key: "entidad",
       title: "Entidad",
-      width: "20%",
+      width: "17%",
       render: (r) => (
         <span className="flex items-center gap-1 truncate text-sm text-muted-foreground" title={r.entidad ?? undefined}>
           {r.entidadRegistrada && (
@@ -251,7 +353,7 @@ export function ProcesosSecopView({
     {
       key: "objeto",
       title: "Objeto",
-      width: "24%",
+      width: "18%",
       render: (r) => (
         <span className="block truncate text-sm text-muted-foreground" title={r.objeto ?? undefined}>
           {r.objeto ?? "—"}
@@ -261,7 +363,7 @@ export function ProcesosSecopView({
     {
       key: "modalidad",
       title: "Modalidad",
-      width: "13%",
+      width: "12%",
       render: (r) => (
         <span className="block truncate text-sm text-muted-foreground" title={r.modalidad ?? undefined}>
           {r.modalidad ?? "—"}
@@ -284,7 +386,7 @@ export function ProcesosSecopView({
     {
       key: "fase",
       title: "Fase",
-      width: "10%",
+      width: "8%",
       render: (r) => (
         <span className="block truncate text-sm text-muted-foreground" title={r.fase ?? undefined}>
           {r.fase ?? "—"}
@@ -305,18 +407,18 @@ export function ProcesosSecopView({
       title: "Detectado",
       width: "9%",
       render: (r) => (
-        <span className="text-sm text-muted-foreground">
-          {formatDate(r.detectadoEl)}
+        <span className="whitespace-nowrap text-sm text-muted-foreground">
+          {formatFechaCorta(r.detectadoEl)}
         </span>
       ),
     },
     {
       key: "acciones",
       title: "Acciones",
-      width: 130,
+      width: 168,
       align: "right",
       render: (r) => (
-        <div className="flex justify-end gap-1">
+        <div className="flex flex-nowrap justify-end gap-0.5 whitespace-nowrap">
           <RowActionButton
             icon={<Info className="h-3.5 w-3.5" />}
             title="Ver detalle"
@@ -341,6 +443,14 @@ export function ProcesosSecopView({
               icon={<XCircle className="h-3.5 w-3.5" />}
               title="Descartar proceso"
               onClick={() => setDescartarTarget(r)}
+            />
+          )}
+          {r.semaforoEstado === "error" && (
+            <RowActionButton
+              icon={<RotateCcw className="h-3.5 w-3.5" />}
+              title="Reintentar clasificación"
+              onClick={() => handleReintentarSemaforo(r.id)}
+              disabled={reintentandoId === r.id}
             />
           )}
         </div>
@@ -375,212 +485,43 @@ export function ProcesosSecopView({
             </ItcButton>
           )}
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <Label className="mb-1.5">Buscar</Label>
-              <div className="flex gap-1.5">
-                <ItcInput
-                  value={buscar}
-                  placeholder="Título, entidad u objeto…"
-                  onChange={(
-                    e: ChangeEvent<
-                      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                    >,
-                  ) => setBuscar(e.target.value)}
-                  onKeyDown={(e: React.KeyboardEvent) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      aplicar({ buscar });
-                    }
-                  }}
-                />
-                <ItcButton
-                  type="button"
-                  variant="secondary"
-                  onClick={() => aplicar({ buscar })}
-                >
-                  <Search className="h-4 w-4" />
-                </ItcButton>
-              </div>
-            </div>
-
-            <div>
-              <Label className="mb-1.5">Fuente</Label>
-              <ItcInput
-                type="select"
-                value={filtros.dataset || TODOS}
-                onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                  aplicar({ dataset: e.target.value === TODOS ? "" : e.target.value })
-                }
-              >
-                <option value={TODOS}>Todas</option>
-                <option value="secop_i">SECOP I</option>
-                <option value="secop_ii">SECOP II</option>
-              </ItcInput>
-            </div>
-
-            <div className="flex items-end">
-              <label className="flex items-center gap-2 text-sm">
-                <Switch
-                  checked={filtros.soloNuevos}
-                  onCheckedChange={(checked) => aplicar({ soloNuevos: checked })}
-                />
-                Solo nuevos
-              </label>
-            </div>
-
-            <div className="flex items-end gap-2">
-              <ItcButton
-                type="button"
-                variant="secondary"
-                onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                className="gap-1.5"
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                {mostrarFiltros ? "Ocultar filtros" : "Filtros avanzados"}
-              </ItcButton>
-            </div>
-          </div>
-
-          {mostrarFiltros && (
-            <div className="grid grid-cols-1 gap-4 border-t pt-4 sm:grid-cols-2 lg:grid-cols-4">
-              <SelectConOtro
-                label="Entidad"
-                value={filtros.entidad}
-                opciones={entidadesDisponibles}
-                placeholderTodos="Todas"
-                onChange={(value) => aplicar({ entidad: value })}
-              />
-
-              <div>
-                <Label className="mb-1.5">Objeto</Label>
-                <ItcInput
-                  value={objeto}
-                  placeholder="Filtrar por objeto…"
-                  onChange={(
-                    e: ChangeEvent<
-                      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                    >,
-                  ) => setObjeto(e.target.value)}
-                  onKeyDown={(e: React.KeyboardEvent) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      aplicar({ objeto });
-                    }
-                  }}
-                />
-              </div>
-
-              <SelectConOtro
-                label="Modalidad"
-                value={filtros.modalidad}
-                opciones={filtrosDisponibles.modalidades}
-                placeholderTodos="Todas"
-                onChange={(value) => aplicar({ modalidad: value })}
-              />
-
-              <SelectConOtro
-                label="Estado"
-                value={filtros.estado}
-                opciones={filtrosDisponibles.estados}
-                placeholderTodos="Todos"
-                onChange={(value) => aplicar({ estado: value })}
-              />
-
-              <div>
-                <Label className="mb-1.5">Fase</Label>
-                <ItcInput
-                  type="select"
-                  value={filtros.fase || TODOS}
-                  onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                    aplicar({ fase: e.target.value === TODOS ? "" : e.target.value })
-                  }
-                >
-                  <option value={TODOS}>Todas</option>
-                  {filtrosDisponibles.fases.map((f) => (
-                    <option key={f} value={f}>
-                      {f}
-                    </option>
-                  ))}
-                </ItcInput>
-              </div>
-
-              <div>
-                <Label className="mb-1.5">Cuantía mínima</Label>
-                <ItcInput
-                  type="text"
-                  inputMode="numeric"
-                  value={formatMilesInput(cuantiaMin)}
-                  placeholder="$0"
-                  onChange={(
-                    e: ChangeEvent<
-                      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                    >,
-                  ) => setCuantiaMin(parseMilesInput(e.target.value))}
-                  onKeyDown={(e: React.KeyboardEvent) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      aplicar({ cuantiaMin });
-                    }
-                  }}
-                />
-              </div>
-
-              <div>
-                <Label className="mb-1.5">Cuantía máxima</Label>
-                <ItcInput
-                  type="text"
-                  inputMode="numeric"
-                  value={formatMilesInput(cuantiaMax)}
-                  placeholder="Sin límite"
-                  onChange={(
-                    e: ChangeEvent<
-                      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                    >,
-                  ) => setCuantiaMax(parseMilesInput(e.target.value))}
-                  onKeyDown={(e: React.KeyboardEvent) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      aplicar({ cuantiaMax });
-                    }
-                  }}
-                />
-              </div>
-
-              <div className="lg:col-span-2">
-                <ItcDateRangePicker
-                  label="Detectado"
-                  placeholder="Rango de fechas…"
-                  clearable
-                  value={
-                    {
-                      from: fromIsoDate(filtros.detectadoDesde),
-                      to: fromIsoDate(filtros.detectadoHasta),
-                    } as DateRange
-                  }
-                  onChange={(range) =>
-                    aplicar({
-                      detectadoDesde: toIsoDate(range?.from),
-                      detectadoHasta: toIsoDate(range?.to),
-                    })
-                  }
-                />
-              </div>
-
-              <div className="flex items-end">
-                <ItcButton
-                  type="button"
-                  variant="secondary"
-                  onClick={limpiarFiltros}
-                  className="w-full"
-                  disabled={isBuscando}
-                >
-                  Limpiar filtros
-                </ItcButton>
-              </div>
-            </div>
-          )}
+        <CardContent>
+          <FiltrosPanel
+            campos={campos}
+            valores={valoresFiltro}
+            onAplicar={aplicarFiltros}
+            onLimpiar={limpiarFiltros}
+            deshabilitado={isBuscando}
+            buscador={
+              <>
+                <Label className="mb-1.5">Buscar</Label>
+                <div className="flex gap-1.5">
+                  <ItcInput
+                    value={buscar}
+                    placeholder="Título, entidad u objeto…"
+                    onChange={(
+                      e: ChangeEvent<
+                        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+                      >,
+                    ) => setBuscar(e.target.value)}
+                    onKeyDown={(e: React.KeyboardEvent) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        aplicar({ buscar });
+                      }
+                    }}
+                  />
+                  <ItcButton
+                    type="button"
+                    variant="secondary"
+                    onClick={() => aplicar({ buscar })}
+                  >
+                    <Search className="h-4 w-4" />
+                  </ItcButton>
+                </div>
+              </>
+            }
+          />
         </CardContent>
       </Card>
 
@@ -656,51 +597,6 @@ export function ProcesosSecopView({
         )}
       </div>
 
-      {esAdmin && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Últimas sincronizaciones</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {sincronizaciones.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Todavía no se ha ejecutado ninguna sincronización.
-              </p>
-            ) : (
-              <ul className="divide-y text-sm">
-                {sincronizaciones.map((s) => (
-                  <li
-                    key={s.id}
-                    className="flex flex-wrap items-center gap-x-3 gap-y-1 py-2"
-                  >
-                    <StatusBadge tone={estadoTone[s.estado] ?? "muted"}>
-                      {estadoLabel[s.estado] ?? s.estado}
-                    </StatusBadge>
-                    <span className="font-medium">
-                      {datasetLabels[s.dataset] ?? s.dataset}
-                    </span>
-                    <span className="text-muted-foreground">
-                      {formatDateTime(s.inicio)}
-                    </span>
-                    {(s.estado === "ok" || s.estado === "sin_novedades") && (
-                      <span className="text-muted-foreground">
-                        {s.consultados} consultados · {s.insertados} nuevos ·{" "}
-                        {s.actualizados} actualizados
-                      </span>
-                    )}
-                    {s.errorMessage && (
-                      <span className="text-destructive">
-                        {s.errorCode}: {s.errorMessage}
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
       <ItcModal
         open={promoverTarget !== null}
         onClose={() => setPromoverTarget(null)}
@@ -775,6 +671,11 @@ export function ProcesosSecopView({
             esNuevo: detalleTarget.esNuevo,
             promovido: detalleTarget.promovido,
             descartado: detalleTarget.descartado,
+            semaforo: detalleTarget.semaforo,
+            semaforoScore: detalleTarget.semaforoScore,
+            semaforoJustificacion: detalleTarget.semaforoJustificacion,
+            semaforoEstado: detalleTarget.semaforoEstado,
+            semaforoError: detalleTarget.semaforoError,
           }
         }
         onClose={() => setDetalleTarget(null)}

@@ -36,6 +36,12 @@ export function ActividadDetalleModal({
     completada: "text-emerald-600 dark:text-emerald-400",
   };
 
+  const FECHA_INICIO_LABELS: Record<string, string> = {
+    event: "Inicio",
+    task: "Vence",
+    secop_closing: "Fecha de cierre",
+  };
+
   return (
     <ItcModal
       open={actividad !== null}
@@ -53,7 +59,9 @@ export function ActividadDetalleModal({
                 {ESTADO_LABELS[actividad.estado] ?? actividad.estado}
               </span>
 
-              <span className="text-muted-foreground">Inicio</span>
+              <span className="text-muted-foreground">
+                {FECHA_INICIO_LABELS[actividad.source] ?? "Inicio"}
+              </span>
               <span>{formatDateTime(actividad.startDate)}</span>
 
               {actividad.endDate && (
@@ -77,12 +85,8 @@ export function ActividadDetalleModal({
                 </>
               )}
 
-              {actividad.responsableNombre && (
-                <>
-                  <span className="text-muted-foreground">Responsable</span>
-                  <span>{actividad.responsableNombre}</span>
-                </>
-              )}
+              <span className="text-muted-foreground">Responsable</span>
+              <span>{actividad.responsableNombre ?? "Sin asignar"}</span>
 
               {actividad.prioridad && (
                 <>

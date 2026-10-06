@@ -11,7 +11,12 @@ const TABS = [
   { key: "vivo", label: "Búsqueda en vivo" },
 ] satisfies { key: Vista; label: string }[];
 
-export function SecopTabsNav({ vista }: { vista: Vista }) {
+const TAB_SINCRONIZACIONES = {
+  key: "sincronizaciones",
+  label: "Sincronizaciones",
+} satisfies { key: Vista; label: string };
+
+export function SecopTabsNav({ vista, esAdmin = false }: { vista: Vista; esAdmin?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
@@ -19,7 +24,7 @@ export function SecopTabsNav({ vista }: { vista: Vista }) {
   return (
     <div className="flex items-center gap-3">
       <ItcTabs
-        items={TABS}
+        items={esAdmin ? [...TABS, TAB_SINCRONIZACIONES] : TABS}
         activeKey={vista}
         hideContent
         onChange={(key) => {

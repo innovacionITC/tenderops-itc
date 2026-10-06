@@ -2,20 +2,20 @@
 
 import { useState, useTransition, type ChangeEvent } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { ChevronRight, ArrowUpDown, ChevronLeft, ChevronRight as ChevronRightIcon } from "lucide-react";
-import { ItcTable, type TableColumn, ItcInput, ItcDateRangePicker, ItcButton } from "@/components/itc";
+import { Search, ChevronRight, ArrowUpDown, ChevronLeft, ChevronRight as ChevronRightIcon } from "lucide-react";
+import { ItcTable, type TableColumn, ItcInput, ItcButton } from "@/components/itc";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { RowActionButton } from "@/components/layout/row-action-button";
-import { formatCOP, formatDate, formatMilesInput, parseMilesInput } from "@/lib/format";
+import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
+import { formatCOP, formatDate } from "@/lib/format";
 import {
   LOGRADOS_MENSAJE_VACIO,
   type ProcesoLogradoRow,
   type LogradosFiltrosDisponibles,
 } from "@/lib/seguimiento-logrados-shared";
 import type { Paginado } from "@/lib/secop-shared";
-import type { DateRange } from "react-day-picker";
 
 const PAGE_SIZES = [10, 25, 50, 100] as const;
 
@@ -41,21 +41,6 @@ function SortButton({
       <ArrowUpDown className="h-3 w-3" />
     </button>
   );
-}
-
-function toIsoDate(d: Date | undefined): string {
-  if (!d) return "";
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function fromIsoDate(s: string): Date | undefined {
-  if (!s) return undefined;
-  const [y, m, d] = s.split("-").map(Number);
-  if (!y || !m || !d) return undefined;
-  return new Date(y, m - 1, d);
 }
 
 type FiltrosState = {
@@ -84,26 +69,17 @@ export function ProcesosLogradosView({
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
-  const [numeroProceso, setNumeroProceso] = useState(filtros.numeroProceso);
-  const [entidad, setEntidad] = useState(filtros.entidad);
   const [palabraClave, setPalabraClave] = useState(filtros.palabraClave);
-  const [valorAdjudicadoMin, setValorAdjudicadoMin] = useState(filtros.valorAdjudicadoMin);
-  const [valorAdjudicadoMax, setValorAdjudicadoMax] = useState(filtros.valorAdjudicadoMax);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
-    const from = fromIsoDate(filtros.fechaDesde);
-    const to = fromIsoDate(filtros.fechaHasta);
-    return from || to ? { from, to } : undefined;
-  });
 
   const aplicar = (cambios: Partial<FiltrosState & { page: number }>) => {
     const next = {
-      numeroProceso: cambios.numeroProceso ?? numeroProceso,
-      entidad: cambios.entidad ?? entidad,
+      numeroProceso: cambios.numeroProceso ?? filtros.numeroProceso,
+      entidad: cambios.entidad ?? filtros.entidad,
       responsableUserId: cambios.responsableUserId ?? filtros.responsableUserId,
       fechaDesde: cambios.fechaDesde ?? filtros.fechaDesde,
       fechaHasta: cambios.fechaHasta ?? filtros.fechaHasta,
-      valorAdjudicadoMin: cambios.valorAdjudicadoMin ?? valorAdjudicadoMin,
-      valorAdjudicadoMax: cambios.valorAdjudicadoMax ?? valorAdjudicadoMax,
+      valorAdjudicadoMin: cambios.valorAdjudicadoMin ?? filtros.valorAdjudicadoMin,
+      valorAdjudicadoMax: cambios.valorAdjudicadoMax ?? filtros.valorAdjudicadoMax,
       palabraClave: cambios.palabraClave ?? palabraClave,
       sortBy: cambios.sortBy ?? filtros.sortBy,
       sortDir: cambios.sortDir ?? filtros.sortDir,
@@ -131,13 +107,78 @@ export function ProcesosLogradosView({
     });
   };
 
-  const handleDateRangeChange = (range: DateRange | undefined) => {
-    setDateRange(range);
-    aplicar({
-      fechaDesde: toIsoDate(range?.from),
-      fechaHasta: toIsoDate(range?.to),
+  const limpiarFiltros = () => {
+    setPalabraClave("");
+    startTransition(() => {
+      router.push(`${pathname}?vista=logrados`);
     });
   };
+
+  const campos: CampoFiltro[] = [
+    {
+      tipo: "texto",
+      clave: "numeroProceso",
+      etiqueta: "Número del proceso",
+      seccion: "Proceso",
+      placeholder: "Ej: 2024-01-00001",
+    },
+    {
+      tipo: "texto",
+      clave: "entidad",
+      etiqueta: "Entidad",
+      seccion: "Proceso",
+      placeholder: "Buscar entidad…",
+    },
+    {
+      tipo: "select",
+      clave: "responsableUserId",
+      etiqueta: "Responsable",
+      seccion: "Proceso",
+      opciones: filtrosDisponibles.responsables.map((r) => ({ value: r.id, label: r.name })),
+    },
+    {
+      tipo: "moneda",
+      clave: "valorAdjudicadoMin",
+      etiqueta: "Valor adjudicado mín.",
+      seccion: "Financiera",
+      placeholder: "0",
+    },
+    {
+      tipo: "moneda",
+      clave: "valorAdjudicadoMax",
+      etiqueta: "Valor adjudicado máx.",
+      seccion: "Financiera",
+      placeholder: "Sin límite",
+    },
+    {
+      tipo: "fechas",
+      claveDesde: "fechaDesde",
+      claveHasta: "fechaHasta",
+      etiqueta: "Fecha de adjudicación",
+      seccion: "Fechas",
+    },
+  ];
+
+  const valoresFiltro: ValoresFiltro = {
+    numeroProceso: filtros.numeroProceso,
+    entidad: filtros.entidad,
+    responsableUserId: filtros.responsableUserId,
+    valorAdjudicadoMin: filtros.valorAdjudicadoMin,
+    valorAdjudicadoMax: filtros.valorAdjudicadoMax,
+    fechaDesde: filtros.fechaDesde,
+    fechaHasta: filtros.fechaHasta,
+  };
+
+  const aplicarFiltros = (v: ValoresFiltro) =>
+    aplicar({
+      numeroProceso: v.numeroProceso,
+      entidad: v.entidad,
+      responsableUserId: v.responsableUserId,
+      valorAdjudicadoMin: v.valorAdjudicadoMin,
+      valorAdjudicadoMax: v.valorAdjudicadoMax,
+      fechaDesde: v.fechaDesde,
+      fechaHasta: v.fechaHasta,
+    });
 
   const handleSort = (columnKey: string) => {
     const currentSortBy = filtros.sortBy;
@@ -255,98 +296,38 @@ export function ProcesosLogradosView({
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <Label className="mb-1.5">Número del proceso</Label>
-            <ItcInput
-              value={numeroProceso}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                setNumeroProceso(e.target.value)
-              }
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter") aplicar({ numeroProceso });
-              }}
-              placeholder="Ej: 2024-01-00001"
-            />
-          </div>
-          <div>
-            <Label className="mb-1.5">Entidad</Label>
-            <ItcInput
-              value={entidad}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                setEntidad(e.target.value)
-              }
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter") aplicar({ entidad });
-              }}
-              placeholder="Buscar entidad…"
-            />
-          </div>
-          <div>
-            <Label className="mb-1.5">Responsable</Label>
-            <ItcInput
-              type="select"
-              value={filtros.responsableUserId}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                aplicar({ responsableUserId: e.target.value })
-              }
-            >
-              <option value="">Todos</option>
-              {filtrosDisponibles.responsables.map((r) => (
-                <option key={r.id} value={r.id}>{r.name}</option>
-              ))}
-            </ItcInput>
-          </div>
-          <div>
-            <Label className="mb-1.5">Fecha de adjudicación</Label>
-            <ItcDateRangePicker
-              value={dateRange}
-              onChange={handleDateRangeChange}
-            />
-          </div>
-          <div>
-            <Label className="mb-1.5">Valor adjudicado mín.</Label>
-            <ItcInput
-              type="text"
-              inputMode="numeric"
-              value={formatMilesInput(valorAdjudicadoMin)}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                setValorAdjudicadoMin(parseMilesInput(e.target.value))
-              }
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter") aplicar({ valorAdjudicadoMin });
-              }}
-              placeholder="0"
-            />
-          </div>
-          <div>
-            <Label className="mb-1.5">Valor adjudicado máx.</Label>
-            <ItcInput
-              type="text"
-              inputMode="numeric"
-              value={formatMilesInput(valorAdjudicadoMax)}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                setValorAdjudicadoMax(parseMilesInput(e.target.value))
-              }
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter") aplicar({ valorAdjudicadoMax });
-              }}
-              placeholder="Sin límite"
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <Label className="mb-1.5">Palabra clave</Label>
-            <ItcInput
-              value={palabraClave}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                setPalabraClave(e.target.value)
-              }
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter") aplicar({ palabraClave });
-              }}
-              placeholder="Buscar en entidad, objeto o número…"
-            />
-          </div>
+        <CardContent>
+          <FiltrosPanel
+            campos={campos}
+            valores={valoresFiltro}
+            onAplicar={aplicarFiltros}
+            onLimpiar={limpiarFiltros}
+            deshabilitado={isPending}
+            buscador={
+              <>
+                <Label className="mb-1.5">Palabra clave</Label>
+                <div className="flex gap-1.5">
+                  <ItcInput
+                    value={palabraClave}
+                    onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+                      setPalabraClave(e.target.value)
+                    }
+                    onKeyDown={(e: React.KeyboardEvent) => {
+                      if (e.key === "Enter") aplicar({ palabraClave });
+                    }}
+                    placeholder="Buscar en entidad, objeto o número…"
+                  />
+                  <ItcButton
+                    type="button"
+                    variant="secondary"
+                    onClick={() => aplicar({ palabraClave })}
+                  >
+                    <Search className="h-4 w-4" />
+                  </ItcButton>
+                </div>
+              </>
+            }
+          />
         </CardContent>
       </Card>
 

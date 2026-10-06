@@ -3,14 +3,15 @@ import { requireAuth } from "@/lib/auth/session";
 import { canAdmin } from "@/lib/auth/roles";
 import {
   listProcesosSecop,
-  listSincronizacionesSecop,
+  listSincronizacionesSecopPaginado,
   getSecopFiltros,
 } from "@/lib/secop";
 import { listEntidadesAdmin, listDepartamentos, listCiudadesAdmin } from "@/lib/parametrica";
-import { DATASETS } from "@/lib/secop-shared";
+import { DATASETS, SEMAFOROS } from "@/lib/secop-shared";
 import { ProcesosSecopView } from "./procesos-secop-view";
 import { BusquedaEnVivoView } from "./busqueda-en-vivo-view";
 import { SecopTabsNav } from "./secop-tabs-nav";
+import { SincronizacionesView } from "./sincronizaciones-view";
 import { parseVista } from "./vista";
 
 export default async function SecopPage({
@@ -26,6 +27,7 @@ export default async function SecopPage({
     modalidad?: string;
     estado?: string;
     fase?: string;
+    semaforo?: string;
     cuantiaMin?: string;
     cuantiaMax?: string;
     detectadoDesde?: string;
@@ -36,8 +38,8 @@ export default async function SecopPage({
 }) {
   const auth = await requireAuth();
   const params = await searchParams;
-  const vista = parseVista(params.vista);
   const esAdmin = canAdmin(auth.role);
+  const vista = parseVista(params.vista, esAdmin);
 
   const header = (
     <PageHeader
@@ -45,6 +47,34 @@ export default async function SecopPage({
       description="Búsqueda en tiempo real y sincronización diaria de procesos detectados."
     />
   );
+
+  if (vista === "sincronizaciones") {
+    const paginaSync = Math.max(Number(params.page) || 1, 1);
+    let sincronizaciones: Awaited<ReturnType<typeof listSincronizacionesSecopPaginado>> | null = null;
+    let syncError: string | null = null;
+
+    try {
+      sincronizaciones = await listSincronizacionesSecopPaginado(paginaSync);
+    } catch (e) {
+      syncError = e instanceof Error ? e.message : "Error al cargar las sincronizaciones.";
+    }
+
+    return (
+      <>
+        {header}
+        <div className="space-y-4 p-4 sm:p-6 lg:p-8">
+          <SecopTabsNav vista={vista} esAdmin={esAdmin} />
+          {syncError || !sincronizaciones ? (
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+              {syncError ?? "Error al cargar las sincronizaciones."}
+            </div>
+          ) : (
+            <SincronizacionesView sincronizaciones={sincronizaciones} />
+          )}
+        </div>
+      </>
+    );
+  }
 
   if (vista === "vivo") {
     let filtrosDisponibles: Awaited<ReturnType<typeof getSecopFiltros>> | null = null;
@@ -85,7 +115,7 @@ export default async function SecopPage({
       <>
         {header}
         <div className="space-y-4 p-4 sm:p-6 lg:p-8">
-          <SecopTabsNav vista={vista} />
+          <SecopTabsNav vista={vista} esAdmin={esAdmin} />
           {vivoError ||
           !filtrosDisponibles ||
           !entidadesDisponibles ||
@@ -115,6 +145,7 @@ export default async function SecopPage({
   const modalidad = params.modalidad || undefined;
   const estado = params.estado || undefined;
   const fase = params.fase || undefined;
+  const semaforo = SEMAFOROS.find((s) => s === params.semaforo) || undefined;
   const cuantiaMin = params.cuantiaMin ? Number(params.cuantiaMin) : undefined;
   const cuantiaMax = params.cuantiaMax ? Number(params.cuantiaMax) : undefined;
   const detectadoDesde = params.detectadoDesde || undefined;
@@ -129,14 +160,13 @@ export default async function SecopPage({
   // decide qué mostrar según `error`.
   let resultado: {
     procesos: Awaited<ReturnType<typeof listProcesosSecop>>;
-    sincronizaciones: Awaited<ReturnType<typeof listSincronizacionesSecop>>;
     filtrosDisponibles: Awaited<ReturnType<typeof getSecopFiltros>>;
     entidadesDisponibles: string[];
   } | null = null;
   let error: string | null = null;
 
   try {
-    const [procesos, sincronizaciones, filtrosDisponibles, entidades] = await Promise.all([
+    const [procesos, filtrosDisponibles, entidades] = await Promise.all([
       listProcesosSecop({
         dataset,
         soloNuevos,
@@ -146,6 +176,7 @@ export default async function SecopPage({
         modalidad,
         estado,
         fase,
+        semaforo,
         cuantiaMin,
         cuantiaMax,
         detectadoDesde,
@@ -153,7 +184,6 @@ export default async function SecopPage({
         page,
         pageSize,
       }),
-      esAdmin && vista === "detectados" ? listSincronizacionesSecop() : Promise.resolve([]),
       getSecopFiltros(),
       listEntidadesAdmin(),
     ]);
@@ -163,7 +193,7 @@ export default async function SecopPage({
       .filter((e) => e.estado !== false)
       .map((e) => e.nombre)
       .sort((a, b) => a.localeCompare(b));
-    resultado = { procesos, sincronizaciones, filtrosDisponibles, entidadesDisponibles };
+    resultado = { procesos, filtrosDisponibles, entidadesDisponibles };
   } catch (e) {
     error = e instanceof Error ? e.message : "Error al cargar los procesos detectados.";
   }
@@ -172,7 +202,7 @@ export default async function SecopPage({
     <>
       {header}
       <div className="space-y-4 p-4 sm:p-6 lg:p-8">
-        <SecopTabsNav vista={vista} />
+        <SecopTabsNav vista={vista} esAdmin={esAdmin} />
         {error || !resultado ? (
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
             {error ?? "Error al cargar los procesos detectados."}
@@ -180,7 +210,6 @@ export default async function SecopPage({
         ) : (
           <ProcesosSecopView
             procesos={resultado.procesos}
-            sincronizaciones={resultado.sincronizaciones}
             filtros={{
               dataset: dataset ?? "",
               soloNuevos,
@@ -190,6 +219,7 @@ export default async function SecopPage({
               modalidad: modalidad ?? "",
               estado: estado ?? "",
               fase: fase ?? "",
+              semaforo: semaforo ?? "",
               cuantiaMin: params.cuantiaMin ?? "",
               cuantiaMax: params.cuantiaMax ?? "",
               detectadoDesde: detectadoDesde ?? "",

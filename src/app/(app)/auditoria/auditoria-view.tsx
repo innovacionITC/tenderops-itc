@@ -3,11 +3,10 @@
 import { useState, useTransition, type ChangeEvent } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { ArrowUpDown, ChevronLeft, ChevronRight, Info } from "lucide-react";
-import { ItcTable, type TableColumn, ItcInput, ItcDateRangePicker, ItcButton } from "@/components/itc";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ItcTable, type TableColumn, ItcInput, ItcButton } from "@/components/itc";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { RowActionButton } from "@/components/layout/row-action-button";
+import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
 import { formatDate } from "@/lib/format";
 import {
   AUDITORIA_MODULOS,
@@ -19,7 +18,6 @@ import {
   type AuditoriaFiltrosDisponibles,
 } from "@/lib/auditoria-shared";
 import type { Paginado } from "@/lib/secop-shared";
-import type { DateRange } from "react-day-picker";
 import { DetalleAuditoriaModal } from "./detalle-auditoria-modal";
 
 const PAGE_SIZES = [10, 25, 50, 100] as const;
@@ -48,21 +46,6 @@ function SortButton({
   );
 }
 
-function toIsoDate(d: Date | undefined): string {
-  if (!d) return "";
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function fromIsoDate(s: string): Date | undefined {
-  if (!s) return undefined;
-  const [y, m, d] = s.split("-").map(Number);
-  if (!y || !m || !d) return undefined;
-  return new Date(y, m - 1, d);
-}
-
 type FiltrosState = {
   userId: string;
   role: string;
@@ -89,11 +72,6 @@ export function AuditoriaView({
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
   const [detalleTarget, setDetalleTarget] = useState<AuditoriaRow | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
-    const from = fromIsoDate(filtros.fechaDesde);
-    const to = fromIsoDate(filtros.fechaHasta);
-    return from || to ? { from, to } : undefined;
-  });
 
   const aplicar = (cambios: Partial<FiltrosState & { page: number }>) => {
     const next = {
@@ -128,13 +106,80 @@ export function AuditoriaView({
     });
   };
 
-  const handleDateRangeChange = (range: DateRange | undefined) => {
-    setDateRange(range);
-    aplicar({
-      fechaDesde: toIsoDate(range?.from),
-      fechaHasta: toIsoDate(range?.to),
+  const limpiarFiltros = () => {
+    startTransition(() => {
+      router.push(pathname);
     });
   };
+
+  const campos: CampoFiltro[] = [
+    {
+      tipo: "select",
+      clave: "userId",
+      etiqueta: "Usuario",
+      seccion: "Usuario",
+      opciones: filtrosDisponibles.usuarios.map((u) => ({ value: u.id, label: u.name })),
+    },
+    {
+      tipo: "select",
+      clave: "role",
+      etiqueta: "Rol",
+      seccion: "Usuario",
+      opciones: AUDITORIA_ROLES.map((r) => ({ value: r, label: r })),
+    },
+    {
+      tipo: "select",
+      clave: "module",
+      etiqueta: "Módulo",
+      seccion: "Operación",
+      opciones: AUDITORIA_MODULOS.map((m) => ({ value: m, label: m })),
+    },
+    {
+      tipo: "select",
+      clave: "operationType",
+      etiqueta: "Tipo de operación",
+      seccion: "Operación",
+      opciones: AUDITORIA_TIPOS_OPERACION.map((t) => ({ value: t, label: t })),
+    },
+    {
+      tipo: "select",
+      clave: "result",
+      etiqueta: "Resultado",
+      seccion: "Operación",
+      opciones: AUDITORIA_RESULTADOS.map((r) => ({
+        value: r,
+        label: r === "ok" ? "Exitoso" : "Error",
+      })),
+    },
+    {
+      tipo: "fechas",
+      claveDesde: "fechaDesde",
+      claveHasta: "fechaHasta",
+      etiqueta: "Fecha",
+      seccion: "Fechas",
+    },
+  ];
+
+  const valoresFiltro: ValoresFiltro = {
+    userId: filtros.userId,
+    role: filtros.role,
+    module: filtros.module,
+    operationType: filtros.operationType,
+    result: filtros.result,
+    fechaDesde: filtros.fechaDesde,
+    fechaHasta: filtros.fechaHasta,
+  };
+
+  const aplicarFiltros = (v: ValoresFiltro) =>
+    aplicar({
+      userId: v.userId,
+      role: v.role,
+      module: v.module,
+      operationType: v.operationType,
+      result: v.result,
+      fechaDesde: v.fechaDesde,
+      fechaHasta: v.fechaHasta,
+    });
 
   const handleSort = (columnKey: string) => {
     const currentSortBy = filtros.sortBy;
@@ -237,95 +282,13 @@ export function AuditoriaView({
 
   return (
     <div className="space-y-6">
-      <Card className="overflow-visible">
-        <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <Label className="mb-1.5">Usuario</Label>
-            <ItcInput
-              type="select"
-              value={filtros.userId}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                aplicar({ userId: e.target.value })
-              }
-            >
-              <option value="">Todos</option>
-              {filtrosDisponibles.usuarios.map((u) => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </ItcInput>
-          </div>
-          <div>
-            <Label className="mb-1.5">Rol</Label>
-            <ItcInput
-              type="select"
-              value={filtros.role}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                aplicar({ role: e.target.value })
-              }
-            >
-              <option value="">Todos</option>
-              {AUDITORIA_ROLES.map((r) => (
-                <option key={r} value={r}>{r}</option>
-              ))}
-            </ItcInput>
-          </div>
-          <div>
-            <Label className="mb-1.5">Módulo</Label>
-            <ItcInput
-              type="select"
-              value={filtros.module}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                aplicar({ module: e.target.value })
-              }
-            >
-              <option value="">Todos</option>
-              {AUDITORIA_MODULOS.map((m) => (
-                <option key={m} value={m}>{m}</option>
-              ))}
-            </ItcInput>
-          </div>
-          <div>
-            <Label className="mb-1.5">Tipo de operación</Label>
-            <ItcInput
-              type="select"
-              value={filtros.operationType}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                aplicar({ operationType: e.target.value })
-              }
-            >
-              <option value="">Todos</option>
-              {AUDITORIA_TIPOS_OPERACION.map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </ItcInput>
-          </div>
-          <div>
-            <Label className="mb-1.5">Resultado</Label>
-            <ItcInput
-              type="select"
-              value={filtros.result}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                aplicar({ result: e.target.value })
-              }
-            >
-              <option value="">Todos</option>
-              {AUDITORIA_RESULTADOS.map((r) => (
-                <option key={r} value={r}>{r === "ok" ? "Exitoso" : "Error"}</option>
-              ))}
-            </ItcInput>
-          </div>
-          <div>
-            <Label className="mb-1.5">Fecha</Label>
-            <ItcDateRangePicker
-              value={dateRange}
-              onChange={handleDateRangeChange}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <FiltrosPanel
+        campos={campos}
+        valores={valoresFiltro}
+        onAplicar={aplicarFiltros}
+        onLimpiar={limpiarFiltros}
+        deshabilitado={isPending}
+      />
 
       <div className="space-y-3">
         <div className="flex items-center justify-between text-sm text-muted-foreground">

@@ -3742,6 +3742,13 @@
             }
           },
           {
+            "name": "semaforo",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
             "name": "page",
             "in": "query",
             "schema": {
@@ -7185,6 +7192,38 @@
           },
           "entidadRegistrada": {
             "type": "boolean"
+          },
+          "semaforo": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "semaforoScore": {
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "semaforoJustificacion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "semaforoEstado": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "semaforoError": {
+            "type": [
+              "null",
+              "string"
+            ]
           }
         }
       },

@@ -2,7 +2,7 @@
 
 import { useRouter, usePathname } from "next/navigation";
 import { useTransition, useState, type ChangeEvent } from "react";
-import { ExternalLink, ChevronDown, ChevronRight, Search, SlidersHorizontal } from "lucide-react";
+import { ExternalLink, ChevronDown, ChevronRight, Search } from "lucide-react";
 import { toast } from "sonner";
 import {
   ItcTable,
@@ -10,11 +10,10 @@ import {
   ItcModal,
   ItcInput,
   ItcButton,
-  ItcDateRangePicker,
 } from "@/components/itc";
-import type { DateRange } from "react-day-picker";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { RowActionButton } from "@/components/layout/row-action-button";
+import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -30,7 +29,6 @@ import {
   type ProcesoSeguimientoRow,
   type SeguimientoFiltrosDisponibles,
 } from "@/lib/seguimiento-shared";
-import { SelectConOtro, TODOS } from "../secop/select-con-otro";
 import { marcarProceso } from "./actions";
 
 const RESULTADO_LABELS: Record<string, string> = {
@@ -75,21 +73,6 @@ type FiltrosState = {
   resultado: string;
 };
 
-function toIsoDate(d: Date | undefined): string {
-  if (!d) return "";
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function fromIsoDate(s: string): Date | undefined {
-  if (!s) return undefined;
-  const [y, m, d] = s.split("-").map(Number);
-  if (!y || !m || !d) return undefined;
-  return new Date(y, m - 1, d);
-}
-
 export function SeguimientoView({
   procesos,
   filtros,
@@ -104,9 +87,6 @@ export function SeguimientoView({
   const [isPending, startTransition] = useTransition();
   const [isBuscando, startBuscar] = useTransition();
   const [buscar, setBuscar] = useState(filtros.buscar);
-  const [objeto, setObjeto] = useState(filtros.objeto);
-  const [cuantiaMin, setCuantiaMin] = useState(filtros.cuantiaMin);
-  const [cuantiaMax, setCuantiaMax] = useState(filtros.cuantiaMax);
   const [marcarTarget, setMarcarTarget] = useState<{
     proceso: ProcesoSeguimientoRow;
     resultado: string;
@@ -116,24 +96,122 @@ export function SeguimientoView({
   const [valorAdjudicado, setValorAdjudicado] = useState("");
   const [fechaAdjudicacion, setFechaAdjudicacion] = useState("");
 
-  const hasFiltrosAvanzadosActivos = Boolean(
-    filtros.entidad || filtros.objeto || filtros.modalidad || filtros.fase ||
-    filtros.cuantiaMin || filtros.cuantiaMax ||
-    filtros.detectadoDesde || filtros.detectadoHasta ||
-    filtros.presentacionDesde || filtros.presentacionHasta ||
-    filtros.estado || filtros.resultado,
-  );
-  const [mostrarFiltros, setMostrarFiltros] = useState(hasFiltrosAvanzadosActivos);
+  const campos: CampoFiltro[] = [
+    {
+      tipo: "seleccion-libre",
+      clave: "entidad",
+      etiqueta: "Entidad",
+      seccion: "Contratación",
+      opciones: filtrosDisponibles.entidades,
+      placeholderTodos: "Todas",
+    },
+    {
+      tipo: "seleccion-libre",
+      clave: "modalidad",
+      etiqueta: "Modalidad",
+      seccion: "Contratación",
+      opciones: filtrosDisponibles.modalidades,
+      placeholderTodos: "Todas",
+    },
+    {
+      tipo: "select",
+      clave: "fase",
+      etiqueta: "Fase",
+      seccion: "Contratación",
+      placeholderTodos: "Todas",
+      opciones: filtrosDisponibles.fases.map((f) => ({ value: f, label: f })),
+    },
+    {
+      tipo: "texto",
+      clave: "objeto",
+      etiqueta: "Objeto",
+      seccion: "Contratación",
+      placeholder: "Filtrar por objeto…",
+    },
+    {
+      tipo: "select",
+      clave: "estado",
+      etiqueta: "Estado",
+      seccion: "Contratación",
+      opciones: [...ESTADO_FILTRO_OPCIONES],
+    },
+    {
+      tipo: "select",
+      clave: "resultado",
+      etiqueta: "Resultado",
+      seccion: "Contratación",
+      opciones: [...RESULTADO_FILTRO_OPCIONES],
+    },
+    {
+      tipo: "moneda",
+      clave: "cuantiaMin",
+      etiqueta: "Cuantía mínima",
+      seccion: "Financiera",
+      placeholder: "$0",
+    },
+    {
+      tipo: "moneda",
+      clave: "cuantiaMax",
+      etiqueta: "Cuantía máxima",
+      seccion: "Financiera",
+      placeholder: "Sin límite",
+    },
+    {
+      tipo: "fechas",
+      claveDesde: "detectadoDesde",
+      claveHasta: "detectadoHasta",
+      etiqueta: "Detectado",
+      seccion: "Fechas",
+    },
+    {
+      tipo: "fechas",
+      claveDesde: "presentacionDesde",
+      claveHasta: "presentacionHasta",
+      etiqueta: "Fecha de presentación",
+      seccion: "Fechas",
+    },
+  ];
+
+  const valoresFiltro: ValoresFiltro = {
+    entidad: filtros.entidad,
+    modalidad: filtros.modalidad,
+    fase: filtros.fase,
+    objeto: filtros.objeto,
+    estado: filtros.estado,
+    resultado: filtros.resultado,
+    cuantiaMin: filtros.cuantiaMin,
+    cuantiaMax: filtros.cuantiaMax,
+    detectadoDesde: filtros.detectadoDesde,
+    detectadoHasta: filtros.detectadoHasta,
+    presentacionDesde: filtros.presentacionDesde,
+    presentacionHasta: filtros.presentacionHasta,
+  };
+
+  const aplicarFiltros = (v: ValoresFiltro) =>
+    aplicar({
+      entidad: v.entidad,
+      modalidad: v.modalidad,
+      fase: v.fase,
+      objeto: v.objeto,
+      estado: v.estado,
+      resultado: v.resultado,
+      cuantiaMin: v.cuantiaMin,
+      cuantiaMax: v.cuantiaMax,
+      detectadoDesde: v.detectadoDesde,
+      detectadoHasta: v.detectadoHasta,
+      presentacionDesde: v.presentacionDesde,
+      presentacionHasta: v.presentacionHasta,
+    });
 
   const aplicar = (cambios: Partial<FiltrosState>) => {
     const next = {
       buscar: cambios.buscar ?? buscar,
       entidad: cambios.entidad ?? filtros.entidad,
-      objeto: cambios.objeto ?? objeto,
+      objeto: cambios.objeto ?? filtros.objeto,
       modalidad: cambios.modalidad ?? filtros.modalidad,
       fase: cambios.fase ?? filtros.fase,
-      cuantiaMin: cambios.cuantiaMin ?? cuantiaMin,
-      cuantiaMax: cambios.cuantiaMax ?? cuantiaMax,
+      cuantiaMin: cambios.cuantiaMin ?? filtros.cuantiaMin,
+      cuantiaMax: cambios.cuantiaMax ?? filtros.cuantiaMax,
       detectadoDesde: cambios.detectadoDesde ?? filtros.detectadoDesde,
       detectadoHasta: cambios.detectadoHasta ?? filtros.detectadoHasta,
       presentacionDesde: cambios.presentacionDesde ?? filtros.presentacionDesde,
@@ -164,9 +242,6 @@ export function SeguimientoView({
 
   const limpiarFiltros = () => {
     setBuscar("");
-    setObjeto("");
-    setCuantiaMin("");
-    setCuantiaMax("");
     startBuscar(() => {
       router.push(pathname);
     });
@@ -361,235 +436,43 @@ export function SeguimientoView({
         <CardHeader className="flex flex-row items-center justify-between gap-4">
           <CardTitle>Filtros</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <Label className="mb-1.5">Buscar</Label>
-              <div className="flex gap-1.5">
-                <ItcInput
-                  value={buscar}
-                  placeholder="Entidad u objeto…"
-                  onChange={(
-                    e: ChangeEvent<
-                      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                    >,
-                  ) => setBuscar(e.target.value)}
-                  onKeyDown={(e: React.KeyboardEvent) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      aplicar({ buscar });
-                    }
-                  }}
-                />
-                <ItcButton
-                  type="button"
-                  variant="secondary"
-                  onClick={() => aplicar({ buscar })}
-                >
-                  <Search className="h-4 w-4" />
-                </ItcButton>
-              </div>
-            </div>
-
-            <div className="flex items-end gap-2">
-              <ItcButton
-                type="button"
-                variant="secondary"
-                onClick={() => setMostrarFiltros(!mostrarFiltros)}
-                className="gap-1.5"
-              >
-                <SlidersHorizontal className="h-4 w-4" />
-                {mostrarFiltros ? "Ocultar filtros" : "Filtros avanzados"}
-              </ItcButton>
-            </div>
-          </div>
-
-          {mostrarFiltros && (
-            <div className="grid grid-cols-1 gap-4 border-t pt-4 sm:grid-cols-2 lg:grid-cols-4">
-              <SelectConOtro
-                label="Entidad"
-                value={filtros.entidad}
-                opciones={filtrosDisponibles.entidades}
-                placeholderTodos="Todas"
-                onChange={(value) => aplicar({ entidad: value })}
-              />
-
-              <SelectConOtro
-                label="Modalidad"
-                value={filtros.modalidad}
-                opciones={filtrosDisponibles.modalidades}
-                placeholderTodos="Todas"
-                onChange={(value) => aplicar({ modalidad: value })}
-              />
-
-              <div>
-                <Label className="mb-1.5">Fase</Label>
-                <ItcInput
-                  type="select"
-                  value={filtros.fase || TODOS}
-                  onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                    aplicar({ fase: e.target.value === TODOS ? "" : e.target.value })
-                  }
-                >
-                  <option value={TODOS}>Todas</option>
-                  {filtrosDisponibles.fases.map((f) => (
-                    <option key={f} value={f}>
-                      {f}
-                    </option>
-                  ))}
-                </ItcInput>
-              </div>
-
-              <div>
-                <Label className="mb-1.5">Objeto</Label>
-                <ItcInput
-                  value={objeto}
-                  placeholder="Filtrar por objeto…"
-                  onChange={(
-                    e: ChangeEvent<
-                      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                    >,
-                  ) => setObjeto(e.target.value)}
-                  onKeyDown={(e: React.KeyboardEvent) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      aplicar({ objeto });
-                    }
-                  }}
-                />
-              </div>
-
-              <div>
-                <Label className="mb-1.5">Cuantía mínima</Label>
-                <ItcInput
-                  type="text"
-                  inputMode="numeric"
-                  value={formatMilesInput(cuantiaMin)}
-                  placeholder="$0"
-                  onChange={(
-                    e: ChangeEvent<
-                      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                    >,
-                  ) => setCuantiaMin(parseMilesInput(e.target.value))}
-                  onKeyDown={(e: React.KeyboardEvent) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      aplicar({ cuantiaMin });
-                    }
-                  }}
-                />
-              </div>
-
-              <div>
-                <Label className="mb-1.5">Cuantía máxima</Label>
-                <ItcInput
-                  type="text"
-                  inputMode="numeric"
-                  value={formatMilesInput(cuantiaMax)}
-                  placeholder="Sin límite"
-                  onChange={(
-                    e: ChangeEvent<
-                      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                    >,
-                  ) => setCuantiaMax(parseMilesInput(e.target.value))}
-                  onKeyDown={(e: React.KeyboardEvent) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      aplicar({ cuantiaMax });
-                    }
-                  }}
-                />
-              </div>
-
-              <div className="lg:col-span-2">
-                <ItcDateRangePicker
-                  label="Detectado"
-                  placeholder="Rango de fechas…"
-                  clearable
-                  value={
-                    {
-                      from: fromIsoDate(filtros.detectadoDesde),
-                      to: fromIsoDate(filtros.detectadoHasta),
-                    } as DateRange
-                  }
-                  onChange={(range) =>
-                    aplicar({
-                      detectadoDesde: toIsoDate(range?.from),
-                      detectadoHasta: toIsoDate(range?.to),
-                    })
-                  }
-                />
-              </div>
-
-              <div className="lg:col-span-2">
-                <ItcDateRangePicker
-                  label="Fecha de presentación"
-                  placeholder="Rango de fechas…"
-                  clearable
-                  value={
-                    {
-                      from: fromIsoDate(filtros.presentacionDesde),
-                      to: fromIsoDate(filtros.presentacionHasta),
-                    } as DateRange
-                  }
-                  onChange={(range) =>
-                    aplicar({
-                      presentacionDesde: toIsoDate(range?.from),
-                      presentacionHasta: toIsoDate(range?.to),
-                    })
-                  }
-                />
-              </div>
-
-              <div>
-                <Label className="mb-1.5">Estado</Label>
-                <ItcInput
-                  type="select"
-                  value={filtros.estado || TODOS}
-                  onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                    aplicar({ estado: e.target.value === TODOS ? "" : e.target.value })
-                  }
-                >
-                  <option value={TODOS}>Todos</option>
-                  {ESTADO_FILTRO_OPCIONES.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </ItcInput>
-              </div>
-
-              <div>
-                <Label className="mb-1.5">Resultado</Label>
-                <ItcInput
-                  type="select"
-                  value={filtros.resultado || TODOS}
-                  onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                    aplicar({ resultado: e.target.value === TODOS ? "" : e.target.value })
-                  }
-                >
-                  <option value={TODOS}>Todos</option>
-                  {RESULTADO_FILTRO_OPCIONES.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </ItcInput>
-              </div>
-
-              <div className="flex items-end">
-                <ItcButton
-                  type="button"
-                  variant="secondary"
-                  onClick={limpiarFiltros}
-                  className="w-full"
-                  disabled={isBuscando}
-                >
-                  Limpiar filtros
-                </ItcButton>
-              </div>
-            </div>
-          )}
+        <CardContent>
+          <FiltrosPanel
+            campos={campos}
+            valores={valoresFiltro}
+            onAplicar={aplicarFiltros}
+            onLimpiar={limpiarFiltros}
+            deshabilitado={isBuscando}
+            buscador={
+              <>
+                <Label className="mb-1.5">Buscar</Label>
+                <div className="flex gap-1.5">
+                  <ItcInput
+                    value={buscar}
+                    placeholder="Entidad u objeto…"
+                    onChange={(
+                      e: ChangeEvent<
+                        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+                      >,
+                    ) => setBuscar(e.target.value)}
+                    onKeyDown={(e: React.KeyboardEvent) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        aplicar({ buscar });
+                      }
+                    }}
+                  />
+                  <ItcButton
+                    type="button"
+                    variant="secondary"
+                    onClick={() => aplicar({ buscar })}
+                  >
+                    <Search className="h-4 w-4" />
+                  </ItcButton>
+                </div>
+              </>
+            }
+          />
         </CardContent>
       </Card>
 

@@ -2,12 +2,14 @@
 
 import { useState, useTransition, type ChangeEvent } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { ChevronRight, ArrowUpDown, ChevronLeft, ChevronRight as ChevronRightIcon, Info } from "lucide-react";
-import { ItcTable, type TableColumn, ItcInput, ItcDateRangePicker, ItcButton } from "@/components/itc";
+import { toast } from "sonner";
+import { Search, ChevronRight, ArrowUpDown, ChevronLeft, ChevronRight as ChevronRightIcon, Info, RotateCcw } from "lucide-react";
+import { ItcTable, type TableColumn, ItcInput, ItcButton, ItcModal } from "@/components/itc";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { RowActionButton } from "@/components/layout/row-action-button";
+import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
 import { formatCOP, formatDate } from "@/lib/format";
 import {
   ESTADO_FINAL_OPCIONES,
@@ -16,8 +18,8 @@ import {
   type HistoricosFiltrosDisponibles,
 } from "@/lib/seguimiento-historicos-shared";
 import type { Paginado } from "@/lib/secop-shared";
-import type { DateRange } from "react-day-picker";
 import { DetalleProcesoHistoricoModal } from "./detalle-proceso-historico-modal";
+import { reactivarProceso } from "./actions";
 
 const PAGE_SIZES = [10, 25, 50, 100] as const;
 
@@ -45,21 +47,6 @@ function SortButton({
   );
 }
 
-function toIsoDate(d: Date | undefined): string {
-  if (!d) return "";
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function fromIsoDate(s: string): Date | undefined {
-  if (!s) return undefined;
-  const [y, m, d] = s.split("-").map(Number);
-  if (!y || !m || !d) return undefined;
-  return new Date(y, m - 1, d);
-}
-
 type FiltrosState = {
   numeroProceso: string;
   entidad: string;
@@ -85,20 +72,15 @@ export function ProcesosHistoricosView({
   const router = useRouter();
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
-  const [numeroProceso, setNumeroProceso] = useState(filtros.numeroProceso);
-  const [entidad, setEntidad] = useState(filtros.entidad);
   const [palabraClave, setPalabraClave] = useState(filtros.palabraClave);
   const [detalleTarget, setDetalleTarget] = useState<ProcesoHistoricoRow | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
-    const from = fromIsoDate(filtros.fechaDesde);
-    const to = fromIsoDate(filtros.fechaHasta);
-    return from || to ? { from, to } : undefined;
-  });
+  const [retomarTarget, setRetomarTarget] = useState<ProcesoHistoricoRow | null>(null);
+  const [isRetomando, startRetomar] = useTransition();
 
   const aplicar = (cambios: Partial<FiltrosState & { page: number }>) => {
     const next = {
-      numeroProceso: cambios.numeroProceso ?? numeroProceso,
-      entidad: cambios.entidad ?? entidad,
+      numeroProceso: cambios.numeroProceso ?? filtros.numeroProceso,
+      entidad: cambios.entidad ?? filtros.entidad,
       responsableUserId: cambios.responsableUserId ?? filtros.responsableUserId,
       estadoFinal: cambios.estadoFinal ?? filtros.estadoFinal,
       fechaDesde: cambios.fechaDesde ?? filtros.fechaDesde,
@@ -129,11 +111,84 @@ export function ProcesosHistoricosView({
     });
   };
 
-  const handleDateRangeChange = (range: DateRange | undefined) => {
-    setDateRange(range);
+  const limpiarFiltros = () => {
+    setPalabraClave("");
+    startTransition(() => {
+      router.push(`${pathname}?vista=historicos`);
+    });
+  };
+
+  const campos: CampoFiltro[] = [
+    {
+      tipo: "texto",
+      clave: "numeroProceso",
+      etiqueta: "Número del proceso",
+      seccion: "Proceso",
+      placeholder: "Ej: 2024-01-00001",
+    },
+    {
+      tipo: "texto",
+      clave: "entidad",
+      etiqueta: "Entidad",
+      seccion: "Proceso",
+      placeholder: "Buscar entidad…",
+    },
+    {
+      tipo: "select",
+      clave: "responsableUserId",
+      etiqueta: "Responsable",
+      seccion: "Proceso",
+      opciones: filtrosDisponibles.responsables.map((r) => ({ value: r.id, label: r.name })),
+    },
+    {
+      tipo: "select",
+      clave: "estadoFinal",
+      etiqueta: "Estado final",
+      seccion: "Proceso",
+      opciones: [...ESTADO_FINAL_OPCIONES],
+    },
+    {
+      tipo: "fechas",
+      claveDesde: "fechaDesde",
+      claveHasta: "fechaHasta",
+      etiqueta: "Fecha de cierre",
+      seccion: "Fechas",
+    },
+  ];
+
+  const valoresFiltro: ValoresFiltro = {
+    numeroProceso: filtros.numeroProceso,
+    entidad: filtros.entidad,
+    responsableUserId: filtros.responsableUserId,
+    estadoFinal: filtros.estadoFinal,
+    fechaDesde: filtros.fechaDesde,
+    fechaHasta: filtros.fechaHasta,
+  };
+
+  const aplicarFiltros = (v: ValoresFiltro) =>
     aplicar({
-      fechaDesde: toIsoDate(range?.from),
-      fechaHasta: toIsoDate(range?.to),
+      numeroProceso: v.numeroProceso,
+      entidad: v.entidad,
+      responsableUserId: v.responsableUserId,
+      estadoFinal: v.estadoFinal,
+      fechaDesde: v.fechaDesde,
+      fechaHasta: v.fechaHasta,
+    });
+
+  const handleRetomar = () => {
+    if (!retomarTarget) return;
+    const id = retomarTarget.id;
+    startRetomar(async () => {
+      try {
+        await reactivarProceso(id);
+        toast.success("Proceso retomado", {
+          description: "Volvió a \"Procesos en seguimiento\" (Activos) para continuar su flujo.",
+        });
+        setRetomarTarget(null);
+        router.refresh();
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "No se pudo retomar el proceso");
+      }
     });
   };
 
@@ -235,7 +290,7 @@ export function ProcesosHistoricosView({
     {
       key: "acciones",
       title: "Acciones",
-      width: 80,
+      width: 110,
       align: "center",
       render: (r) => (
         <div className="flex items-center justify-center gap-1">
@@ -244,6 +299,14 @@ export function ProcesosHistoricosView({
             title="Ver detalle"
             onClick={() => setDetalleTarget(r)}
           />
+          {r.estadoFinal === "Descartado" && (
+            <RowActionButton
+              icon={<RotateCcw className="h-3.5 w-3.5" />}
+              title="Retomar proceso"
+              onClick={() => setRetomarTarget(r)}
+              disabled={isRetomando}
+            />
+          )}
           <button
             type="button"
             className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -265,83 +328,38 @@ export function ProcesosHistoricosView({
         <CardHeader>
           <CardTitle>Filtros</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <Label className="mb-1.5">Número del proceso</Label>
-            <ItcInput
-              value={numeroProceso}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                setNumeroProceso(e.target.value)
-              }
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter") aplicar({ numeroProceso });
-              }}
-              placeholder="Ej: 2024-01-00001"
-            />
-          </div>
-          <div>
-            <Label className="mb-1.5">Entidad</Label>
-            <ItcInput
-              value={entidad}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                setEntidad(e.target.value)
-              }
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter") aplicar({ entidad });
-              }}
-              placeholder="Buscar entidad…"
-            />
-          </div>
-          <div>
-            <Label className="mb-1.5">Responsable</Label>
-            <ItcInput
-              type="select"
-              value={filtros.responsableUserId}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                aplicar({ responsableUserId: e.target.value })
-              }
-            >
-              <option value="">Todos</option>
-              {filtrosDisponibles.responsables.map((r) => (
-                <option key={r.id} value={r.id}>{r.name}</option>
-              ))}
-            </ItcInput>
-          </div>
-          <div>
-            <Label className="mb-1.5">Estado final</Label>
-            <ItcInput
-              type="select"
-              value={filtros.estadoFinal}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                aplicar({ estadoFinal: e.target.value })
-              }
-            >
-              <option value="">Todos</option>
-              {ESTADO_FINAL_OPCIONES.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </ItcInput>
-          </div>
-          <div>
-            <Label className="mb-1.5">Fecha de cierre</Label>
-            <ItcDateRangePicker
-              value={dateRange}
-              onChange={handleDateRangeChange}
-            />
-          </div>
-          <div className="sm:col-span-2">
-            <Label className="mb-1.5">Palabra clave</Label>
-            <ItcInput
-              value={palabraClave}
-              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                setPalabraClave(e.target.value)
-              }
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter") aplicar({ palabraClave });
-              }}
-              placeholder="Buscar en entidad, objeto o número…"
-            />
-          </div>
+        <CardContent>
+          <FiltrosPanel
+            campos={campos}
+            valores={valoresFiltro}
+            onAplicar={aplicarFiltros}
+            onLimpiar={limpiarFiltros}
+            deshabilitado={isPending}
+            buscador={
+              <>
+                <Label className="mb-1.5">Palabra clave</Label>
+                <div className="flex gap-1.5">
+                  <ItcInput
+                    value={palabraClave}
+                    onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+                      setPalabraClave(e.target.value)
+                    }
+                    onKeyDown={(e: React.KeyboardEvent) => {
+                      if (e.key === "Enter") aplicar({ palabraClave });
+                    }}
+                    placeholder="Buscar en entidad, objeto o número…"
+                  />
+                  <ItcButton
+                    type="button"
+                    variant="secondary"
+                    onClick={() => aplicar({ palabraClave })}
+                  >
+                    <Search className="h-4 w-4" />
+                  </ItcButton>
+                </div>
+              </>
+            }
+          />
         </CardContent>
       </Card>
 
@@ -414,6 +432,37 @@ export function ProcesosHistoricosView({
       <DetalleProcesoHistoricoModal
         proceso={detalleTarget}
         onClose={() => setDetalleTarget(null)}
+      />
+
+      <ItcModal
+        open={retomarTarget !== null}
+        onClose={() => setRetomarTarget(null)}
+        onConfirm={handleRetomar}
+        title="¿Retomar proceso?"
+        content={
+          <div className="space-y-3 text-sm text-muted-foreground">
+            <p>
+              El proceso{" "}
+              <span className="font-medium text-foreground">
+                {retomarTarget?.secopId ?? "seleccionado"}
+              </span>{" "}
+              volverá a &quot;Procesos en seguimiento&quot; (Activos) y podrás continuar con su flujo.
+            </p>
+            {retomarTarget?.motivoCierre && (
+              <p>
+                Motivo del descarte:{" "}
+                <span className="text-foreground">{retomarTarget.motivoCierre}</span>
+              </p>
+            )}
+            <p>
+              Se conserva el historial anterior y queda registrado quién lo retomó y cuándo.
+            </p>
+          </div>
+        }
+        variant="confirm"
+        confirmText="Retomar"
+
+        disabled={isRetomando}
       />
     </div>
   );

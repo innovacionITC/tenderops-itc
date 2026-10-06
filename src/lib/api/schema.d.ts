@@ -3061,6 +3061,7 @@ export interface paths {
                     detectadoDesde?: string;
                     detectadoHasta?: string;
                     soloPromovidos?: boolean;
+                    semaforo?: string;
                     page?: number | string;
                     pageSize?: number | string;
                 };
@@ -4493,6 +4494,12 @@ export interface components {
             /** Format: date-time */
             lastDetectedAt: string;
             entidadRegistrada: boolean;
+            semaforo?: null | string;
+            /** Format: int32 */
+            semaforoScore?: null | number | string;
+            semaforoJustificacion?: null | string;
+            semaforoEstado?: null | string;
+            semaforoError?: null | string;
         };
         ProcesoHistoricoListResponse: {
             items: components["schemas"]["ProcesoHistoricoResponse"][];

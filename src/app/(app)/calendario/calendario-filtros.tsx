@@ -1,11 +1,13 @@
 "use client";
 
-import { type ChangeEvent } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
-import { ItcInput, ItcDateRangePicker, ItcButton } from "@/components/itc";
+import {
+  FiltrosPanel,
+  type CampoFiltro,
+  type ValoresFiltro,
+} from "@/components/layout/filtros-panel";
 import type { UsuarioAsignableRow } from "@/lib/usuarios-asignables";
 import type { ProcesoSeguimientoRow } from "@/lib/seguimiento-shared";
 
@@ -46,16 +48,7 @@ export function CalendarioFiltrosBar({
   const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
-  const aplicar = (cambios: Partial<CalendarioFiltrosState>) => {
-    const next = {
-      responsableUserId: cambios.responsableUserId ?? filtros.responsableUserId,
-      estado: cambios.estado ?? filtros.estado,
-      tipo: cambios.tipo ?? filtros.tipo,
-      procesoId: cambios.procesoId ?? filtros.procesoId,
-      fechaDesde: cambios.fechaDesde ?? filtros.fechaDesde,
-      fechaHasta: cambios.fechaHasta ?? filtros.fechaHasta,
-    };
-
+  const aplicar = (next: CalendarioFiltrosState) => {
     const qs = new URLSearchParams();
     if (next.responsableUserId) qs.set("responsableUserId", next.responsableUserId);
     if (next.estado) qs.set("estado", next.estado);
@@ -69,123 +62,82 @@ export function CalendarioFiltrosBar({
     });
   };
 
-  const dateRange = filtros.fechaDesde || filtros.fechaHasta
-    ? {
-        from: fromIsoDate(filtros.fechaDesde),
-        to: fromIsoDate(filtros.fechaHasta),
-      }
-    : undefined;
-
-  const handleDateRangeChange = (range: { from?: Date; to?: Date } | undefined) => {
-    const from = range?.from ? toIsoDate(range.from) : "";
-    const to = range?.to ? toIsoDate(range.to) : "";
-    onDateRangeChange?.(from, to);
-    aplicar({ fechaDesde: from, fechaHasta: to });
-  };
-
   const limpiarFiltros = () => {
     startTransition(() => {
       router.push(pathname);
     });
   };
 
+  const campos: CampoFiltro[] = [
+    {
+      tipo: "select",
+      clave: "responsableUserId",
+      etiqueta: "Responsable",
+      seccion: "Actividad",
+      opciones: responsables.map((r) => ({ value: r.id, label: r.name })),
+    },
+    {
+      tipo: "select",
+      clave: "estado",
+      etiqueta: "Estado",
+      seccion: "Actividad",
+      opciones: [...ESTADO_OPCIONES],
+    },
+    {
+      tipo: "select",
+      clave: "tipo",
+      etiqueta: "Tipo",
+      seccion: "Actividad",
+      opciones: [...TIPO_OPCIONES],
+    },
+    {
+      tipo: "select",
+      clave: "procesoId",
+      etiqueta: "Oportunidad",
+      seccion: "Actividad",
+      placeholderTodos: "Todas",
+      opciones: procesos.map((p) => ({
+        value: p.id,
+        label: `${p.secopId ?? p.id.slice(0, 8)} — ${p.entidad ?? "Sin entidad"}`,
+      })),
+    },
+    {
+      tipo: "fechas",
+      claveDesde: "fechaDesde",
+      claveHasta: "fechaHasta",
+      etiqueta: "Rango de fechas",
+      seccion: "Fechas",
+    },
+  ];
+
+  const valoresFiltro: ValoresFiltro = { ...filtros };
+
+  const aplicarFiltros = (v: ValoresFiltro) => {
+    if (v.fechaDesde !== filtros.fechaDesde || v.fechaHasta !== filtros.fechaHasta) {
+      onDateRangeChange?.(v.fechaDesde, v.fechaHasta);
+    }
+    aplicar({
+      responsableUserId: v.responsableUserId,
+      estado: v.estado,
+      tipo: v.tipo,
+      procesoId: v.procesoId,
+      fechaDesde: v.fechaDesde,
+      fechaHasta: v.fechaHasta,
+    });
+  };
+
   return (
-    <div className="flex flex-wrap items-end gap-3">
+    <div className="flex items-start gap-3">
+      <FiltrosPanel
+        campos={campos}
+        valores={valoresFiltro}
+        onAplicar={aplicarFiltros}
+        onLimpiar={limpiarFiltros}
+        deshabilitado={isPending}
+      />
       {isPending && (
-        <Spinner className="mb-2 size-3.5 self-end text-muted-foreground" aria-label="Actualizando" />
+        <Spinner className="mt-2 size-3.5 text-muted-foreground" aria-label="Actualizando" />
       )}
-      <div className="w-36">
-        <Label className="mb-1.5">Responsable</Label>
-        <ItcInput
-          type="select"
-          className="w-full"
-          value={filtros.responsableUserId}
-          onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-            aplicar({ responsableUserId: e.target.value })
-          }
-        >
-          <option value="">Todos</option>
-          {responsables.map((r) => (
-            <option key={r.id} value={r.id}>{r.name}</option>
-          ))}
-        </ItcInput>
-      </div>
-      <div className="w-36">
-        <Label className="mb-1.5">Estado</Label>
-        <ItcInput
-          type="select"
-          className="w-full"
-          value={filtros.estado}
-          onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-            aplicar({ estado: e.target.value })
-          }
-        >
-          <option value="">Todos</option>
-          {ESTADO_OPCIONES.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </ItcInput>
-      </div>
-      <div className="w-36">
-        <Label className="mb-1.5">Tipo</Label>
-        <ItcInput
-          type="select"
-          className="w-full"
-          value={filtros.tipo}
-          onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-            aplicar({ tipo: e.target.value })
-          }
-        >
-          <option value="">Todos</option>
-          {TIPO_OPCIONES.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </ItcInput>
-      </div>
-      <div className="w-48">
-        <Label className="mb-1.5">Oportunidad</Label>
-        <ItcInput
-          type="select"
-          className="w-full"
-          value={filtros.procesoId}
-          onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-            aplicar({ procesoId: e.target.value })
-          }
-        >
-          <option value="">Todas</option>
-          {procesos.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.secopId ?? p.id.slice(0, 8)} — {p.entidad ?? "Sin entidad"}
-            </option>
-          ))}
-        </ItcInput>
-      </div>
-      <div className="w-56">
-        <Label className="mb-1.5">Rango de fechas</Label>
-        <ItcDateRangePicker
-          value={dateRange}
-          onChange={handleDateRangeChange}
-        />
-      </div>
-      <div className="flex items-end">
-        <ItcButton type="button" variant="secondary" onClick={limpiarFiltros} disabled={isPending}>
-          Limpiar filtros
-        </ItcButton>
-      </div>
     </div>
   );
-}
-
-function toIsoDate(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}`;
-}
-
-function fromIsoDate(s: string | undefined): Date | undefined {
-  if (!s) return undefined;
-  const [y, m, d] = s.split("-").map(Number);
-  if (!y || !m || !d) return undefined;
-  return new Date(y, m - 1, d);
 }

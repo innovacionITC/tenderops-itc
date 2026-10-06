@@ -30,6 +30,20 @@ export const formatDate = (d: string | Date | null | undefined) => {
   });
 };
 
+// Numérica y de ancho fijo (02/10/2026): para columnas de tabla donde "02 oct 2026"
+// se parte en dos líneas.
+export const formatFechaCorta = (d: string | Date | null | undefined) => {
+  if (!d) return "—";
+  const date = typeof d === "string" ? new Date(d) : d;
+  if (isNaN(date.getTime())) return "—";
+  return date.toLocaleDateString("es-CO", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: TZ,
+  });
+};
+
 export const formatDateTime = (d: string | Date | null | undefined) => {
   if (!d) return "—";
   const date = typeof d === "string" ? new Date(d) : d;
