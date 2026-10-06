@@ -98,6 +98,18 @@ export default async function CalendarioPage({
     errorTipo = clasificarCalendarioError(e);
   }
 
+  const tasksFiltradas = resultado
+    ? resultado.tasks.filter((t) => {
+        if (filtrosState.responsableUserId && t.assignedTo !== filtrosState.responsableUserId) {
+          return false;
+        }
+        if (filtrosState.procesoId && t.processId !== filtrosState.procesoId) {
+          return false;
+        }
+        return true;
+      })
+    : [];
+
   const header = (
     <PageHeader
       title="Calendario"
@@ -128,7 +140,7 @@ export default async function CalendarioPage({
       </div>
       <CalendarView
         actividades={resultado.actividades}
-        tasks={resultado.tasks}
+        tasks={tasksFiltradas}
         currentUserId={userId}
         canManageAll={hasAnyRole(role, ["administrador", "director"])}
         initialView={vista as "month" | "week" | "day"}
