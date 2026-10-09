@@ -7,9 +7,9 @@ import { toast } from "sonner";
 import { ItcButton, ItcTabs, ItcModal } from "@/components/itc";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { type ProcesoSeguimientoRow } from "@/lib/seguimiento-shared";
-import type { TaskRow } from "@/lib/tasks";
 import { cerrarSeguimiento } from "./actions";
 import { TareasTab } from "./tareas-tab";
+import type { CitasCrmData } from "./data";
 import { AnalisisIaTab } from "./analisis-ia-tab";
 import { MatrizCumplimientoTab } from "./matriz-cumplimiento-tab";
 import { AsistenteIaTab } from "./asistente-ia-tab";
@@ -62,15 +62,13 @@ type AnalisisIa = {
 
 export function WorkspaceView({
   proceso,
-  tareas,
-  usuariosAsignables,
+  citasCrm,
   analisisIa,
   documentosCrm,
   directLineBaseUrl,
 }: {
   proceso: ProcesoSeguimientoRow;
-  tareas: TaskRow[];
-  usuariosAsignables: { id: string; name: string }[];
+  citasCrm: CitasCrmData;
   analisisIa: AnalisisIa | null;
   documentosCrm: OportunidadDocumentoRow[];
   directLineBaseUrl: string;
@@ -159,8 +157,8 @@ export function WorkspaceView({
               {t.key === "tareas" && (
                 <TareasTab
                   procesoId={proceso.id}
-                  tareas={tareas}
-                  usuariosAsignables={usuariosAsignables}
+                  tieneOportunidad={!!proceso.crmOpportunityId}
+                  citasCrm={citasCrm}
                 />
               )}
               {t.key === "crm" && (
