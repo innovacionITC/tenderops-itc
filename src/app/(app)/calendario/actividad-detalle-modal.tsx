@@ -18,7 +18,6 @@ export function ActividadDetalleModal({
 
   const SOURCE_LABELS: Record<string, string> = {
     event: "Evento",
-    task: "Tarea",
     secop_closing: "Cierre SECOP",
   };
 
@@ -26,19 +25,16 @@ export function ActividadDetalleModal({
     pendiente: "Pendiente",
     proxima_a_vencer: "Próxima a vencer",
     vencida: "Vencida",
-    completada: "Completada",
   };
 
   const ESTADO_COLORS: Record<string, string> = {
     pendiente: "text-muted-foreground",
     proxima_a_vencer: "text-amber-600 dark:text-amber-400",
     vencida: "text-destructive",
-    completada: "text-emerald-600 dark:text-emerald-400",
   };
 
   const FECHA_INICIO_LABELS: Record<string, string> = {
     event: "Inicio",
-    task: "Vence",
     secop_closing: "Fecha de cierre",
   };
 

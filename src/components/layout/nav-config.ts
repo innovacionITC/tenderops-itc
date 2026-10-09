@@ -39,7 +39,7 @@ export const menuGroups: { title: string; items: MenuItem[] }[] = [
   },
   {
     title: "Gestión",
-    items: [{ href: "/calendario", icon: Calendar, label: "Calendario y tareas" }],
+    items: [{ href: "/calendario", icon: Calendar, label: "Calendario" }],
   },
   {
     title: "Sistema",

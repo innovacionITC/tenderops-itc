@@ -15,12 +15,10 @@ export const ESTADO_OPCIONES = [
   { value: "pendiente", label: "Pendiente" },
   { value: "proxima_a_vencer", label: "Próxima a vencer" },
   { value: "vencida", label: "Vencida" },
-  { value: "completada", label: "Completada" },
 ] as const;
 
 export const TIPO_OPCIONES = [
   { value: "event", label: "Evento" },
-  { value: "task", label: "Tarea" },
   { value: "secop_closing", label: "Cierre SECOP" },
 ] as const;
 

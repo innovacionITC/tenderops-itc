@@ -7,14 +7,14 @@ export type Actividad = {
   startDate: string;
   endDate: string | null;
   eventType: string | null;
-  source: "event" | "task" | "secop_closing";
+  source: "event" | "secop_closing";
   processId: string | null;
   numeroProceso: string | null;
   entidad: string | null;
   responsableUserId: string | null;
   responsableNombre: string | null;
   prioridad: string | null;
-  estado: "completada" | "vencida" | "proxima_a_vencer" | "pendiente";
+  estado: "vencida" | "proxima_a_vencer" | "pendiente";
 };
 
 type ActividadResponse = {
