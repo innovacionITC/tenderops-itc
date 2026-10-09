@@ -15,7 +15,7 @@ export default async function DashboardPage() {
         description="Resumen general de la operación licitatoria de Intelecto y xRM"
       />
       <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
           <StatCard label="Procesos detectados" value={data.counts.total} tone="info" />
           <StatCard label="En seguimiento" value={data.counts.followed} tone="info" />
           <StatCard
@@ -24,8 +24,6 @@ export default async function DashboardPage() {
             tone="warning"
           />
           <StatCard label="Estudios de mercado" value={data.counts.marketStudies} tone="warning" />
-          <StatCard label="Tareas pendientes" value={data.counts.pendingTasks} tone="muted" />
-          <StatCard label="Tareas vencidas" value={data.counts.overdueTasks} tone="danger" />
         </div>
 
         <section className="rounded-2xl border bg-card p-5 shadow-sm">

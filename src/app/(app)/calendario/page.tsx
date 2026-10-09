@@ -1,8 +1,6 @@
 import { PageHeader } from "@/components/layout/page-header";
 import { requireAuth } from "@/lib/auth/session";
-import { hasAnyRole } from "@/lib/auth/roles";
 import { listCalendar, type CalendarioFiltros } from "@/lib/calendar";
-import { listTasks } from "@/lib/tasks";
 import { listUsuariosAsignables } from "@/lib/usuarios-asignables";
 import { listProcesosSeguimiento } from "@/lib/seguimiento";
 import { clasificarCalendarioError } from "@/lib/errors/calendario";
@@ -43,7 +41,7 @@ export default async function CalendarioPage({
 }: {
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const { userId, role } = await requireAuth(["administrador", "director", "gestor"]);
+  await requireAuth(["administrador", "director", "gestor"]);
   const params = await searchParams;
 
   const vista = params.vista ?? "month";
@@ -80,40 +78,26 @@ export default async function CalendarioPage({
 
   let resultado: {
     actividades: Awaited<ReturnType<typeof listCalendar>>;
-    tasks: Awaited<ReturnType<typeof listTasks>>;
     responsables: Awaited<ReturnType<typeof listUsuariosAsignables>>;
     procesos: Awaited<ReturnType<typeof listProcesosSeguimiento>>;
   } | null = null;
   let errorTipo: ReturnType<typeof clasificarCalendarioError> | null = null;
 
   try {
-    const [actividades, tasks, responsables, procesos] = await Promise.all([
+    const [actividades, responsables, procesos] = await Promise.all([
       listCalendar(apiFiltros),
-      listTasks(),
       listUsuariosAsignables(),
       listProcesosSeguimiento(),
     ]);
-    resultado = { actividades, tasks, responsables, procesos };
+    resultado = { actividades, responsables, procesos };
   } catch (e) {
     errorTipo = clasificarCalendarioError(e);
   }
 
-  const tasksFiltradas = resultado
-    ? resultado.tasks.filter((t) => {
-        if (filtrosState.responsableUserId && t.assignedTo !== filtrosState.responsableUserId) {
-          return false;
-        }
-        if (filtrosState.procesoId && t.processId !== filtrosState.procesoId) {
-          return false;
-        }
-        return true;
-      })
-    : [];
-
   const header = (
     <PageHeader
       title="Calendario"
-      description="Vista día/semana/mes de eventos, tareas y cierres SECOP."
+      description="Vista día/semana/mes de eventos y cierres SECOP."
     />
   );
 
@@ -140,9 +124,6 @@ export default async function CalendarioPage({
       </div>
       <CalendarView
         actividades={resultado.actividades}
-        tasks={tasksFiltradas}
-        currentUserId={userId}
-        canManageAll={hasAnyRole(role, ["administrador", "director"])}
         initialView={vista as "month" | "week" | "day"}
         initialDate={fecha}
         searchParams={sp}

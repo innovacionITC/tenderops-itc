@@ -136,7 +136,7 @@ export function NotificationsBell() {
               onClick={() => setOpen(false)}
               className="block py-1 text-center text-xs text-primary hover:underline"
             >
-              Ver calendario y tareas
+              Ver calendario
             </Link>
           </div>
         </div>
