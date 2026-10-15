@@ -416,36 +416,6 @@
               "type": "string",
               "format": "date-time"
             }
-          },
-          {
-            "name": "responsableUserId",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          },
-          {
-            "name": "estado",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "tipo",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "procesoId",
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
           }
         ],
         "responses": {
@@ -454,26 +424,17 @@
             "content": {
               "text/plain": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ActividadResponse"
-                  }
+                  "$ref": "#/components/schemas/CalendarioResponse"
                 }
               },
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ActividadResponse"
-                  }
+                  "$ref": "#/components/schemas/CalendarioResponse"
                 }
               },
               "text/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ActividadResponse"
-                  }
+                  "$ref": "#/components/schemas/CalendarioResponse"
                 }
               }
             }
@@ -4709,51 +4670,103 @@
   },
   "components": {
     "schemas": {
-      "ActividadResponse": {
+      "CalendarioResponse": {
+        "required": [
+          "eventos"
+        ],
+        "type": "object",
+        "properties": {
+          "calendarioUrl": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "eventos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/EventoCalendarioResponse"
+            }
+          }
+        }
+      },
+      "EventoCalendarioResponse": {
         "required": [
           "id",
-          "title",
-          "startDate",
-          "endDate",
-          "eventType",
-          "source",
-          "processId",
-          "numeroProceso",
-          "entidad",
-          "responsableUserId",
-          "responsableNombre",
-          "prioridad",
-          "estado"
+          "titulo",
+          "inicio",
+          "fin",
+          "todoElDia",
+          "origen",
+          "cancelado",
+          "esRecurrente",
+          "asistentes"
         ],
         "type": "object",
         "properties": {
           "id": {
             "type": "string"
           },
-          "title": {
+          "titulo": {
             "type": "string"
           },
-          "startDate": {
+          "inicio": {
             "type": "string",
             "format": "date-time"
           },
-          "endDate": {
-            "type": [
-              "null",
-              "string"
-            ],
+          "fin": {
+            "type": "string",
             "format": "date-time"
           },
-          "eventType": {
+          "todoElDia": {
+            "type": "boolean"
+          },
+          "origen": {
+            "type": "string"
+          },
+          "cancelado": {
+            "type": "boolean"
+          },
+          "esRecurrente": {
+            "type": "boolean"
+          },
+          "ubicacion": {
             "type": [
               "null",
               "string"
             ]
           },
-          "source": {
-            "type": "string"
+          "organizador": {
+            "type": [
+              "null",
+              "string"
+            ]
           },
-          "processId": {
+          "asistentes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "urlReunion": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "webLink": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "oportunidadNombre": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "procesoId": {
             "type": [
               "null",
               "string"
@@ -4771,28 +4784,6 @@
               "null",
               "string"
             ]
-          },
-          "responsableUserId": {
-            "type": [
-              "null",
-              "string"
-            ],
-            "format": "uuid"
-          },
-          "responsableNombre": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "prioridad": {
-            "type": [
-              "null",
-              "string"
-            ]
-          },
-          "estado": {
-            "type": "string"
           }
         }
       },

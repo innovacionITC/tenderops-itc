@@ -272,24 +272,25 @@ html:root {
   padding: 1px 4px;
 }
 
-.rbc-event-vencida {
-  background-color: oklch(0.577 0.245 27.325 / 0.85) !important;
+.rbc-event-dynamics {
+  background-color: oklch(0.541 0.281 293.009 / 0.8) !important;
   color: white !important;
 }
 
-.rbc-event-proxima {
+.rbc-event-outlook {
+  background-color: oklch(0.682 0.157 220.066 / 0.7) !important;
+  color: white !important;
+}
+
+.rbc-event-secop {
   background-color: oklch(0.769 0.188 70.082 / 0.85) !important;
   color: oklch(0.269 0.058 70.082) !important;
 }
 
-.rbc-event-completada {
-  background-color: oklch(0.627 0.194 149.214 / 0.7) !important;
-  color: oklch(0.269 0.046 149.214) !important;
-}
-
-.rbc-event-pendiente {
-  background-color: oklch(0.682 0.157 220.066 / 0.7) !important;
-  color: white !important;
+.rbc-event-cancelado {
+  background-color: oklch(0.551 0.013 256.948 / 0.4) !important;
+  color: oklch(0.551 0.013 256.948 / 0.7) !important;
+  text-decoration: line-through !important;
 }
 
 .rbc-toolbar button {
