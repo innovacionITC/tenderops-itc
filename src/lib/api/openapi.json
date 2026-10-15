@@ -3749,6 +3749,13 @@
             }
           },
           {
+            "name": "soloDescartados",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "page",
             "in": "query",
             "schema": {
@@ -3885,6 +3892,29 @@
           },
           "required": true
         },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/secop/procesos/{id}/retomar": {
+      "patch": {
+        "tags": [
+          "SecopSync"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK"
@@ -7220,6 +7250,19 @@
             ]
           },
           "semaforoError": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "discardedAt": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          },
+          "discardReason": {
             "type": [
               "null",
               "string"

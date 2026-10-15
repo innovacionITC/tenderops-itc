@@ -47,6 +47,8 @@ export type ProcesoRow = {
   semaforoJustificacion: string | null;
   semaforoEstado: string | null;
   semaforoError: string | null;
+  descartadoEl: string | null;
+  motivoDescarte: string | null;
 };
 
 export type SincronizacionRow = {

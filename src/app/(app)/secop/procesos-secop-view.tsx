@@ -438,7 +438,9 @@ export function ProcesosSecopView({
               onClick={() => setPromoverTarget(r)}
             />
           )}
-          {!r.descartado && (
+          {/* Un proceso ya promovido se descarta desde "Procesos en
+              seguimiento"; aquí solo se descarta lo que aún no tiene seguimiento. */}
+          {!r.descartado && !r.promovido && (
             <RowActionButton
               icon={<XCircle className="h-3.5 w-3.5" />}
               title="Descartar proceso"
@@ -631,7 +633,7 @@ export function ProcesosSecopView({
               <span className="font-medium">
                 {descartarTarget?.titulo ?? descartarTarget?.secopId}
               </span>{" "}
-              se ocultará de los resultados.
+              pasará a la pestaña &quot;Descartados&quot;, desde donde podrás retomarlo.
             </p>
             <div>
               <Label className="mb-1.5">Motivo (opcional)</Label>

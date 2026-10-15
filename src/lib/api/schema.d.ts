@@ -3062,6 +3062,7 @@ export interface paths {
                     detectadoHasta?: string;
                     soloPromovidos?: boolean;
                     semaforo?: string;
+                    soloDescartados?: boolean;
                     page?: number | string;
                     pageSize?: number | string;
                 };
@@ -3193,6 +3194,41 @@ export interface paths {
                     "application/*+json": components["schemas"]["DescartarProcesoRequest"];
                 };
             };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/secop/procesos/{id}/retomar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
             responses: {
                 /** @description OK */
                 200: {
@@ -4500,6 +4536,9 @@ export interface components {
             semaforoJustificacion?: null | string;
             semaforoEstado?: null | string;
             semaforoError?: null | string;
+            /** Format: date-time */
+            discardedAt?: null | string;
+            discardReason?: null | string;
         };
         ProcesoHistoricoListResponse: {
             items: components["schemas"]["ProcesoHistoricoResponse"][];
