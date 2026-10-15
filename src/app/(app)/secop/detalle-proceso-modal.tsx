@@ -30,6 +30,8 @@ export type DetalleProceso = {
   semaforoJustificacion?: string | null;
   semaforoEstado?: string | null;
   semaforoError?: string | null;
+  descartadoEl?: string | null;
+  motivoDescarte?: string | null;
 };
 
 function Campo({ label, value }: { label: string; value: ReactNode }) {
@@ -153,8 +155,13 @@ export function DetalleProcesoModal({
                 <Campo label="Detectado" value={formatDateTime(proceso.detectadoEl)} />
               )}
               <Campo label="Identificador SECOP" value={proceso.secopId} />
+              {proceso.descartado && proceso.descartadoEl && (
+                <Campo label="Descartado" value={formatDateTime(proceso.descartadoEl)} />
+              )}
+              {proceso.descartado && (
+                <Campo label="Motivo del descarte" value={proceso.motivoDescarte ?? "Sin motivo registrado"} />
+              )}
             </dl>
-
 
             {proceso.url && (
               <a

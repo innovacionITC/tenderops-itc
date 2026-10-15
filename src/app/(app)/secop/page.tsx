@@ -9,6 +9,7 @@ import {
 import { listEntidadesAdmin, listDepartamentos, listCiudadesAdmin } from "@/lib/parametrica";
 import { DATASETS, SEMAFOROS } from "@/lib/secop-shared";
 import { ProcesosSecopView } from "./procesos-secop-view";
+import { ProcesosDescartadosView } from "./procesos-descartados-view";
 import { BusquedaEnVivoView } from "./busqueda-en-vivo-view";
 import { SecopTabsNav } from "./secop-tabs-nav";
 import { SincronizacionesView } from "./sincronizaciones-view";
@@ -137,15 +138,20 @@ export default async function SecopPage({
     );
   }
 
+  // "detectados" y "descartados" comparten consulta y filtros: el backend
+  // devuelve uno u otro lado según soloDescartados.
+  const soloDescartados = vista === "descartados";
   const dataset = DATASETS.find((d) => d === params.dataset);
-  const soloNuevos = params.nuevos === "1";
+  const soloNuevos = !soloDescartados && params.nuevos === "1";
   const buscar = params.buscar?.trim() || undefined;
   const entidad = params.entidad?.trim() || undefined;
   const objeto = params.objeto?.trim() || undefined;
   const modalidad = params.modalidad || undefined;
   const estado = params.estado || undefined;
   const fase = params.fase || undefined;
-  const semaforo = SEMAFOROS.find((s) => s === params.semaforo) || undefined;
+  const semaforo = soloDescartados
+    ? undefined
+    : SEMAFOROS.find((s) => s === params.semaforo) || undefined;
   const cuantiaMin = params.cuantiaMin ? Number(params.cuantiaMin) : undefined;
   const cuantiaMax = params.cuantiaMax ? Number(params.cuantiaMax) : undefined;
   const detectadoDesde = params.detectadoDesde || undefined;
@@ -181,6 +187,7 @@ export default async function SecopPage({
         cuantiaMax,
         detectadoDesde,
         detectadoHasta,
+        soloDescartados,
         page,
         pageSize,
       }),
@@ -207,6 +214,26 @@ export default async function SecopPage({
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
             {error ?? "Error al cargar los procesos detectados."}
           </div>
+        ) : soloDescartados ? (
+          <ProcesosDescartadosView
+            procesos={resultado.procesos}
+            filtros={{
+              dataset: dataset ?? "",
+              buscar: buscar ?? "",
+              entidad: entidad ?? "",
+              objeto: objeto ?? "",
+              modalidad: modalidad ?? "",
+              estado: estado ?? "",
+              fase: fase ?? "",
+              cuantiaMin: params.cuantiaMin ?? "",
+              cuantiaMax: params.cuantiaMax ?? "",
+              detectadoDesde: detectadoDesde ?? "",
+              detectadoHasta: detectadoHasta ?? "",
+              pageSize,
+            }}
+            filtrosDisponibles={resultado.filtrosDisponibles}
+            entidadesDisponibles={resultado.entidadesDisponibles}
+          />
         ) : (
           <ProcesosSecopView
             procesos={resultado.procesos}

@@ -49,6 +49,8 @@ function toProcesoRow(r: ProcesoResponse): ProcesoRow {
     semaforoJustificacion: r.semaforoJustificacion ?? null,
     semaforoEstado: r.semaforoEstado ?? null,
     semaforoError: r.semaforoError ?? null,
+    descartadoEl: r.discardedAt ?? null,
+    motivoDescarte: r.discardReason ?? null,
   };
 }
 
@@ -82,6 +84,7 @@ export async function listProcesosSecop(params: {
   detectadoHasta?: string;
   soloPromovidos?: boolean;
   semaforo?: string;
+  soloDescartados?: boolean;
   page?: number;
   pageSize?: number;
 }): Promise<Paginado<ProcesoRow>> {
@@ -101,6 +104,7 @@ export async function listProcesosSecop(params: {
       detectadoHasta: params.detectadoHasta,
       soloPromovidos: params.soloPromovidos ? "true" : undefined,
       semaforo: params.semaforo,
+      soloDescartados: params.soloDescartados ? "true" : undefined,
       page: params.page ?? 1,
       pageSize: params.pageSize ?? PAGE_SIZE,
     },
