@@ -64,11 +64,10 @@ export type {
 // onItemClick + router.push.
 //
 // `collapsed` en ItcMenu oculta por CSS TODO `.itc-submenu` (no solo el
-// label), así que si los items de primer nivel son grupos con `children`
-// (como en app-shell.tsx), colapsar deja el sidebar sin íconos clicables —
-// los grupos no tienen ícono propio y sus hijos quedan display:none. Por
-// eso app-shell.tsx aplana el árbol a items de primer nivel cuando
-// collapsed=true, en vez de solo pasar la prop. Tampoco hay `collapsible`
+// label), así que si los items de primer nivel son grupos con `children`,
+// colapsar deja el sidebar sin íconos clicables — los grupos no tienen ícono
+// propio y sus hijos quedan display:none. Por eso app-shell.tsx le pasa una
+// lista plana de items de primer nivel. Tampoco hay `collapsible`
 // real: el prop existe en MenuProps pero el componente nunca lo lee ni
 // expone un botón propio — el toggle hay que construirlo y controlar
 // `collapsed` desde afuera (ver logo= en app-shell.tsx).

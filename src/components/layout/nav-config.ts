@@ -21,43 +21,15 @@ export type MenuItem = {
   comingSoon?: boolean; // not yet migrated from tenderops-itc
 };
 
-export const menuGroups: { title: string; items: MenuItem[] }[] = [
-  { title: "General", items: [{ href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" }] },
-  {
-    title: "Licitaciones",
-    items: [
-      { href: "/secop", icon: Search, label: "Consulta SECOP" },
-      { href: "/seguimiento", icon: Eye, label: "Procesos en seguimiento" },
-    ],
-  },
-  {
-    title: "Preparación",
-    items: [
-      { href: "/plantillas", icon: FileStack, label: "Plantillas" },
-      { href: "/indicadores", icon: TrendingUp, label: "Indicadores", consultOnly: true },
-    ],
-  },
-  {
-    title: "Gestión",
-    items: [{ href: "/calendario", icon: Calendar, label: "Calendario" }],
-  },
-  {
-    title: "Sistema",
-    items: [
-      {
-        href: "/auditoria",
-        icon: ShieldCheck,
-        label: "Auditoría",
-        privilegedOnly: true,
-      },
-      {
-        href: "/admin",
-        icon: Settings,
-        label: "Administración",
-        adminOnly: true,
-      },
-    ],
-  },
+export const menuItems: MenuItem[] = [
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/secop", icon: Search, label: "Consulta SECOP" },
+  { href: "/seguimiento", icon: Eye, label: "Procesos en seguimiento" },
+  { href: "/plantillas", icon: FileStack, label: "Plantillas" },
+  { href: "/indicadores", icon: TrendingUp, label: "Indicadores", consultOnly: true },
+  { href: "/calendario", icon: Calendar, label: "Calendario" },
+  { href: "/auditoria", icon: ShieldCheck, label: "Auditoría", privilegedOnly: true },
+  { href: "/admin", icon: Settings, label: "Administración", adminOnly: true },
 ];
 
 export function isMenuItemVisible(item: MenuItem, role: AppRole | null) {

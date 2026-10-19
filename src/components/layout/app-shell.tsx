@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import type { AppRole } from "@/lib/auth/roles";
 import type { OrganizationSummary } from "@/lib/auth/session";
 import { ItcMenu, type MenuItem as ItcMenuItem } from "@/components/itc";
-import { isMenuItemVisible, menuGroups } from "./nav-config";
+import { isMenuItemVisible, menuItems } from "./nav-config";
 import { NotificationsBell } from "./notifications-bell";
 import { OrganizationSwitcher } from "./organization-switcher";
 import { version as appVersion } from "../../../package.json";
@@ -35,48 +35,31 @@ export function AppShell({
   const [collapsed, setCollapsed] = useState(false);
   const toggleCollapsed = () => setCollapsed((prev) => !prev);
 
-  const { items, expandedGroupIds } = useMemo(() => {
-    const expandedGroupIds: string[] = [];
-    const items: ItcMenuItem[] = [];
-
-    for (const group of menuGroups) {
-      const visible = group.items.filter((item) => isMenuItemVisible(item, role));
-      if (visible.length === 0) continue;
-
-      const leafItems = visible.map((item) => {
-        const active = pathname === item.href || pathname.startsWith(item.href + "/");
-        return {
-          id: item.href,
-          label: item.label,
-          disabled: item.comingSoon,
-          icon: <item.icon className="h-4 w-4" {...(active ? { "data-nav-active": true } : {})} />,
-          badge: item.comingSoon ? (
-            <span className="rounded bg-sidebar-foreground/10 px-1.5 py-0.5 text-[9px] uppercase">
-              Pronto
-            </span>
-          ) : undefined,
-        };
-      });
-
-      if (collapsed) {
-        // La librería oculta los submenús (.itc-submenu) cuando collapsed=true,
-        // así que agrupar por secciones dejaría los ítems sin ícono visible.
-        // En modo colapsado se aplanan para que cada página siga siendo un
-        // botón de primer nivel con su propio ícono.
-        items.push(...leafItems);
-      } else {
-        const groupId = `group-${group.title}`;
-        expandedGroupIds.push(groupId);
-        items.push({ id: groupId, label: group.title, children: leafItems });
-      }
-    }
-
-    return { items, expandedGroupIds };
-  }, [pathname, role, collapsed]);
+  const items = useMemo<ItcMenuItem[]>(
+    () =>
+      menuItems
+        .filter((item) => isMenuItemVisible(item, role))
+        .map((item) => {
+          const active = pathname === item.href || pathname.startsWith(item.href + "/");
+          return {
+            id: item.href,
+            label: item.label,
+            disabled: item.comingSoon,
+            icon: (
+              <item.icon className="h-4 w-4" {...(active ? { "data-nav-active": true } : {})} />
+            ),
+            badge: item.comingSoon ? (
+              <span className="rounded bg-sidebar-foreground/10 px-1.5 py-0.5 text-[9px] uppercase">
+                Pronto
+              </span>
+            ) : undefined,
+          };
+        }),
+    [pathname, role]
+  );
 
   const handleItemClick = (item: ItcMenuItem) => {
-    if (item.children) return; // grupo: ItcMenu ya maneja el expand/collapse
-    router.push(item.id); // id === href para los ítems hoja, ver items arriba
+    router.push(item.id); // id === href, ver items arriba
   };
 
   const handleLogout = async () => {
@@ -101,9 +84,6 @@ export function AppShell({
         bordered
         showIcons
         iconPosition="left"
-        allowNested
-        expandMode="multiple"
-        defaultExpanded={expandedGroupIds}
         theme={resolvedTheme === "dark" ? "dark" : "light"}
         onItemClick={handleItemClick}
         ariaLabel="Navegación principal"
