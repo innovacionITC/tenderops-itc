@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Pencil, Plus } from "lucide-react";
@@ -50,8 +50,9 @@ export function UsersTable({
   // El Select de Radix porta su dropdown a document.body por defecto, pero
   // ItcModal usa <dialog>.showModal(): todo lo de fuera del <dialog> queda
   // inerte y el dropdown no recibe clicks. Apuntamos el container al propio
-  // <dialog> vía ref (ver comentario en components/ui/select.tsx).
-  const createModalRef = useRef<HTMLDialogElement>(null);
+  // <dialog> vía ref (ver comentario en components/ui/select.tsx). Se guarda en
+  // estado con un callback ref porque se lee durante el render.
+  const [createModalEl, setCreateModalEl] = useState<HTMLDialogElement | null>(null);
 
   // Solo un superadmin puede otorgar el rol superadmin a otro usuario (la API
   // lo exige igual con un 403; esto solo evita ofrecer una opción condenada).
@@ -338,7 +339,7 @@ export function UsersTable({
       />
 
       <ItcModal
-        ref={createModalRef}
+        ref={setCreateModalEl}
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         onConfirm={handleCreate}
@@ -353,7 +354,7 @@ export function UsersTable({
                 <Label className="mb-1.5">Nombre <span className="text-destructive">*</span></Label>
                 <ItcInput
                   value={fullName}
-                  onChange={(e: any) => { setFullName(e.target.value); clearFieldError("fullName"); }}
+                  onChange={(e) => { setFullName(e.target.value); clearFieldError("fullName"); }}
                   placeholder="Nombre completo"
                   aria-invalid={!!fieldErrors.fullName}
                 />
@@ -363,7 +364,7 @@ export function UsersTable({
                 <Label className="mb-1.5">Correo <span className="text-destructive">*</span></Label>
                 <ItcInput
                   value={email}
-                  onChange={(e: any) => { setEmail(e.target.value); clearFieldError("email"); }}
+                  onChange={(e) => { setEmail(e.target.value); clearFieldError("email"); }}
                   placeholder="correo@ejemplo.com"
                   type="email"
                   aria-invalid={!!fieldErrors.email}
@@ -374,7 +375,7 @@ export function UsersTable({
                 <Label className="mb-1.5">Contraseña</Label>
                 <ItcInput
                   value={password}
-                  onChange={(e: any) => { setPassword(e.target.value); clearFieldError("password"); }}
+                  onChange={(e) => { setPassword(e.target.value); clearFieldError("password"); }}
                   type="password"
                   autoComplete="new-password"
                   aria-invalid={!!fieldErrors.password}
@@ -386,7 +387,7 @@ export function UsersTable({
                 <Label className="mb-1.5">Confirmar contraseña</Label>
                 <ItcInput
                   value={confirmPassword}
-                  onChange={(e: any) => { setConfirmPassword(e.target.value); clearFieldError("confirmPassword"); }}
+                  onChange={(e) => { setConfirmPassword(e.target.value); clearFieldError("confirmPassword"); }}
                   type="password"
                   autoComplete="new-password"
                   aria-invalid={!!fieldErrors.confirmPassword}
@@ -399,7 +400,7 @@ export function UsersTable({
                   <SelectTrigger aria-invalid={!!fieldErrors.role}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent container={createModalRef.current}>
+                  <SelectContent container={createModalEl}>
                     {roleOptions.map((r) => (
                       <SelectItem key={r} value={r}>{roleLabels[r]}</SelectItem>
                     ))}
