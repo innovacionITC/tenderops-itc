@@ -2,11 +2,12 @@
 
 import { useCallback, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, Views, dateFnsLocalizer, type View } from "react-big-calendar";
+import { Calendar, Views, dateFnsLocalizer, type EventProps, type View } from "react-big-calendar";
 import { es } from "date-fns/locale/es";
 import { startOfWeek, getDay, parse, format } from "date-fns";
-import type { Actividad } from "@/lib/calendar";
-import { ActividadDetalleModal } from "./actividad-detalle-modal";
+import { Repeat } from "lucide-react";
+import type { EventoCalendario } from "@/lib/calendar";
+import { EventoDetalleModal } from "./evento-detalle-modal";
 
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
@@ -21,14 +22,14 @@ const localizer = dateFnsLocalizer({
 });
 
 type CalendarEvent = {
-  actividad: Actividad;
+  evento: EventoCalendario;
   start: Date;
   end: Date;
   title: string;
 };
 
 const CALENDARIO_MENSAJE_VACIO =
-  "No existen actividades programadas para el período seleccionado.";
+  "No hay eventos en el calendario del equipo para este período.";
 
 function toIsoDate(d: Date): string {
   const y = d.getFullYear();
@@ -37,9 +38,9 @@ function toIsoDate(d: Date): string {
   return `${y}-${m}-${day}`;
 }
 
-// El título completo ya se ve en el modal de detalle (ActividadDetalleModal):
-// en la grilla basta un texto corto, así las columnas del calendario no
-// necesitan ensancharse para mostrarlo completo.
+// El título completo ya se ve en el modal de detalle (EventoDetalleModal) y en
+// el tooltip: en la grilla basta un texto corto, así las columnas del
+// calendario no necesitan ensancharse para mostrarlo completo.
 const TITULO_GRILLA_MAX = 26;
 function toTituloGrilla(title: string): string {
   return title.length > TITULO_GRILLA_MAX
@@ -47,13 +48,26 @@ function toTituloGrilla(title: string): string {
     : title;
 }
 
+// `title` se queda como texto porque react-big-calendar lo usa también como
+// tooltip (atributo HTML title); el ícono de recurrencia se pinta aquí.
+function EventoGrilla({ event }: EventProps<CalendarEvent>) {
+  return (
+    <span className="inline-flex items-center gap-1">
+      {toTituloGrilla(event.title)}
+      {event.evento.esRecurrente && <Repeat className="h-3 w-3 shrink-0 opacity-60" />}
+    </span>
+  );
+}
+
+const CALENDAR_COMPONENTS = { event: EventoGrilla };
+
 export function CalendarView({
-  actividades,
+  eventos,
   initialView,
   initialDate,
   searchParams,
 }: {
-  actividades: Actividad[];
+  eventos: EventoCalendario[];
   initialView: View;
   initialDate: Date;
   searchParams: URLSearchParams;
@@ -61,7 +75,7 @@ export function CalendarView({
   const router = useRouter();
   const pathname = typeof window !== "undefined" ? window.location.pathname : "/calendario";
   const [, startTransition] = useTransition();
-  const [selectedActividad, setSelectedActividad] = useState<Actividad | null>(null);
+  const [selectedEvento, setSelectedEvento] = useState<EventoCalendario | null>(null);
   const [currentView, setCurrentView] = useState<View>(initialView);
   const [currentDate, setCurrentDate] = useState(initialDate);
 
@@ -95,26 +109,27 @@ export function CalendarView({
 
   const calendarEvents: CalendarEvent[] = useMemo(
     () =>
-      actividades.map((a) => ({
-        actividad: a,
-        start: new Date(a.startDate),
-        end: a.endDate ? new Date(a.endDate) : new Date(a.startDate),
-        title: toTituloGrilla(a.title),
+      eventos.map((e) => ({
+        evento: e,
+        start: new Date(e.inicio),
+        end: new Date(e.fin),
+        title: e.titulo,
       })),
-    [actividades],
+    [eventos],
   );
 
   const eventPropGetter = useCallback((event: CalendarEvent) => {
-    const { estado } = event.actividad;
+    const { origen, cancelado } = event.evento;
     let className = "";
-    if (estado === "vencida") className = "rbc-event-vencida";
-    else if (estado === "proxima_a_vencer") className = "rbc-event-proxima";
-    else className = "rbc-event-pendiente";
+    if (cancelado) className = "rbc-event-cancelado";
+    else if (origen === "dynamics") className = "rbc-event-dynamics";
+    else if (origen === "outlook") className = "rbc-event-outlook";
+    else className = "rbc-event-secop";
     return { className };
   }, []);
 
   const handleSelectEvent = useCallback((event: CalendarEvent) => {
-    setSelectedActividad(event.actividad);
+    setSelectedEvento(event.evento);
   }, []);
 
   const messages = {
@@ -128,7 +143,7 @@ export function CalendarView({
     agenda: "Agenda",
     date: "Fecha",
     time: "Hora",
-    event: "Actividad",
+    event: "Evento",
     noEventsInRange: CALENDARIO_MENSAJE_VACIO,
     showMore: (total: number) => `+${total} más`,
   };
@@ -141,6 +156,8 @@ export function CalendarView({
           events={calendarEvents}
           startAccessor="start"
           endAccessor="end"
+          allDayAccessor={(e: CalendarEvent) => e.evento.todoElDia}
+          components={CALENDAR_COMPONENTS}
           view={currentView}
           onView={handleViewChange}
           date={currentDate}
@@ -154,20 +171,23 @@ export function CalendarView({
         />
         <div className="mt-3 flex items-center gap-3 text-[11px] text-muted-foreground">
           <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-sm bg-destructive/60" /> Vencida
+            <span className="h-2 w-2 rounded-sm bg-violet-500/70" /> Cita Dynamics
           </span>
           <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-sm bg-amber-500/60" /> Próxima a vencer
+            <span className="h-2 w-2 rounded-sm bg-sky-500/70" /> Evento Outlook
           </span>
           <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-sm bg-sky-500/60" /> Pendiente
+            <span className="h-2 w-2 rounded-sm bg-amber-500/60" /> Cierre SECOP
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-sm bg-muted-foreground/30" /> Cancelado
           </span>
         </div>
       </div>
 
-      <ActividadDetalleModal
-        actividad={selectedActividad}
-        onClose={() => setSelectedActividad(null)}
+      <EventoDetalleModal
+        evento={selectedEvento}
+        onClose={() => setSelectedEvento(null)}
       />
     </div>
   );

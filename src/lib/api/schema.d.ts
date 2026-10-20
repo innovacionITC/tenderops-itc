@@ -314,10 +314,6 @@ export interface paths {
                 query?: {
                     fechaDesde?: string;
                     fechaHasta?: string;
-                    responsableUserId?: string;
-                    estado?: string;
-                    tipo?: string;
-                    procesoId?: string;
                 };
                 header?: never;
                 path?: never;
@@ -331,9 +327,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ActividadResponse"][];
-                        "application/json": components["schemas"]["ActividadResponse"][];
-                        "text/json": components["schemas"]["ActividadResponse"][];
+                        "text/plain": components["schemas"]["CalendarioResponse"];
+                        "application/json": components["schemas"]["CalendarioResponse"];
+                        "text/json": components["schemas"]["CalendarioResponse"];
                     };
                 };
             };
@@ -3974,24 +3970,31 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        ActividadResponse: {
+        CalendarioResponse: {
+            calendarioUrl: null | string;
+            eventos: components["schemas"]["EventoCalendarioResponse"][];
+        };
+        EventoCalendarioResponse: {
             id: string;
-            title: string;
+            titulo: string;
             /** Format: date-time */
-            startDate: string;
+            inicio: string;
             /** Format: date-time */
-            endDate: null | string;
-            eventType: null | string;
-            source: string;
+            fin: string;
+            todoElDia: boolean;
+            origen: string;
+            cancelado: boolean;
+            esRecurrente: boolean;
+            ubicacion: null | string;
+            organizador: null | string;
+            asistentes: string[];
+            urlReunion: null | string;
+            webLink: null | string;
+            oportunidadNombre: null | string;
             /** Format: uuid */
-            processId: null | string;
+            procesoId: null | string;
             numeroProceso: null | string;
             entidad: null | string;
-            /** Format: uuid */
-            responsableUserId: null | string;
-            responsableNombre: null | string;
-            prioridad: null | string;
-            estado: string;
         };
         AddMembershipRequest: {
             /** Format: uuid */
