@@ -44,6 +44,90 @@ export async function ejecutarAnalisisIa(procesoId: string) {
   return r;
 }
 
+// --- Análisis de licitación asíncrono (HU 60125–60128) ---------------------
+// El POST responde 202 al instante y el job de Hangfire recorre las etapas;
+// la pestaña consulta el estado cada pocos segundos hasta un estado final.
+
+export type EstadoAnalisisLicitacion =
+  | "PENDIENTE"
+  | "INVENTARIANDO"
+  | "EXTRAYENDO"
+  | "NORMALIZANDO"
+  | "EVALUANDO"
+  | "VALIDANDO"
+  | "COMPLETADO"
+  | "REQUIERE_REVISION"
+  | "ERROR";
+
+export type DocumentoAnalisis = {
+  id: string;
+  nombre: string;
+  extension: string;
+  estado: "INCLUIDO" | "EXCLUIDO" | "FALTANTE" | "LEIDO" | "FALLIDO";
+  motivo: string | null;
+  tipoDocumento: string | null;
+  paginas: number | null;
+  paginasNativas: number | null;
+  paginasMixtas: number | null;
+  paginasOcr: number | null;
+};
+
+export type EstadoAnalisis = {
+  id: string;
+  version: number;
+  estado: EstadoAnalisisLicitacion;
+  progreso: number;
+  mensaje: string | null;
+  correlationId: string;
+  solicitadoEn: string;
+  iniciadoEn: string | null;
+  finalizadoEn: string | null;
+  forceReanalisis: boolean;
+  reutilizadoDe: string | null;
+  versionReutilizada: number | null;
+  metodologiaVersion: string | null;
+  cobertura: number | null;
+  errorCodigo: string | null;
+  sharePointCarpeta: string | null;
+  documentos: DocumentoAnalisis[];
+};
+
+export type VersionAnalisis = {
+  id: string;
+  version: number;
+  estado: EstadoAnalisisLicitacion;
+  solicitadoEn: string;
+  finalizadoEn: string | null;
+  reutilizadoDe: string | null;
+  cobertura: number | null;
+};
+
+export async function solicitarAnalisis(procesoId: string, forceReanalisis: boolean) {
+  await requireAuth(["administrador", "director", "gestor"]);
+  const id = z.uuid().parse(procesoId);
+
+  return apiFetch<{ analisisId: string; version: number; estado: EstadoAnalisisLicitacion; correlationId: string }>(
+    `/procesos-seguimiento/${id}/analisis-licitacion`,
+    { method: "POST", body: { forceReanalisis } },
+  );
+}
+
+export async function getEstadoAnalisis(procesoId: string) {
+  await requireAuth(["administrador", "director", "gestor"]);
+  const id = z.uuid().parse(procesoId);
+
+  // 204 (todavía no hay análisis) llega como undefined desde apiFetch.
+  const result = await apiFetch<EstadoAnalisis | undefined>(`/procesos-seguimiento/${id}/analisis-licitacion`);
+  return result ?? null;
+}
+
+export async function listVersionesAnalisis(procesoId: string) {
+  await requireAuth(["administrador", "director", "gestor"]);
+  const id = z.uuid().parse(procesoId);
+
+  return apiFetch<VersionAnalisis[]>(`/procesos-seguimiento/${id}/analisis-licitacion/versiones`);
+}
+
 export async function getAnalisisIa(procesoId: string) {
   await requireAuth(["administrador", "director", "gestor"]);
   const id = z.uuid().parse(procesoId);

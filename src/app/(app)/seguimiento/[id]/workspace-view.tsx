@@ -15,6 +15,7 @@ import { MatrizCumplimientoTab } from "./matriz-cumplimiento-tab";
 import { AsistenteIaTab } from "./asistente-ia-tab";
 import { CrmTab } from "./crm-tab";
 import { type OportunidadDocumentoRow } from "./crm-actions";
+import { type EstadoAnalisis, type VersionAnalisis } from "./analisis-ia-actions";
 
 type TabKey = "analisis-ia" | "asistente-ia" | "matriz-cumplimiento" | "tareas" | "crm";
 
@@ -64,12 +65,16 @@ export function WorkspaceView({
   proceso,
   citasCrm,
   analisisIa,
+  estadoAnalisis,
+  versionesAnalisis,
   documentosCrm,
   directLineBaseUrl,
 }: {
   proceso: ProcesoSeguimientoRow;
   citasCrm: CitasCrmData;
   analisisIa: AnalisisIa | null;
+  estadoAnalisis: EstadoAnalisis | null;
+  versionesAnalisis: VersionAnalisis[];
   documentosCrm: OportunidadDocumentoRow[];
   directLineBaseUrl: string;
 }) {
@@ -142,7 +147,9 @@ export function WorkspaceView({
               {t.key === "analisis-ia" && (
                 <AnalisisIaTab
                   procesoId={proceso.id}
-                  analisis={analisisIa}
+                  estadoInicial={estadoAnalisis}
+                  versionesIniciales={versionesAnalisis}
+                  analisisPrevio={analisisIa}
                 />
               )}
               {t.key === "asistente-ia" && (
