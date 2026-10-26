@@ -9,23 +9,29 @@ import { StatusBadge, type Tone } from "@/components/layout/status-badge";
 import { formatDate } from "@/lib/format";
 import {
   getEstadoAnalisis,
+  getResultadoAnalisis,
   listVersionesAnalisis,
   solicitarAnalisis,
   type DocumentoAnalisis,
   type EstadoAnalisis,
   type EstadoAnalisisLicitacion,
+  type ResultadoAnalisis,
   type VersionAnalisis,
 } from "./analisis-ia-actions";
+import { ResultadoAnalisisLicitacion } from "./analisis-ia-resultado";
 
 const INTERVALO_CONSULTA_MS = 5_000;
 
 const ESTADOS_FINALES: EstadoAnalisisLicitacion[] = ["COMPLETADO", "REQUIERE_REVISION", "ERROR"];
 
-// Hasta la fase 3 (evaluación) el análisis termina después de organizar las evidencias.
+// Si la evaluación está apagada en el ambiente, el análisis termina después de
+// organizar las evidencias y las dos últimas etapas no se recorren.
 const ETAPAS: { estado: EstadoAnalisisLicitacion; label: string }[] = [
   { estado: "INVENTARIANDO", label: "Inventario de documentos" },
   { estado: "EXTRAYENDO", label: "Lectura de documentos" },
   { estado: "NORMALIZANDO", label: "Organización de evidencias" },
+  { estado: "EVALUANDO", label: "Lectura integral con IA" },
+  { estado: "VALIDANDO", label: "Evaluación y recomendación" },
 ];
 
 const ESTADO_LABEL: Record<EstadoAnalisisLicitacion, string> = {
@@ -86,15 +92,18 @@ export function AnalisisIaTab({
   procesoId,
   estadoInicial,
   versionesIniciales,
+  resultadoInicial,
   analisisPrevio,
 }: {
   procesoId: string;
   estadoInicial: EstadoAnalisis | null;
   versionesIniciales: VersionAnalisis[];
+  resultadoInicial: ResultadoAnalisis | null;
   analisisPrevio: AnalisisIaPrevio | null;
 }) {
   const [estado, setEstado] = useState<EstadoAnalisis | null>(estadoInicial);
   const [versiones, setVersiones] = useState<VersionAnalisis[]>(versionesIniciales);
+  const [resultado, setResultado] = useState<ResultadoAnalisis | null>(resultadoInicial);
   const [forzar, setForzar] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -104,7 +113,15 @@ export function AnalisisIaTab({
     const actual = await getEstadoAnalisis(procesoId);
     setEstado(actual);
     if (actual && esFinal(actual.estado)) {
-      setVersiones(await listVersionesAnalisis(procesoId));
+      const [versionesActuales, resultadoActual] = await Promise.all([
+        listVersionesAnalisis(procesoId),
+        getResultadoAnalisis(procesoId),
+      ]);
+      setVersiones(versionesActuales);
+      setResultado(resultadoActual);
+    } else {
+      // Mientras corre una versión nueva no se muestra el resultado de la anterior.
+      setResultado(null);
     }
     return actual;
   }, [procesoId]);
@@ -115,7 +132,7 @@ export function AnalisisIaTab({
     const intervalo = setInterval(() => {
       refrescar()
         .then((actual) => {
-          if (actual?.estado === "COMPLETADO") toast.success("El análisis terminó: las evidencias están listas.");
+          if (actual?.estado === "COMPLETADO") toast.success("El análisis terminó.");
           else if (actual?.estado === "REQUIERE_REVISION") toast.warning("El análisis terminó y requiere revisión.");
           else if (actual?.estado === "ERROR") toast.error("El análisis no pudo completarse.");
         })
@@ -144,8 +161,9 @@ export function AnalisisIaTab({
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Lee todos los documentos del proceso que ya están en la oportunidad del CRM y los organiza en
-          evidencias citables (archivo, página y numeral) para el asistente IA.
+          Lee todos los documentos del proceso que ya están en la oportunidad del CRM, los organiza en
+          evidencias citables y evalúa el cumplimiento de xRM e Intelecto con el Playbook de licitaciones:
+          semáforo, figura recomendada, brechas y acciones.
         </p>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -168,6 +186,8 @@ export function AnalisisIaTab({
       {estado ? <EstadoActual estado={estado} /> : (
         <p className="text-sm text-muted-foreground">Todavía no se ha ejecutado un análisis para este proceso.</p>
       )}
+
+      {resultado && <ResultadoAnalisisLicitacion procesoId={procesoId} resultado={resultado} />}
 
       {estado && estado.documentos.length > 0 && <InventarioDocumentos documentos={estado.documentos} />}
 
@@ -199,7 +219,7 @@ function EstadoActual({ estado }: { estado: EstadoAnalisis }) {
       </div>
 
       {!final && (
-        <ol className="grid gap-2 sm:grid-cols-3">
+        <ol className="grid gap-2 sm:grid-cols-5">
           {ETAPAS.map((etapa, i) => {
             const hecha = indiceActual > i;
             const actual = indiceActual === i;

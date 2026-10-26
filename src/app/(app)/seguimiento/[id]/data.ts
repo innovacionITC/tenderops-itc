@@ -3,7 +3,7 @@ import { z } from "zod";
 import { ApiError } from "@/lib/api/client";
 import { requireAuth } from "@/lib/auth/session";
 import { getProcesoSeguimiento } from "@/lib/seguimiento";
-import { getAnalisisIa, getEstadoAnalisis, listVersionesAnalisis } from "./analisis-ia-actions";
+import { getAnalisisIa, getEstadoAnalisis, getResultadoAnalisis, listVersionesAnalisis } from "./analisis-ia-actions";
 import {
   listCitasOportunidadCrm,
   listDocumentosCrm,
@@ -51,12 +51,13 @@ export async function loadSeguimientoWorkspaceData(id: string) {
     throw e;
   }
 
-  const [analisisIa, estadoAnalisis, versionesAnalisis, documentosCrm, citasCrm] = await Promise.all([
+  const [analisisIa, estadoAnalisis, versionesAnalisis, resultadoAnalisis, documentosCrm, citasCrm] = await Promise.all([
     getAnalisisIa(id),
     // Si la API todavía no tiene el análisis de licitación (despliegue
     // desfasado) la pestaña muestra "sin análisis" en vez de romper el workspace.
     getEstadoAnalisis(id).catch(() => null),
     listVersionesAnalisis(id).catch(() => []),
+    getResultadoAnalisis(id).catch(() => null),
     // Solo hay documentos que consultar una vez que existe la oportunidad —
     // antes de eso el endpoint no tiene nada que devolver.
     proceso.crmOpportunityId ? listDocumentosCrm(id) : Promise.resolve([]),
@@ -73,6 +74,7 @@ export async function loadSeguimientoWorkspaceData(id: string) {
     analisisIa,
     estadoAnalisis,
     versionesAnalisis,
+    resultadoAnalisis,
     documentosCrm,
     citasCrm,
     directLineBaseUrl,

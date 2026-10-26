@@ -1,7 +1,8 @@
 "use server";
 
 import { z } from "zod";
-import { apiFetch } from "@/lib/api/client";
+import { ApiError, apiFetch, apiFetchRaw } from "@/lib/api/client";
+import type { ApiSchemas } from "@/lib/api/types";
 import { requireAuth } from "@/lib/auth/session";
 
 type AnalisisIaResponse = {
@@ -126,6 +127,39 @@ export async function listVersionesAnalisis(procesoId: string) {
   const id = z.uuid().parse(procesoId);
 
   return apiFetch<VersionAnalisis[]>(`/procesos-seguimiento/${id}/analisis-licitacion/versiones`);
+}
+
+// Esquema tenderops.analisis-licitacion/1.0: el mismo JSON que se guarda en
+// SharePoint (pasos 0 a 7 del Playbook, semáforo, figura y controles de calidad).
+export type ResultadoAnalisis = ApiSchemas["ResultadoAnalisisLicitacion"];
+export type EvidenciaCitada = ApiSchemas["EvidenciaCitadaRecord"];
+
+export async function getResultadoAnalisis(procesoId: string) {
+  await requireAuth(["administrador", "director", "gestor"]);
+  const id = z.uuid().parse(procesoId);
+
+  // 204 = el último análisis todavía no tiene resultado (en curso o sin evaluación).
+  const result = await apiFetch<ResultadoAnalisis | undefined>(`/procesos-seguimiento/${id}/analisis-licitacion/resultado`);
+  return result ?? null;
+}
+
+export async function getInformeAnalisis(procesoId: string) {
+  await requireAuth(["administrador", "director", "gestor"]);
+  const id = z.uuid().parse(procesoId);
+
+  const res = await apiFetchRaw(`/procesos-seguimiento/${id}/analisis-licitacion/resultado/informe`);
+  if (!res.ok) throw new ApiError(res.status, { detail: "No se pudo descargar el informe del análisis." });
+  return res.status === 204 ? null : await res.text();
+}
+
+export async function getEvidenciaAnalisis(procesoId: string, evidenceId: string) {
+  await requireAuth(["administrador", "director", "gestor"]);
+  const id = z.uuid().parse(procesoId);
+  const evidencia = z.string().min(1).max(80).parse(evidenceId);
+
+  return apiFetch<EvidenciaCitada>(
+    `/procesos-seguimiento/${id}/analisis-licitacion/evidencias/${encodeURIComponent(evidencia)}`,
+  );
 }
 
 export async function getAnalisisIa(procesoId: string) {

@@ -4,6 +4,48 @@
  */
 
 export interface paths {
+    "/agente/procesos/{procesoId}/evidencias": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: {
+                    q?: string;
+                    top?: number | string;
+                };
+                header?: never;
+                path: {
+                    procesoId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["EvidenciaResponse"][];
+                        "application/json": components["schemas"]["EvidenciaResponse"][];
+                        "text/json": components["schemas"]["EvidenciaResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auditoria": {
         parameters: {
             query?: never;
@@ -314,10 +356,6 @@ export interface paths {
                 query?: {
                     fechaDesde?: string;
                     fechaHasta?: string;
-                    responsableUserId?: string;
-                    estado?: string;
-                    tipo?: string;
-                    procesoId?: string;
                 };
                 header?: never;
                 path?: never;
@@ -331,9 +369,9 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "text/plain": components["schemas"]["ActividadResponse"][];
-                        "application/json": components["schemas"]["ActividadResponse"][];
-                        "text/json": components["schemas"]["ActividadResponse"][];
+                        "text/plain": components["schemas"]["CalendarioResponse"];
+                        "application/json": components["schemas"]["CalendarioResponse"];
+                        "text/json": components["schemas"]["CalendarioResponse"];
                     };
                 };
             };
@@ -674,6 +712,195 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/conocimiento-licitaciones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["EstadoConocimientoResult"];
+                        "application/json": components["schemas"]["EstadoConocimientoResult"];
+                        "text/json": components["schemas"]["EstadoConocimientoResult"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/conocimiento-licitaciones/plantilla": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": unknown;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/conocimiento-licitaciones/previsualizar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/x-www-form-urlencoded": {
+                        archivos?: components["schemas"]["IFormFileCollection"];
+                    };
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CargaConocimientoResult"];
+                        "application/json": components["schemas"]["CargaConocimientoResult"];
+                        "text/json": components["schemas"]["CargaConocimientoResult"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/conocimiento-licitaciones/{cargaId}/aplicar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    cargaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CargaConocimientoRecord"];
+                        "application/json": components["schemas"]["CargaConocimientoRecord"];
+                        "text/json": components["schemas"]["CargaConocimientoRecord"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/conocimiento-licitaciones/{cargaId}/descartar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    cargaId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/credenciales": {
         parameters: {
             query?: never;
@@ -793,6 +1020,148 @@ export interface paths {
                 };
             };
         };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/crm/equipo-comercial": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CrmUsuarioResponse"][];
+                        "application/json": components["schemas"]["CrmUsuarioResponse"][];
+                        "text/json": components["schemas"]["CrmUsuarioResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/crm/prioridades-cita": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CrmOpcionResponse"][];
+                        "application/json": components["schemas"]["CrmOpcionResponse"][];
+                        "text/json": components["schemas"]["CrmOpcionResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}/crm/citas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CitaOportunidadResponse"][];
+                        "application/json": components["schemas"]["CitaOportunidadResponse"][];
+                        "text/json": components["schemas"]["CitaOportunidadResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CrearCitaCrmRequest"];
+                    "text/json": components["schemas"]["CrearCitaCrmRequest"];
+                    "application/*+json": components["schemas"]["CrearCitaCrmRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["CitaCrmResponse"];
+                        "application/json": components["schemas"]["CitaCrmResponse"];
+                        "text/json": components["schemas"]["CitaCrmResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -2525,7 +2894,21 @@ export interface paths {
         };
         get: {
             parameters: {
-                query?: never;
+                query?: {
+                    buscar?: string;
+                    entidad?: string;
+                    objeto?: string;
+                    modalidad?: string;
+                    fase?: string;
+                    cuantiaMin?: number | string;
+                    cuantiaMax?: number | string;
+                    detectadoDesde?: string;
+                    detectadoHasta?: string;
+                    presentacionDesde?: string;
+                    presentacionHasta?: string;
+                    estado?: string;
+                    resultado?: string;
+                };
                 header?: never;
                 path?: never;
                 cookie?: never;
@@ -2541,6 +2924,43 @@ export interface paths {
                         "text/plain": components["schemas"]["ProcesoSeguimientoResponse"][];
                         "application/json": components["schemas"]["ProcesoSeguimientoResponse"][];
                         "text/json": components["schemas"]["ProcesoSeguimientoResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/filtros": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ProcesoSeguimientoFiltrosResponse"];
+                        "application/json": components["schemas"]["ProcesoSeguimientoFiltrosResponse"];
+                        "text/json": components["schemas"]["ProcesoSeguimientoFiltrosResponse"];
                     };
                 };
             };
@@ -2767,6 +3187,41 @@ export interface paths {
         };
         trace?: never;
     };
+    "/procesos-seguimiento/{id}/reactivar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        trace?: never;
+    };
     "/procesos-seguimiento/{id}/analisis-ia": {
         parameters: {
             query?: never;
@@ -2913,6 +3368,229 @@ export interface paths {
                 };
             };
         };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}/analisis-licitacion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["EstadoAnalisisResponse"];
+                        "application/json": components["schemas"]["EstadoAnalisisResponse"];
+                        "text/json": components["schemas"]["EstadoAnalisisResponse"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: {
+                content: {
+                    "application/json": null | components["schemas"]["SolicitarAnalisisRequest"];
+                    "text/json": null | components["schemas"]["SolicitarAnalisisRequest"];
+                    "application/*+json": null | components["schemas"]["SolicitarAnalisisRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["SolicitarAnalisisResponse"];
+                        "application/json": components["schemas"]["SolicitarAnalisisResponse"];
+                        "text/json": components["schemas"]["SolicitarAnalisisResponse"];
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}/analisis-licitacion/resultado": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["ResultadoAnalisisLicitacion"];
+                        "application/json": components["schemas"]["ResultadoAnalisisLicitacion"];
+                        "text/json": components["schemas"]["ResultadoAnalisisLicitacion"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}/analisis-licitacion/resultado/informe": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/markdown": unknown;
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}/analisis-licitacion/evidencias/{evidenceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                    evidenceId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["EvidenciaCitadaRecord"];
+                        "application/json": components["schemas"]["EvidenciaCitadaRecord"];
+                        "text/json": components["schemas"]["EvidenciaCitadaRecord"];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/procesos-seguimiento/{id}/analisis-licitacion/versiones": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "text/plain": components["schemas"]["VersionAnalisisResponse"][];
+                        "application/json": components["schemas"]["VersionAnalisisResponse"][];
+                        "text/json": components["schemas"]["VersionAnalisisResponse"][];
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -3239,6 +3917,41 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/secop/procesos/{id}/semaforo/reintentar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/secop/buscar-en-vivo": {
@@ -3604,111 +4317,6 @@ export interface paths {
         };
         trace?: never;
     };
-    "/tareas": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: {
-            parameters: {
-                query?: {
-                    processId?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["TareaResponse"][];
-                        "application/json": components["schemas"]["TareaResponse"][];
-                        "text/json": components["schemas"]["TareaResponse"][];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["CrearTareaRequest"];
-                    "text/json": components["schemas"]["CrearTareaRequest"];
-                    "application/*+json": components["schemas"]["CrearTareaRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["TareaResponse"];
-                        "application/json": components["schemas"]["TareaResponse"];
-                        "text/json": components["schemas"]["TareaResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/tareas/{id}/completar": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "text/plain": components["schemas"]["CompleteTareaResponse"];
-                        "application/json": components["schemas"]["CompleteTareaResponse"];
-                        "text/json": components["schemas"]["CompleteTareaResponse"];
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/usuarios": {
         parameters: {
             query?: never;
@@ -3974,28 +4582,28 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        ActividadResponse: {
-            id: string;
-            title: string;
-            /** Format: date-time */
-            startDate: string;
-            /** Format: date-time */
-            endDate: null | string;
-            eventType: null | string;
-            source: string;
-            /** Format: uuid */
-            processId: null | string;
-            numeroProceso: null | string;
-            entidad: null | string;
-            /** Format: uuid */
-            responsableUserId: null | string;
-            responsableNombre: null | string;
-            prioridad: null | string;
-            estado: string;
+        AccionBrecha: {
+            /** Format: int32 */
+            numero: number | string;
+            tipo: string;
+            brecha: string;
+            empresa: string;
+            accion: string;
+            urgencia: string;
+            responsable: string;
+            subsanabilidad: null | string;
+            fundamento: null | string;
+            fechaLimite: null | string;
+            evidenceIds: string[];
         };
         AddMembershipRequest: {
             /** Format: uuid */
             userId: string;
+        };
+        AlternativaFigura: {
+            figura: string;
+            estado: string;
+            motivo: string;
         };
         AnalisisIaResponse: {
             /** Format: uuid */
@@ -4022,6 +4630,11 @@ export interface components {
             matrixRiesgoAlto: null | number | string;
             /** Format: date-time */
             createdAt: string;
+        };
+        ArchivoRevisado: {
+            nombre: string;
+            tipo: string;
+            nota: null | string;
         };
         AsistenteIaSesionResponse: {
             conversationId: string;
@@ -4137,6 +4750,78 @@ export interface components {
             /** Format: double */
             valorPlural: null | number | string;
         };
+        CalendarioResponse: {
+            calendarioUrl: null | string;
+            eventos: components["schemas"]["EventoCalendarioResponse"][];
+        };
+        CargaConocimientoRecord: {
+            /** Format: uuid */
+            id: string;
+            estado: string;
+            archivos: string[];
+            resumenJson: string;
+            datosJson: null | string;
+            sharePointCarpeta: null | string;
+            /** Format: uuid */
+            creadoPor: null | string;
+            /** Format: date-time */
+            creadoEn: string;
+            /** Format: uuid */
+            aplicadoPor: null | string;
+            /** Format: date-time */
+            aplicadoEn: null | string;
+        };
+        CargaConocimientoResult: {
+            /** Format: uuid */
+            cargaId: string;
+            estado: string;
+            vistaPrevia: components["schemas"]["VistaPreviaConocimiento"];
+            sharePointCarpeta: null | string;
+        };
+        CargaHistorialResult: {
+            /** Format: uuid */
+            id: string;
+            estado: string;
+            archivos: string[];
+            /** Format: date-time */
+            creadoEn: string;
+            creadoPor: null | string;
+            /** Format: date-time */
+            aplicadoEn: null | string;
+            aplicadoPor: null | string;
+            sharePointCarpeta: null | string;
+            vistaPrevia: components["schemas"]["VistaPreviaConocimiento"];
+        };
+        CategoriaSemaforo: {
+            categoria: string;
+            xrm: components["schemas"]["EstadoNota"];
+            intelecto: components["schemas"]["EstadoNota"];
+            plural: null | components["schemas"]["EstadoNota"];
+            comentario: string;
+        };
+        CausalRechazo: {
+            id: string;
+            numeral: null | string;
+            descripcion: string;
+            evidenceIds: string[];
+        };
+        CitaCrmResponse: {
+            citaId: string;
+        };
+        CitaOportunidadResponse: {
+            id: string;
+            asunto: string;
+            descripcion: null | string;
+            /** Format: date-time */
+            inicio: null | string;
+            /** Format: date-time */
+            fin: null | string;
+            /** Format: int32 */
+            prioridad: null | number | string;
+            prioridadEtiqueta: null | string;
+            responsable: null | string;
+            estado: null | string;
+        };
         CiudadRecordResponse: {
             /** Format: uuid */
             id: string;
@@ -4159,29 +4844,51 @@ export interface components {
             id: string;
             label: string;
         };
+        Cobertura: {
+            /** Format: double */
+            documentos: null | number | string;
+            /** Format: int32 */
+            chunksTotales: number | string;
+            /** Format: int32 */
+            chunksLeidosIa: number | string;
+        };
         CodigoUnspscResponse: {
             /** Format: uuid */
             id: string;
             code: string;
             description: null | string;
         };
-        CompleteTareaResponse: {
-            ok: boolean;
-            already: boolean;
+        ContratosResumen: {
+            /** Format: int32 */
+            leidos: number | string;
+            /** Format: int32 */
+            declarados: null | number | string;
+            /** Format: int32 */
+            anteriores: number | string;
+            /** Format: int32 */
+            unspscCompletados: number | string;
+            /** Format: double */
+            smmlvTotal: number | string;
+            nuevos: string[];
+            retirados: string[];
+        };
+        ControlCalidad: {
+            control: string;
+            resultado: string;
+            bloqueante: boolean;
+            detalle: null | string;
+        };
+        CrearCitaCrmRequest: {
+            titulo: string;
+            descripcion: null | string;
+            responsableCrmId: string;
+            /** Format: date-time */
+            fechaLimite: null | string;
+            /** Format: int32 */
+            prioridad: null | number | string;
         };
         CrearOportunidadCrmRequest: {
             tema: string;
-        };
-        CrearTareaRequest: {
-            title: string;
-            description: null | string;
-            /** Format: uuid */
-            processId: null | string;
-            /** Format: uuid */
-            assignedTo: null | string;
-            priority: null | string;
-            /** Format: date-time */
-            dueAt: null | string;
         };
         CreateCiudadRequest: {
             name: string;
@@ -4245,9 +4952,19 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
         };
+        CrmOpcionResponse: {
+            /** Format: int32 */
+            valor: number | string;
+            etiqueta: string;
+        };
         CrmOportunidadResponse: {
             opportunityId: string;
             opportunityUrl: null | string;
+        };
+        CrmUsuarioResponse: {
+            id: string;
+            nombre: string;
+            email: null | string;
         };
         DashboardCountsResponse: {
             /** Format: int32 */
@@ -4258,10 +4975,6 @@ export interface components {
             upcoming7: number | string;
             /** Format: int32 */
             marketStudies: number | string;
-            /** Format: int32 */
-            pendingTasks: number | string;
-            /** Format: int32 */
-            overdueTasks: number | string;
         };
         DashboardResponse: {
             counts: components["schemas"]["DashboardCountsResponse"];
@@ -4304,9 +5017,43 @@ export interface components {
         DescartarProcesoRequest: {
             motivo: null | string;
         };
+        DocumentoAnalisisResponse: {
+            /** Format: uuid */
+            id: string;
+            nombre: string;
+            extension: string;
+            estado: string;
+            motivo: null | string;
+            tipoDocumento: null | string;
+            /** Format: int32 */
+            paginas: null | number | string;
+            /** Format: int32 */
+            paginasNativas: null | number | string;
+            /** Format: int32 */
+            paginasMixtas: null | number | string;
+            /** Format: int32 */
+            paginasOcr: null | number | string;
+        };
         EjecutarAnalisisIaRequest: {
             /** Format: uuid */
             empresaId: null | string;
+        };
+        EmpresaConocimientoResult: {
+            clave: string;
+            razonSocial: string;
+            nit: string;
+            tamano: null | string;
+            rupNumero: null | string;
+            /** Format: date */
+            rupVigenteHasta: null | string;
+            /** Format: int32 */
+            contratos: number | string;
+            /** Format: double */
+            smmlvTotal: number | string;
+            /** Format: date-time */
+            actualizadoEn: null | string;
+            fuente: string;
+            indicadores: components["schemas"]["IndicadorActualResult"][];
         };
         EntidadResponse: {
             /** Format: uuid */
@@ -4316,14 +5063,163 @@ export interface components {
             nit: null | string;
             dv: null | string;
         };
+        EstadoAnalisisResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int32 */
+            version: number | string;
+            estado: string;
+            /** Format: int32 */
+            progreso: number | string;
+            mensaje: null | string;
+            /** Format: uuid */
+            correlationId: string;
+            /** Format: date-time */
+            solicitadoEn: string;
+            /** Format: date-time */
+            iniciadoEn: null | string;
+            /** Format: date-time */
+            finalizadoEn: null | string;
+            forceReanalisis: boolean;
+            /** Format: uuid */
+            reutilizadoDe: null | string;
+            /** Format: int32 */
+            versionReutilizada: null | number | string;
+            metodologiaVersion: null | string;
+            /** Format: double */
+            cobertura: null | number | string;
+            errorCodigo: null | string;
+            sharePointCarpeta: null | string;
+            duracionEtapas: null | {
+                [key: string]: number | string;
+            };
+            documentos: components["schemas"]["DocumentoAnalisisResponse"][];
+        };
+        EstadoConocimientoResult: {
+            empresas: components["schemas"]["EmpresaConocimientoResult"][];
+            cargas: components["schemas"]["CargaHistorialResult"][];
+        };
+        EstadoNota: {
+            estado: string;
+            nota: string;
+        };
         EstadoSecopResponse: {
             /** Format: uuid */
             id: string;
             name: string;
             isActive: boolean;
         };
+        EvaluacionFila: {
+            estado: string;
+            detalle: string;
+            fuente: null | string;
+            origen: string;
+        };
+        EventoCalendarioResponse: {
+            id: string;
+            titulo: string;
+            /** Format: date-time */
+            inicio: string;
+            /** Format: date-time */
+            fin: string;
+            todoElDia: boolean;
+            origen: string;
+            cancelado: boolean;
+            esRecurrente: boolean;
+            ubicacion: null | string;
+            organizador: null | string;
+            asistentes: string[];
+            urlReunion: null | string;
+            webLink: null | string;
+            oportunidadNombre: null | string;
+            /** Format: uuid */
+            procesoId: null | string;
+            numeroProceso: null | string;
+            entidad: null | string;
+        };
+        EvidenciaCitadaRecord: {
+            evidenceId: string;
+            documento: null | string;
+            paginas: (number | string)[];
+            seccion: string;
+            tipo: string;
+            /** Format: double */
+            confianza: null | number | string;
+            texto: string;
+        };
+        EvidenciaResponse: {
+            title: string;
+            content: string;
+            contentLocation: string;
+        };
+        FiguraRecomendada: {
+            recomendacion: string;
+            provisional: boolean;
+            justificacion: string;
+            alternativas: components["schemas"]["AlternativaFigura"][];
+            porcentajesSugeridos: null | components["schemas"]["PorcentajesSugeridos"];
+            evidenceIds: string[];
+        };
+        FilaCalificacion: {
+            criterio: string;
+            numeral: null | string;
+            /** Format: double */
+            puntos: null | number | string;
+            puntosTexto: null | string;
+            regla: null | string;
+            soporte: null | string;
+            xrm: components["schemas"]["EstadoNota"];
+            intelecto: components["schemas"]["EstadoNota"];
+            puntajePotencial: null | string;
+            observacion: null | string;
+            evidenceIds: string[];
+        };
+        FilaCronograma: {
+            hito: string;
+            fechaHora: null | string;
+            /** Format: date */
+            fecha: null | string;
+            accion: string;
+            responsable: string;
+            critico: boolean;
+            incierto: boolean;
+            avisos: string[];
+            evidenceIds: string[];
+        };
+        FilaFinanciera: {
+            id: string;
+            indicador: string;
+            formula: null | string;
+            periodo: null | string;
+            xrm: components["schemas"]["ValorIndicador"];
+            intelecto: components["schemas"]["ValorIndicador"];
+            plural: null | components["schemas"]["EvaluacionFila"];
+            umbral: null | string;
+            estado: string;
+            evidenceIds: string[];
+        };
+        FilaRequisito: {
+            id: string;
+            numeral: null | string;
+            lote: null | string;
+            requisito: string;
+            tipo: string;
+            xrm: components["schemas"]["EvaluacionFila"];
+            intelecto: components["schemas"]["EvaluacionFila"];
+            plural: null | components["schemas"]["EvaluacionFila"];
+            estado: string;
+            subsanabilidad: null | string;
+            avisos: string[];
+            evidenceIds: string[];
+        };
         /** Format: binary */
         IFormFile: string;
+        IFormFileCollection: components["schemas"]["IFormFile"][];
+        IndicadorActualResult: {
+            nombre: string;
+            /** Format: double */
+            valor: null | number | string;
+        };
         IndicadorConsultaResponse: {
             /** Format: uuid */
             id: string;
@@ -4352,6 +5248,16 @@ export interface components {
             formulaDenominadorIds: null | string[];
             /** Format: double */
             formulaMultiplicador: null | number | string;
+        };
+        IndicadorResumen: {
+            nombre: string;
+            /** Format: double */
+            calculado: null | number | string;
+            /** Format: double */
+            documento: null | number | string;
+            /** Format: double */
+            anterior: null | number | string;
+            coincide: boolean;
         };
         IndicadoresConsultaResponse: {
             indicadores: components["schemas"]["IndicadorConsultaResponse"][];
@@ -4391,6 +5297,12 @@ export interface components {
             isActive: boolean;
             /** Format: date-time */
             createdAt: string;
+        };
+        MetodologiaResultado: {
+            playbook: string;
+            version: string;
+            prompts: null | string;
+            modelo: null | string;
         };
         ModalidadResponse: {
             /** Format: uuid */
@@ -4471,6 +5383,43 @@ export interface components {
             /** Format: double */
             porcentaje: number | string;
         };
+        Paso0LecturaIntegral: {
+            numeroProceso: null | string;
+            objeto: null | string;
+            entidad: null | string;
+            modalidad: null | string;
+            presupuesto: components["schemas"]["Presupuesto"];
+            plazo: null | string;
+            cierre: null | string;
+            /** Format: date */
+            cierreFecha: null | string;
+            lotes: string[];
+            estadoDocumento: null | string;
+            pluralPermitido: null | boolean;
+            metodologiaPlural: null | string;
+            cobertura: components["schemas"]["Cobertura"];
+            avisos: string[];
+            evidenceIds: string[];
+        };
+        Paso1Semaforo: {
+            categorias: components["schemas"]["CategoriaSemaforo"][];
+            figura: components["schemas"]["FiguraRecomendada"];
+        };
+        Paso6Cronograma: {
+            hitos: components["schemas"]["FilaCronograma"][];
+            siguienteHitoCritico: null | string;
+        };
+        PerfilResumen: {
+            tamano: null | string;
+            rupNumero: null | string;
+            /** Format: date */
+            rupVigenteHasta: null | string;
+            /** Format: int32 */
+            discapacidadVinculadas: number | string;
+            /** Format: date */
+            discapacidadFechaIngreso: null | string;
+            discapacidadCertificacion: null | string;
+        };
         PlantillaResponse: {
             /** Format: uuid */
             id: string;
@@ -4480,6 +5429,14 @@ export interface components {
             isActive: boolean;
             /** Format: date-time */
             createdAt: string;
+        };
+        PorcentajesSugeridos: {
+            metodologia: string;
+            /** Format: int32 */
+            xrmMinimo: number | string;
+            /** Format: int32 */
+            xrmMaximo: number | string;
+            nota: string;
         };
         PowerBiEmbedUrlResponse: {
             url: null | string;
@@ -4494,6 +5451,14 @@ export interface components {
             estimatedValue: null | number | string;
             /** Format: date-time */
             updatedAt: string;
+        };
+        Presupuesto: {
+            /** Format: double */
+            cop: null | number | string;
+            cdp: null | string;
+            fechaCdp: null | string;
+            /** Format: double */
+            smmlv: null | number | string;
         };
         ProcesoDetectadoListResponse: {
             items: components["schemas"]["ProcesoDetectadoResponse"][];
@@ -4530,15 +5495,15 @@ export interface components {
             /** Format: date-time */
             lastDetectedAt: string;
             entidadRegistrada: boolean;
-            semaforo?: null | string;
+            semaforo: null | string;
             /** Format: int32 */
-            semaforoScore?: null | number | string;
-            semaforoJustificacion?: null | string;
-            semaforoEstado?: null | string;
-            semaforoError?: null | string;
+            semaforoScore: null | number | string;
+            semaforoJustificacion: null | string;
+            semaforoEstado: null | string;
+            semaforoError: null | string;
             /** Format: date-time */
-            discardedAt?: null | string;
-            discardReason?: null | string;
+            discardedAt: null | string;
+            discardReason: null | string;
         };
         ProcesoHistoricoListResponse: {
             items: components["schemas"]["ProcesoHistoricoResponse"][];
@@ -4591,6 +5556,11 @@ export interface components {
             /** Format: date-time */
             fechaUltimaActualizacion: string;
         };
+        ProcesoSeguimientoFiltrosResponse: {
+            entidades: string[];
+            modalidades: string[];
+            fases: string[];
+        };
         ProcesoSeguimientoResponse: {
             /** Format: uuid */
             id: string;
@@ -4624,6 +5594,9 @@ export interface components {
             valorAdjudicado: null | number | string;
             /** Format: date-time */
             fechaAdjudicacion: null | string;
+            fase: null | string;
+            /** Format: date-time */
+            detectado: null | string;
         };
         PromoverProcesoEnVivoRequest: {
             dataset: string;
@@ -4656,6 +5629,41 @@ export interface components {
         };
         RefreshRequest: {
             refreshToken: string;
+        };
+        ResultadoAnalisisLicitacion: {
+            esquema: string;
+            /** Format: uuid */
+            analisisId: string;
+            /** Format: int32 */
+            version: number | string;
+            metodologia: components["schemas"]["MetodologiaResultado"];
+            huellaExpediente: null | string;
+            titulo: string;
+            estadoResultado: string;
+            /** Format: date-time */
+            generadoEn: string;
+            paso0LecturaIntegral: components["schemas"]["Paso0LecturaIntegral"];
+            paso1Semaforo: components["schemas"]["Paso1Semaforo"];
+            paso2Calificacion: components["schemas"]["FilaCalificacion"][];
+            paso3Juridico: components["schemas"]["FilaRequisito"][];
+            paso4Financiero: components["schemas"]["FilaFinanciera"][];
+            paso5Tecnico: components["schemas"]["FilaRequisito"][];
+            paso6Cronograma: components["schemas"]["Paso6Cronograma"];
+            paso7Acciones: components["schemas"]["AccionBrecha"][];
+            causalesRechazo: components["schemas"]["CausalRechazo"][];
+            controlesCalidad: components["schemas"]["ControlCalidad"][];
+            limitaciones: string[];
+            avisoLegal: string;
+        };
+        ResumenEmpresaCarga: {
+            clave: string;
+            razonSocial: string;
+            partes: string[];
+            contratos: null | components["schemas"]["ContratosResumen"];
+            indicadores: components["schemas"]["IndicadorResumen"][];
+            perfil: null | components["schemas"]["PerfilResumen"];
+            errores: string[];
+            avisos: string[];
         };
         SaveParametricaRequest: {
             isEnabled: boolean;
@@ -4755,6 +5763,18 @@ export interface components {
         SetValoresIndicadorRequest: {
             valores: components["schemas"]["ValorIndicadorRequest"][];
         };
+        SolicitarAnalisisRequest: {
+            forceReanalisis: null | boolean;
+        };
+        SolicitarAnalisisResponse: {
+            /** Format: uuid */
+            analisisId: string;
+            /** Format: int32 */
+            version: number | string;
+            estado: string;
+            /** Format: uuid */
+            correlationId: string;
+        };
         SsoRequest: {
             idToken: string;
         };
@@ -4773,22 +5793,6 @@ export interface components {
             refreshToken: string;
             /** Format: uuid */
             organizationId: string;
-        };
-        TareaResponse: {
-            /** Format: uuid */
-            id: string;
-            title: string;
-            description: null | string;
-            /** Format: uuid */
-            processId: null | string;
-            processTitle: null | string;
-            /** Format: uuid */
-            assignedTo: null | string;
-            assignedToName: null | string;
-            priority: null | string;
-            status: null | string;
-            /** Format: date-time */
-            dueDate: null | string;
         };
         TokensResponse: {
             accessToken: string;
@@ -4888,6 +5892,12 @@ export interface components {
             role: null | string;
             organizaciones: components["schemas"]["UsuarioOrganizacionResponse"][];
         };
+        ValorIndicador: {
+            resultado: null | string;
+            estado: string;
+            detalle: string;
+            fuente: null | string;
+        };
         ValorIndicadorRequest: {
             /** Format: uuid */
             indicadorId: string;
@@ -4902,6 +5912,27 @@ export interface components {
             suborganizacionNombre: string;
             /** Format: double */
             valor: null | number | string;
+        };
+        VersionAnalisisResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int32 */
+            version: number | string;
+            estado: string;
+            /** Format: date-time */
+            solicitadoEn: string;
+            /** Format: date-time */
+            finalizadoEn: null | string;
+            /** Format: uuid */
+            reutilizadoDe: null | string;
+            /** Format: double */
+            cobertura: null | number | string;
+        };
+        VistaPreviaConocimiento: {
+            archivos: components["schemas"]["ArchivoRevisado"][];
+            empresas: components["schemas"]["ResumenEmpresaCarga"][];
+            errores: string[];
+            puedeAplicarse?: boolean;
         };
     };
     responses: never;
