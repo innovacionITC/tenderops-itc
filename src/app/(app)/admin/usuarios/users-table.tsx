@@ -51,8 +51,23 @@ export function UsersTable({
   // ItcModal usa <dialog>.showModal(): todo lo de fuera del <dialog> queda
   // inerte y el dropdown no recibe clicks. Apuntamos el container al propio
   // <dialog> vía ref (ver comentario en components/ui/select.tsx). Se guarda en
-  // estado con un callback ref porque se lee durante el render.
+  // estado porque se lee durante el render.
   const [createModalEl, setCreateModalEl] = useState<HTMLDialogElement | null>(null);
+  // ItcModal abre el <dialog> con ref.current.showModal(): con un callback ref
+  // no hay .current y el modal nunca se abre. Por eso va un objeto ref, cuyo
+  // setter además deja el elemento en estado para el Select.
+  const [createModalRef] = useState(() => {
+    let dialog: HTMLDialogElement | null = null;
+    return {
+      get current() {
+        return dialog;
+      },
+      set current(el: HTMLDialogElement | null) {
+        dialog = el;
+        setCreateModalEl(el);
+      },
+    };
+  });
 
   // Solo un superadmin puede otorgar el rol superadmin a otro usuario (la API
   // lo exige igual con un 403; esto solo evita ofrecer una opción condenada).
@@ -339,7 +354,7 @@ export function UsersTable({
       />
 
       <ItcModal
-        ref={setCreateModalEl}
+        ref={createModalRef}
         open={createOpen}
         onClose={() => setCreateOpen(false)}
         onConfirm={handleCreate}
