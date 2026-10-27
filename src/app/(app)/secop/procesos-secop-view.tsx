@@ -28,12 +28,11 @@ import { RowActionButton } from "@/components/layout/row-action-button";
 import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
 import {
   MoneyCell,
+  ProcessFactsCell,
   ProcessIdentityCell,
-  SecondaryCell,
   SemaforoMeter,
-  StageCell,
 } from "@/components/layout/process-cells";
-import { formatFechaCorta } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import {
   SEMAFOROS,
   datasetLabels,
@@ -343,54 +342,38 @@ export function ProcesosSecopView({
     {
       key: "proceso",
       title: "Proceso",
-      width: "34%",
+      width: "46%",
       render: (r) => (
-        <ProcessIdentityCell
-          identifier={r.secopId}
-          source={datasetLabels[r.dataset] ?? r.dataset}
-          title={r.objeto || r.titulo}
-          entity={r.entidad}
-          starred={r.entidadRegistrada}
-        />
-      ),
-    },
-    {
-      key: "modalidad",
-      title: "Modalidad",
-      width: "12%",
-      render: (r) => <SecondaryCell title={r.modalidad ?? undefined}>{r.modalidad ?? "—"}</SecondaryCell>,
-    },
-    {
-      key: "estado",
-      title: "Estado",
-      width: "11%",
-      render: (r) => (
-        <div className="flex min-w-0 flex-col gap-1">
-          <SecondaryCell title={r.estado ?? undefined}>{r.estado ?? "—"}</SecondaryCell>
-          {r.esNuevo && <StatusBadge tone="info">Nuevo</StatusBadge>}
+        <div className="flex items-start justify-between gap-4">
+          <ProcessIdentityCell
+            identifier={r.secopId}
+            source={datasetLabels[r.dataset] ?? r.dataset}
+            title={r.objeto || r.titulo}
+            entity={r.entidad}
+            starred={r.entidadRegistrada}
+          />
+          <div className="shrink-0">
+            <MoneyCell value={r.valor} />
+          </div>
         </div>
       ),
     },
     {
-      key: "fase",
-      title: "Fase",
-      width: "8%",
-      render: (r) => <StageCell label={r.fase} />,
-    },
-    {
-      key: "valor",
-      title: "Cuantía",
-      width: "10%",
-      render: (r) => <MoneyCell value={r.valor} />,
-    },
-    {
-      key: "detectadoEl",
-      title: "Detectado",
-      width: "9%",
+      key: "detalle",
+      title: "Detalle",
+      width: "32%",
       render: (r) => (
-        <span className="whitespace-nowrap text-sm text-muted-foreground">
-          {formatFechaCorta(r.detectadoEl)}
-        </span>
+        <ProcessFactsCell
+          modalidad={r.modalidad}
+          estado={
+            <span className="inline-flex items-center gap-1.5">
+              <span className="truncate">{r.estado || "—"}</span>
+              {r.esNuevo && <StatusBadge tone="info">Nuevo</StatusBadge>}
+            </span>
+          }
+          fase={r.fase}
+          detectado={formatDateTime(r.detectadoEl)}
+        />
       ),
     },
     {
