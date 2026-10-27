@@ -281,7 +281,7 @@ export function AuditoriaView({
   const totalPaginas = Math.max(Math.ceil(eventos.total / eventos.pageSize), 1);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <FiltrosPanel
         campos={campos}
         valores={valoresFiltro}

@@ -63,7 +63,7 @@ export default async function SecopPage({
     return (
       <>
         {header}
-        <div className="space-y-4 p-4 sm:p-6 lg:p-8">
+        <div className="page-body space-y-3">
           <SecopTabsNav vista={vista} esAdmin={esAdmin} />
           {syncError || !sincronizaciones ? (
             <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
@@ -115,7 +115,7 @@ export default async function SecopPage({
     return (
       <>
         {header}
-        <div className="space-y-4 p-4 sm:p-6 lg:p-8">
+        <div className="page-body space-y-3">
           <SecopTabsNav vista={vista} esAdmin={esAdmin} />
           {vivoError ||
           !filtrosDisponibles ||
@@ -208,7 +208,7 @@ export default async function SecopPage({
   return (
     <>
       {header}
-      <div className="space-y-4 p-4 sm:p-6 lg:p-8">
+      <div className="page-body space-y-3">
         <SecopTabsNav vista={vista} esAdmin={esAdmin} />
         {error || !resultado ? (
           <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">

@@ -13,7 +13,7 @@ export default async function OrganizacionesPage() {
         title="Organizaciones"
         description="Gestión de las organizaciones del sistema. Solo Super Admin puede crear nuevas organizaciones."
       />
-      <div className="p-4 sm:p-6 lg:p-8">
+      <div className="page-body">
         <OrganizacionesTable rows={rows} userRole={auth.role} />
       </div>
     </>

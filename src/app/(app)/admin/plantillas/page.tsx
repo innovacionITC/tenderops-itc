@@ -13,7 +13,7 @@ export default async function PlantillasPage() {
         title="Plantillas"
         description="Gestión de las plantillas del sistema."
       />
-      <div className="p-4 sm:p-6 lg:p-8">
+      <div className="page-body">
         <PlantillasTable rows={rows} userRole={auth.role} variant="admin" />
       </div>
     </>

@@ -16,7 +16,7 @@ export function AdminNav({ role }: { role: AppRole | null }) {
   const pathname = usePathname();
 
   return (
-    <div className="border-b bg-card px-4 sm:px-6 lg:px-8">
+    <div className="border-b bg-card/40 px-4 sm:px-6 lg:px-8">
       <nav className="flex gap-1 overflow-x-auto">
         {TABS.filter((tab) => !tab.superadminOnly || role === "superadmin").map((tab) => {
           const active = pathname === tab.href || pathname.startsWith(tab.href + "/");

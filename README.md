@@ -1,152 +1,143 @@
 # TenderOps
 
-Plataforma de gestión de procesos licitatorios (SECOP, seguimiento comercial, tareas, indicadores). Este repo es una **reescritura en Next.js** de la app anterior (`tenderops-itc`); varias secciones del menú siguen marcadas como `comingSoon` porque aún no se han migrado.
+Plataforma de gestión de procesos licitatorios (SECOP, seguimiento comercial, tareas, indicadores). Este repositorio es el **frontend Next.js** de TenderOps: una interfaz y un BFF. No es el backend ni la base de datos.
 
-> Este documento describe la arquitectura y convenciones reales del proyecto — es la referencia a seguir al construir features nuevas. Para las particularidades de este fork de Next.js (rutas, convenciones que difieren del Next.js estándar), ver [AGENTS.md](./AGENTS.md).
+> La arquitectura canónica está en [`docs/architecture/adr-001-api-dotnet-source-of-truth.md`](./docs/architecture/adr-001-api-dotnet-source-of-truth.md) y el mapa de ownership en [`docs/architecture/system-ownership.md`](./docs/architecture/system-ownership.md). Para las particularidades de este fork de Next.js, ver [AGENTS.md](./AGENTS.md).
+
+## Arquitectura
+
+```text
+Navegador
+  → Next.js / BFF (este repo)
+  → API .NET (TENDEROPS_API_URL)
+  → Supabase PostgreSQL e integraciones externas
+```
+
+- El navegador no habla con Supabase ni recibe tokens.
+- Next.js pinta la UI, guarda cookies HttpOnly, llama a `requireAuth()` y habla con el API mediante `apiFetch`.
+- El API .NET autentica, autoriza, valida, audita, persiste e integra SECOP, Dynamics, Graph, Power BI, Entra y Copilot.
+- PostgreSQL vive detrás del API. Este frontend no debe consultar ni modificar la base.
 
 ## Stack
 
-- **Next.js 16** (App Router, Turbopack) + React 19 + TypeScript
-- **Supabase**: Auth (login con email/password y SSO Microsoft Entra ID vía provider `azure`) + Postgres
-- **Drizzle ORM** (`postgres-js`) para todo el acceso a datos desde el servidor
-- **Tailwind CSS 4** + shadcn/ui (`radix-ui`) para la UI
-- **Zod** para validación de inputs en Server Actions
+- **Next.js 16** (App Router) + React 19 + TypeScript
+- **BFF** hacia el API .NET: `src/lib/api/client.ts` (`apiFetch`)
+- Contrato: `src/lib/api/openapi.json` → tipos con `npm run api:types`
+- **Tailwind CSS 4** + shadcn/ui (`radix-ui`) + `itc-frontend-base`
+- **Zod** en Server Actions
 
-## Estructura del proyecto
+## Estructura
 
 ```
 src/
   app/
-    (app)/                  # Rutas autenticadas, envueltas por layout.tsx que llama requireAuth()
-      dashboard/page.tsx
-      calendario/
-        page.tsx
-        actions.ts          # Server Actions de esta sección
-        calendar-view.tsx
-      layout.tsx            # Guard: requireAuth() + shell (sidebar, header, notificaciones)
-    auth/callback/route.ts  # Callback OAuth (Supabase <-> Entra ID)
-    login/                  # Ruta pública
-    layout.tsx              # Root layout
-  components/
-    layout/                 # Shell de la app: sidebar, header, nav, page-header, stat-card
-    ui/                     # Componentes shadcn/ui (generados, no editar a mano el core)
+    (app)/                  # Rutas autenticadas (layout llama requireAuth())
+    auth/callback/route.ts  # Callback Entra: intercambia el code con el API
+    login/
+    api/plantillas/...      # Proxy de descarga de archivos hacia el API
+  components/layout/        # Shell, barra Crystal, encabezados, filtros
+  components/ui/            # shadcn/ui
   lib/
-    auth/
-      session.ts            # getAuthContext() / requireAuth() — punto único de autorización
-      roles.ts               # AppRole, hasAnyRole, canFollow/canApprove/canAdmin
-    supabase/
-      client.ts              # Cliente para Client Components
-      server.ts               # Cliente para Server Components/Actions/Route Handlers (cookies)
-      proxy.ts                # updateSession() usado por src/proxy.ts
-      admin.ts                # Cliente service-role (bypassa RLS) — uso restringido, ver abajo
-    dashboard.ts, calendar.ts, tasks.ts,
-    notifications.ts, audit.ts, credentials.ts, powerbi.ts
-                              # Data Access Layer: una función por caso de uso, consumida
-                              # directamente desde Server Components/Actions
-    format.ts, utils.ts
-  db/
-    index.ts                 # Instancia de Drizzle (conexión directa a Postgres)
-    schema/
-      schema.ts               # Generado por `npm run db:pull` — NO editar a mano (ver más abajo)
-      relations.ts             # Generado por `npm run db:pull`
-      auth-users.ts             # Stub manual de auth.users (Supabase), fuera del schema "public"
-  proxy.ts                   # Equivalente a middleware.ts en este fork de Next.js
-  env.ts / env.server.ts     # Validación de env vars (públicas / solo-servidor) con Zod
+    api/                    # Cliente BFF, cookies, OpenAPI
+    auth/session.ts         # getAuthContext() / requireAuth() vía GET /auth/me
+    auth/roles.ts           # AppRole y helpers de visibilidad
+    *.ts                    # Adaptadores de presentación: llaman apiFetch
+  proxy.ts                  # Guard de sesión y refresh del access token
+  env.server.ts             # Variables solo servidor
+  db/                       # Esquema Drizzle residual. No forma parte del runtime
 ```
 
 ## Autenticación
 
-- Login con email/password **o** SSO con Microsoft Entra ID, ambos vía Supabase Auth (provider `azure` configurado en el dashboard de Supabase, no en este repo).
-- `src/proxy.ts` es el equivalente a `middleware.ts` en este fork de Next.js. Corre en cada request, refresca la sesión de Supabase y redirige a `/login` si no hay usuario — **excepto** en `PUBLIC_ROUTES` (`/login`, `/auth`). Cualquier ruta nueva que deba ser pública (páginas de error, webhooks, etc.) debe agregarse ahí explícitamente.
-- El callback OAuth vive en `src/app/auth/callback/route.ts` — por eso `/auth` está excluido del guard, si no, el proxy interceptaría el `code` antes de que se intercambie por la sesión.
+La sesión la emite el API .NET, no Supabase Auth.
 
-## Roles y autorización (guards)
+- Login: `POST /auth/login`. SSO Entra: el BFF inicia PKCE y `POST /auth/sso/entra`.
+- Cookies `access_token` y `refresh_token`: HttpOnly, `SameSite=Lax`, `Secure` en producción.
+- El access token dura lo que indique `expiresIn`. El refresh se rota; `apiFetch` y el proxy deduplican renovaciones concurrentes del mismo token.
+- `src/proxy.ts` refresca si no hay access token y hay refresh. Sin sesión redirige a `/login`, salvo `/login` y `/auth`.
+- Cerrar sesión llama `POST /auth/logout` y borra las cookies.
+- Organización activa: `POST /auth/switch-organization`. El API reemite los tokens.
 
-Roles definidos en Postgres como enum `app_role`: `administrador`, `director`, `gestor`, `consultor`, `lectura`. Se resuelven desde la tabla `user_roles` (un rol por usuario).
+## Roles y autorización
 
-**Importante:** la conexión de Drizzle a Postgres es directa (no impersonada), por lo que **las políticas RLS de Supabase (`pgPolicy(...)` en `schema.ts`) no se aplican realmente** a las queries de la app. La autorización real ocurre en la capa de aplicación:
+Roles: `superadmin`, `administrador`, `director`, `gestor`, `consultor`, `lectura`.
 
-- `requireAuth(allowedRoles?)` en `src/lib/auth/session.ts` es el punto de entrada obligatorio en toda Server Component, Server Action o Route Handler que toque datos protegidos. Redirige a `/login` si no hay sesión; lanza error si el rol no está en `allowedRoles`.
-- Helpers de rol en `src/lib/auth/roles.ts`: `hasAnyRole`, `canFollow` (admin/director/gestor), `canApprove` (admin/director), `canAdmin` (solo admin).
-- En el menú (`src/components/layout/nav-config.ts`), los items usan `adminOnly` / `privilegedOnly` + `isMenuItemVisible(item, role)` para ocultar secciones — esto es solo UX, **no reemplaza** el `requireAuth()` del lado servidor.
-- `src/lib/supabase/admin.ts` expone un cliente service-role que sí bypassa RLS — reservado para operaciones que no pueden hacerse con Drizzle (APIs de administración de Supabase Auth, ej. invitar/eliminar usuarios). Nunca importarlo en código de cliente.
+- Toda Server Component, Server Action o Route Handler protegido empieza por `requireAuth(allowedRoles?)`.
+- El menú oculta entradas con `adminOnly` / `privilegedOnly` / `consultOnly`. Eso es solo UX: el API autoriza de verdad.
+- Helpers: `hasAnyRole`, `canFollow`, `canApprove`, `canAdmin`, `canConsult`.
 
-**Regla al agregar una función/página nueva que lea o escriba datos protegidos: siempre empezar por `const { userId, role } = await requireAuth(allowedRolesSiAplica)`.**
-
-## Base de datos (Drizzle)
-
-El flujo es **pull-only**, no hay `db:generate`/`db:migrate`/`db:push`:
-
-1. Los cambios de schema (crear/alterar/borrar tablas) se hacen directamente en Postgres/Supabase (SQL editor, dashboard, o script puntual).
-2. Se corre `npm run db:pull` para reintrospectar la BD y regenerar `src/db/schema/schema.ts` y `relations.ts`.
-3. **`db:pull` sobreescribe `schema.ts` por completo**, incluyendo el import manual de `usersInAuth`. Después de cada pull hay que volver a agregar, arriba del archivo:
-   ```ts
-   import { usersInAuth as users } from "./auth-users";
-   export { usersInAuth } from "./auth-users";
-   ```
-   (pull solo introspecta el schema `public`; `auth.users` es de Supabase y se referencia a mano vía `src/db/schema/auth-users.ts`).
-4. `npm run db:studio` abre Drizzle Studio contra la BD configurada en `DATABASE_URL`.
-
-Solo existen en la BD las tablas que el código realmente usa (se depuraron las que quedaron de un modelo de datos más amplio sin usar todavía — ver sección Roadmap). Antes de crear una tabla nueva, confirmar que no exista ya algo similar.
-
-## Patrón para features nuevas
+## Cómo agregar una función
 
 **Lectura (Server Component):**
+
 ```ts
-// src/lib/mi-feature.ts
 import "server-only";
-import { db } from "@/db";
-// ...query con drizzle...
-export async function getMiFeature() { /* ... */ }
+import { apiFetch } from "@/lib/api/client";
+
+export async function getMiFeature() {
+  return apiFetch<MiTipo>("/mi-recurso");
+}
 ```
+
 ```tsx
-// src/app/(app)/mi-feature/page.tsx
 export default async function Page() {
-  await requireAuth(); // o requireAuth(["administrador", "director"]) si aplica
+  await requireAuth();
   const data = await getMiFeature();
   return /* ... */;
 }
 ```
 
-**Escritura (Server Action)** — ver `src/app/(app)/calendario/actions.ts` como referencia:
+**Escritura (Server Action):**
+
 ```ts
 "use server";
 export async function miAccion(input: unknown) {
-  const { userId, role } = await requireAuth();
-  const parsed = miSchema.parse(input);       // zod
-  // reglas de negocio / chequeos de permiso adicionales con hasAnyRole
-  // mutación vía Drizzle
-  await recordAudit(userId, { action: "...", module: "...", entityType: "...", entityId: "..." });
+  await requireAuth();
+  const parsed = miSchema.parse(input);
+  await apiFetch("/mi-recurso", { method: "POST", body: parsed });
   revalidatePath("/mi-feature");
-  return { ok: true };
 }
 ```
 
-Convenciones:
-- Toda query a Postgres pasa por Drizzle (`@/db`), nunca por `supabase.from(...)` con nombres de tabla en string.
-- Server Components hacen fetch de datos directamente (no hay capa de API REST/tRPC interna); nada de `fetch("/api/...")` desde el propio front para datos propios.
-- Mutaciones relevantes registran auditoría con `recordAudit` (`src/lib/audit.ts`).
-- Componentes de UI reutilizables van en `components/ui` (shadcn — regenerar con su CLI, no tocar a mano el core) y `components/layout` (shell propio de la app).
+No importar `@/db`, `drizzle-orm`, `postgres` ni clientes de Supabase. Si el endpoint no está en OpenAPI, el cambio va primero en el API .NET y después se regenera el contrato.
+
+## Contrato OpenAPI
+
+```bash
+npm run api:types
+```
+
+Lee `src/lib/api/openapi.json` y escribe `src/lib/api/schema.d.ts`. El JSON debe salir del API; no se agregan rutas a mano para silenciar errores.
 
 ## Variables de entorno
 
-Ver `.env.local.example`. Resumen:
-- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`: públicas, cliente Supabase.
-- `SUPABASE_SERVICE_ROLE_KEY`: solo servidor, para `lib/supabase/admin.ts`.
-- `DATABASE_URL`: connection string directo de Postgres para Drizzle (no respeta RLS).
-- Bloque comentado (`MICROSOFT_*`, `DATAVERSE_*`, `GRAPH_*`, `SECOP_*`, `COPILOT_*`): integraciones de fases futuras, todavía no usadas por el código.
+Ver `.env.local.example`. Las que usa el runtime:
 
-## Roadmap / pendiente de migrar
+| Variable | Dónde | Uso |
+| --- | --- | --- |
+| `TENDEROPS_API_URL` | servidor | Base URL del API .NET |
+| `MICROSOFT_TENANT_ID` | servidor, opcional | SSO Entra (PKCE en el BFF) |
+| `MICROSOFT_CLIENT_ID` | servidor, opcional | SSO Entra |
+| `MICROSOFT_CLIENT_SECRET` | servidor, opcional | SSO Entra |
+| `NEXT_PUBLIC_DIRECTLINE_BASE_URL` | opcional | Cliente Direct Line del asistente IA |
 
-Marcado como `comingSoon` en `nav-config.ts`: Consulta SECOP, Procesos en seguimiento, Plantillas, Indicadores, Auditoría (vista), Administración. Antes de reintroducir una tabla o integración para alguna de estas, confirmar que efectivamente se va a construir en el corto plazo — este proyecto prefiere mantener en la BD solo lo que el código usa activamente mientras se desarrolla.
+`DATABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `NEXT_PUBLIC_SUPABASE_*` aparecen en el ejemplo por restos de una fase anterior. **La aplicación no las usa en runtime.** `src/db` y `npm run db:pull` / `db:studio` quedan solo como introspección local, no como camino de datos.
 
-## Getting Started
+Las credenciales de Dynamics, Graph, SECOP y Copilot se administran en el API (pantalla Administración → Credenciales). El frontend solo ve si hay valor configurado, no el secreto.
+
+## Módulos
+
+Dashboard, Consulta SECOP, Procesos en seguimiento, Plantillas, Indicadores, Calendario, Auditoría y Administración están en el menú y hablan con el API. Ninguno está marcado como `comingSoon`.
+
+## Desarrollo local
+
+Hace falta el API .NET en la URL de `TENDEROPS_API_URL` (por defecto `http://localhost:5106`).
 
 ```bash
 npm install
 npm run dev
 ```
 
-Abrir [http://localhost:3000](http://localhost:3000). El login redirige a `/dashboard` tras autenticar.
+Abrir [http://localhost:3000](http://localhost:3000). El login redirige a `/dashboard`.
 
-Otros scripts: `npm run lint`, `npm run format`, `npm run db:pull`, `npm run db:studio`.
+Otros scripts: `npm run lint`, `npm run format`, `npm run api:types`.

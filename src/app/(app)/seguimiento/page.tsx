@@ -113,7 +113,7 @@ export default async function SeguimientoPage({
     return (
       <>
         {header}
-        <div className="space-y-4 p-4 sm:p-6 lg:p-8">
+        <div className="page-body space-y-3">
           <SeguimientoTabsNav vista={vista} />
           {errorTipo || !resultado ? (
             <HistoricosErrorBanner tipo={errorTipo ?? "error_consulta"} />
@@ -192,7 +192,7 @@ export default async function SeguimientoPage({
     return (
       <>
         {header}
-        <div className="space-y-4 p-4 sm:p-6 lg:p-8">
+        <div className="page-body space-y-3">
           <SeguimientoTabsNav vista={vista} />
           {errorTipo || !resultado ? (
             <LogradosErrorBanner tipo={errorTipo ?? "error_consulta"} />
@@ -250,7 +250,7 @@ export default async function SeguimientoPage({
   return (
     <>
       {header}
-      <div className="space-y-4 p-4 sm:p-6 lg:p-8">
+      <div className="page-body space-y-3">
         <SeguimientoTabsNav vista={vista} />
         <SeguimientoView
           procesos={activos}

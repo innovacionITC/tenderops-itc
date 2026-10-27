@@ -282,13 +282,13 @@ export function FiltrosPanel({
   };
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-end gap-3">
-        {buscador && <div className="min-w-64 flex-1">{buscador}</div>}
+    <div className="filtros-toolbar space-y-1.5">
+      <div className="flex flex-wrap items-center gap-2">
+        {buscador && <div className="min-w-52 max-w-md flex-1">{buscador}</div>}
 
         <Sheet open={abierto} onOpenChange={abrir}>
           <SheetTrigger asChild>
-            <ItcButton type="button" variant="secondary" className="gap-1.5">
+            <ItcButton type="button" variant="secondary" className="h-8 gap-1.5 px-2.5 text-xs">
               <SlidersHorizontal className="h-4 w-4" />
               Filtros
               {activos.length > 0 && (
@@ -359,7 +359,7 @@ export function FiltrosPanel({
           {activos.map((campo) => (
             <span
               key={clavesDe(campo)[0]}
-              className="inline-flex items-center gap-1 rounded-full border bg-muted px-3 py-1 text-xs"
+              className="inline-flex items-center gap-1 rounded-full border bg-muted/70 px-2 py-0.5 text-[11px]"
             >
               {textoChip(campo, valores)}
               <button

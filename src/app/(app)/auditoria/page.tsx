@@ -81,7 +81,7 @@ export default async function AuditoriaPage({
         title="Auditoría"
         description="Bitácora de eventos del sistema: consultas, mutaciones, login/logout y sincronizaciones."
       />
-      <div className="space-y-4 p-4 sm:p-6 lg:p-8">
+      <div className="page-body space-y-3">
         {errorTipo || !resultado ? (
           <AuditoriaErrorBanner tipo={errorTipo ?? "error_consulta"} />
         ) : (

@@ -4,8 +4,6 @@ import { useState, useTransition, type ChangeEvent } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Search, ChevronRight, ArrowUpDown, ChevronLeft, ChevronRight as ChevronRightIcon } from "lucide-react";
 import { ItcTable, type TableColumn, ItcInput, ItcButton } from "@/components/itc";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { RowActionButton } from "@/components/layout/row-action-button";
 import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
@@ -291,45 +289,31 @@ export function ProcesosLogradosView({
   const totalPaginas = Math.max(Math.ceil(procesos.total / procesos.pageSize), 1);
 
   return (
-    <div className="space-y-6">
-      <Card className="overflow-visible">
-        <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <FiltrosPanel
-            campos={campos}
-            valores={valoresFiltro}
-            onAplicar={aplicarFiltros}
-            onLimpiar={limpiarFiltros}
-            deshabilitado={isPending}
-            buscador={
-              <>
-                <Label className="mb-1.5">Palabra clave</Label>
-                <div className="flex gap-1.5">
-                  <ItcInput
-                    value={palabraClave}
-                    onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                      setPalabraClave(e.target.value)
-                    }
-                    onKeyDown={(e: React.KeyboardEvent) => {
-                      if (e.key === "Enter") aplicar({ palabraClave });
-                    }}
-                    placeholder="Buscar en entidad, objeto o número…"
-                  />
-                  <ItcButton
-                    type="button"
-                    variant="secondary"
-                    onClick={() => aplicar({ palabraClave })}
-                  >
-                    <Search className="h-4 w-4" />
-                  </ItcButton>
-                </div>
-              </>
-            }
-          />
-        </CardContent>
-      </Card>
+    <div className="space-y-3">
+      <FiltrosPanel
+        campos={campos}
+        valores={valoresFiltro}
+        onAplicar={aplicarFiltros}
+        onLimpiar={limpiarFiltros}
+        deshabilitado={isPending}
+        buscador={
+          <div className="flex gap-1.5">
+            <ItcInput
+              value={palabraClave}
+              onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+                setPalabraClave(e.target.value)
+              }
+              onKeyDown={(e: React.KeyboardEvent) => {
+                if (e.key === "Enter") aplicar({ palabraClave });
+              }}
+              placeholder="Buscar en entidad, objeto o número…"
+            />
+            <ItcButton type="button" variant="secondary" onClick={() => aplicar({ palabraClave })}>
+              <Search className="h-4 w-4" />
+            </ItcButton>
+          </div>
+        }
+      />
 
       <div className="space-y-3">
         <div className="flex items-center justify-between text-sm text-muted-foreground">
@@ -358,18 +342,19 @@ export function ProcesosLogradosView({
             {LOGRADOS_MENSAJE_VACIO}
           </div>
         ) : (
-          <ItcTable
-            data={procesos.items}
-            columns={columns}
-            rowKey={(r) => r.id}
-            pagination={false}
-            tableLayout="fixed"
-            responsiveStrategy="cards"
-            striped
-            hoverable
-            stickyHeader
-            ariaLabel="Tabla de procesos logrados"
-          />
+          <div className="process-table">
+            <ItcTable
+              data={procesos.items}
+              columns={columns}
+              rowKey={(r) => r.id}
+              pagination={false}
+              tableLayout="fixed"
+              responsiveStrategy="cards"
+              hoverable
+              stickyHeader
+              ariaLabel="Tabla de procesos logrados"
+            />
+          </div>
         )}
 
         {totalPaginas > 1 && (
