@@ -55,7 +55,7 @@ export default async function ParametricasPage() {
         title="Paramétricas"
         description="Configuración y catálogos del sistema."
       />
-      <div className="p-4 sm:p-6 lg:p-8">
+      <div className="page-body">
         <ParametricasAccordions
           config={config}
           catalogs={{ modalidades, entidades, estadosSecop, unspscCodes, departamentos }}

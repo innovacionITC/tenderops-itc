@@ -20,7 +20,7 @@ export default async function DashboardPage() {
         title="Dashboard"
         description="Operación licitatoria de Intelecto y xRM"
       />
-      <div className="space-y-4 p-4 sm:px-6 lg:px-8">
+      <div className="page-body space-y-3">
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
           <StatCard label="Procesos detectados" value={data.counts.total} tone="info" />
           <StatCard

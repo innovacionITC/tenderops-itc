@@ -10,7 +10,6 @@ import {
   Eye,
   XCircle,
   Info,
-  Star,
   RotateCcw,
 } from "lucide-react";
 import {
@@ -21,15 +20,21 @@ import {
   ItcModal,
 } from "@/components/itc";
 import { DetalleProcesoModal } from "./detalle-proceso-modal";
-import { SemaforoBadge } from "./semaforo-badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { LoadingOverlay } from "@/components/layout/loading-overlay";
 import { RowActionButton } from "@/components/layout/row-action-button";
 import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
-import { formatCOP, formatFechaCorta } from "@/lib/format";
+import {
+  EntityCell,
+  MoneyCell,
+  ProcessTitleCell,
+  SecondaryCell,
+  SemaforoMeter,
+  StageCell,
+} from "@/components/layout/process-cells";
+import { formatFechaCorta } from "@/lib/format";
 import {
   SEMAFOROS,
   semaforoLabels,
@@ -328,7 +333,7 @@ export function ProcesosSecopView({
       title: "Semáforo",
       width: "11%",
       render: (r) => (
-        <SemaforoBadge
+        <SemaforoMeter
           semaforo={r.semaforo}
           semaforoScore={r.semaforoScore}
           semaforoEstado={r.semaforoEstado}
@@ -339,46 +344,27 @@ export function ProcesosSecopView({
       key: "entidad",
       title: "Entidad",
       width: "17%",
-      render: (r) => (
-        <span className="flex items-center gap-1 truncate text-sm text-muted-foreground" title={r.entidad ?? undefined}>
-          {r.entidadRegistrada && (
-            <span title="Entidad registrada en Administración">
-              <Star className="h-3 w-3 shrink-0 text-yellow-500" />
-            </span>
-          )}
-          {r.entidad ?? "—"}
-        </span>
-      ),
+      render: (r) => <EntityCell name={r.entidad} starred={r.entidadRegistrada} />,
     },
     {
       key: "objeto",
       title: "Objeto",
       width: "18%",
-      render: (r) => (
-        <span className="block truncate text-sm text-muted-foreground" title={r.objeto ?? undefined}>
-          {r.objeto ?? "—"}
-        </span>
-      ),
+      render: (r) => <ProcessTitleCell title={r.objeto} />,
     },
     {
       key: "modalidad",
       title: "Modalidad",
       width: "12%",
-      render: (r) => (
-        <span className="block truncate text-sm text-muted-foreground" title={r.modalidad ?? undefined}>
-          {r.modalidad ?? "—"}
-        </span>
-      ),
+      render: (r) => <SecondaryCell title={r.modalidad ?? undefined}>{r.modalidad ?? "—"}</SecondaryCell>,
     },
     {
       key: "estado",
       title: "Estado",
       width: "11%",
       render: (r) => (
-        <div className="flex items-center gap-1.5">
-          <span className="truncate text-sm text-muted-foreground" title={r.estado ?? undefined}>
-            {r.estado ?? "—"}
-          </span>
+        <div className="flex min-w-0 flex-col gap-1">
+          <SecondaryCell title={r.estado ?? undefined}>{r.estado ?? "—"}</SecondaryCell>
           {r.esNuevo && <StatusBadge tone="info">Nuevo</StatusBadge>}
         </div>
       ),
@@ -387,20 +373,13 @@ export function ProcesosSecopView({
       key: "fase",
       title: "Fase",
       width: "8%",
-      render: (r) => (
-        <span className="block truncate text-sm text-muted-foreground" title={r.fase ?? undefined}>
-          {r.fase ?? "—"}
-        </span>
-      ),
+      render: (r) => <StageCell label={r.fase} />,
     },
     {
       key: "valor",
       title: "Cuantía",
       width: "10%",
-      align: "right",
-      render: (r) => (
-        <span className="text-sm tabular-nums">{formatCOP(r.valor)}</span>
-      ),
+      render: (r) => <MoneyCell value={r.valor} />,
     },
     {
       key: "detectadoEl",
@@ -467,65 +446,42 @@ export function ProcesosSecopView({
   const totalSinFiltrar = filtrosDisponibles.totalSinFiltrar;
 
   return (
-    <div className="space-y-6">
-      {/* overflow-visible: el Card de shadcn trae overflow-hidden por defecto,
-          y el calendario de ItcDateRangePicker se posiciona con position:
-          absolute dentro de este mismo contenedor (no usa portal a
-          document.body) — sin este override, el Card le corta la grilla de
-          días y solo se ve el encabezado del mes. */}
-      <Card className="overflow-visible">
-        <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <CardTitle>Filtros</CardTitle>
-          {esAdmin && (
-            <ItcButton onClick={handleSincronizar} disabled={isSyncing}>
-              {isSyncing ? (
-                <Spinner className="size-3.5" />
-              ) : (
-                <RefreshCw className="h-4 w-4" />
-              )}
-              {isSyncing ? "Encolando…" : "Sincronizar ahora"}
+    <div className="space-y-3">
+      <FiltrosPanel
+        campos={campos}
+        valores={valoresFiltro}
+        onAplicar={aplicarFiltros}
+        onLimpiar={limpiarFiltros}
+        deshabilitado={isBuscando}
+        acciones={
+          esAdmin ? (
+            <ItcButton onClick={handleSincronizar} disabled={isSyncing} className="h-8 px-2.5 text-xs">
+              {isSyncing ? <Spinner className="size-3.5" /> : <RefreshCw className="h-3.5 w-3.5" />}
+              {isSyncing ? "Encolando…" : "Sincronizar"}
             </ItcButton>
-          )}
-        </CardHeader>
-        <CardContent>
-          <FiltrosPanel
-            campos={campos}
-            valores={valoresFiltro}
-            onAplicar={aplicarFiltros}
-            onLimpiar={limpiarFiltros}
-            deshabilitado={isBuscando}
-            buscador={
-              <>
-                <Label className="mb-1.5">Buscar</Label>
-                <div className="flex gap-1.5">
-                  <ItcInput
-                    value={buscar}
-                    placeholder="Título, entidad u objeto…"
-                    onChange={(
-                      e: ChangeEvent<
-                        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                      >,
-                    ) => setBuscar(e.target.value)}
-                    onKeyDown={(e: React.KeyboardEvent) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        aplicar({ buscar });
-                      }
-                    }}
-                  />
-                  <ItcButton
-                    type="button"
-                    variant="secondary"
-                    onClick={() => aplicar({ buscar })}
-                  >
-                    <Search className="h-4 w-4" />
-                  </ItcButton>
-                </div>
-              </>
-            }
-          />
-        </CardContent>
-      </Card>
+          ) : undefined
+        }
+        buscador={
+          <div className="flex gap-1.5">
+            <ItcInput
+              value={buscar}
+              placeholder="Título, entidad u objeto…"
+              onChange={(
+                e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+              ) => setBuscar(e.target.value)}
+              onKeyDown={(e: React.KeyboardEvent) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  aplicar({ buscar });
+                }
+              }}
+            />
+            <ItcButton type="button" variant="secondary" onClick={() => aplicar({ buscar })}>
+              <Search className="h-4 w-4" />
+            </ItcButton>
+          </div>
+        }
+      />
 
       <div className="space-y-3">
         <div className="flex items-center justify-between">
@@ -561,16 +517,17 @@ export function ProcesosSecopView({
           </div>
         ) : (
           <>
-            <ItcTable
-              data={procesos.items}
-              columns={columns}
-              rowKey={(r) => r.id}
-              pagination={false}
-              tableLayout="fixed"
-              striped
-              hoverable
-              stickyHeader
-            />
+            <div className="process-table">
+              <ItcTable
+                data={procesos.items}
+                columns={columns}
+                rowKey={(r) => r.id}
+                pagination={false}
+                tableLayout="fixed"
+                hoverable
+                stickyHeader
+              />
+            </div>
 
             {totalPaginas > 1 && (
               <div className="flex items-center justify-between">

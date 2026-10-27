@@ -13,7 +13,7 @@ export default async function PlantillasPage() {
         title="Plantillas"
         description="Consulta las plantillas disponibles de tu organización."
       />
-      <div className="p-4 sm:p-6 lg:p-8">
+      <div className="page-body">
         <PlantillasTable rows={rows} userRole={auth.role} variant="consulta" />
       </div>
     </>

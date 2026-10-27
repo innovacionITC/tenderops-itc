@@ -11,7 +11,7 @@ export default async function MenuDemoPage() {
         title="Demo: ItcMenu"
         description="Ruta temporal para verificar en vivo el error de ItcMenu (no exportado en itc-frontend-base@1.1.3)."
       />
-      <div className="p-4 sm:p-6 lg:p-8">
+      <div className="page-body">
         <MenuDemoClient />
       </div>
     </>

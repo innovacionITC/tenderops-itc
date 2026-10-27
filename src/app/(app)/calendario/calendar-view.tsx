@@ -149,7 +149,7 @@ export function CalendarView({
   };
 
   return (
-    <div className="grid grid-cols-1 gap-6 p-4 sm:p-6 lg:p-8">
+    <div className="page-body grid grid-cols-1 gap-4">
       <div className="rounded-2xl border bg-card p-4 shadow-sm">
         <Calendar<CalendarEvent>
           localizer={localizer}

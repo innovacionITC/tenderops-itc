@@ -17,13 +17,13 @@ import {
   ItcModal,
 } from "@/components/itc";
 import { DetalleProcesoModal } from "./detalle-proceso-modal";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { MoneyCell, ProcessTitleCell, SecondaryCell, StageCell } from "@/components/layout/process-cells";
 import { Spinner } from "@/components/ui/spinner";
 import { LoadingOverlay } from "@/components/layout/loading-overlay";
 import { RowActionButton } from "@/components/layout/row-action-button";
 import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
-import { formatCOP, formatDate } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import type { BuscarEnVivoRow, SecopFiltros } from "@/lib/secop-shared";
 import {
   buscarEnVivoAction,
@@ -311,18 +311,14 @@ export function BusquedaEnVivoView({
       key: "entidad",
       title: "Entidad",
       width: "18%",
-      render: (r) => (
-        <span className="block truncate text-sm text-muted-foreground" title={r.entidad ?? undefined}>
-          {r.entidad ?? "—"}
-        </span>
-      ),
+      render: (r) => <SecondaryCell title={r.entidad ?? undefined}>{r.entidad ?? "—"}</SecondaryCell>,
     },
     {
       key: "secopId",
       title: "N. proceso",
       width: "10%",
       render: (r) => (
-        <span className="block truncate text-sm text-muted-foreground" title={r.secopId}>
+        <span className="block truncate font-mono text-xs text-muted-foreground" title={r.secopId}>
           {r.secopId}
         </span>
       ),
@@ -331,31 +327,19 @@ export function BusquedaEnVivoView({
       key: "objeto",
       title: "Objeto",
       width: "22%",
-      render: (r) => (
-        <span className="block truncate text-sm text-muted-foreground" title={r.objeto ?? undefined}>
-          {r.objeto ?? "—"}
-        </span>
-      ),
+      render: (r) => <ProcessTitleCell title={r.objeto} />,
     },
     {
       key: "modalidad",
       title: "Modalidad",
       width: "12%",
-      render: (r) => (
-        <span className="block truncate text-sm text-muted-foreground" title={r.modalidad ?? undefined}>
-          {r.modalidad ?? "—"}
-        </span>
-      ),
+      render: (r) => <SecondaryCell title={r.modalidad ?? undefined}>{r.modalidad ?? "—"}</SecondaryCell>,
     },
     {
       key: "estado",
       title: "Estado",
       width: "10%",
-      render: (r) => (
-        <span className="block truncate text-sm text-muted-foreground" title={r.estado ?? undefined}>
-          {r.estado ?? "—"}
-        </span>
-      ),
+      render: (r) => <StageCell label={r.estado} />,
     },
     {
       key: "fechaPublicacion",
@@ -378,7 +362,7 @@ export function BusquedaEnVivoView({
       title: "Cuantía",
       width: "8%",
       align: "right",
-      render: (r) => <span className="text-sm tabular-nums">{formatCOP(r.valor)}</span>,
+      render: (r) => <MoneyCell value={r.valor} />,
     },
     {
       key: "acciones",
@@ -421,18 +405,8 @@ export function BusquedaEnVivoView({
   ];
 
   return (
-    <div className="space-y-6">
-      {/* overflow-visible: el Card de shadcn trae overflow-hidden por defecto,
-          y el calendario de ItcDateRangePicker se posiciona con position:
-          absolute dentro de este mismo contenedor (no usa portal a
-          document.body) — sin este override, el Card le corta la grilla de
-          días y solo se ve el encabezado del mes. */}
-      <Card className="overflow-visible">
-        <CardHeader>
-          <CardTitle>Criterios de búsqueda</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <FiltrosPanel
+    <div className="space-y-3">
+      <FiltrosPanel
             campos={campos}
             valores={valoresFiltro}
             onAplicar={(v) => {
@@ -445,12 +419,11 @@ export function BusquedaEnVivoView({
             deshabilitado={isPending}
             descripcion="Define los criterios y busca directamente en SECOP."
             buscador={
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div className="sm:col-span-2">
-                  <Label className="mb-1.5">Palabras clave</Label>
+              <div className="flex flex-wrap gap-1.5">
+                <div className="min-w-52 flex-1">
                   <ItcInput
                     value={criterios.keyword}
-                    placeholder="Buscar en título y objeto…"
+                    placeholder="Palabras clave…"
                     onKeyDown={(e: React.KeyboardEvent) => {
                       if (e.key === "Enter") {
                         e.preventDefault();
@@ -462,35 +435,31 @@ export function BusquedaEnVivoView({
                     }
                   />
                 </div>
-
-                <div>
-                  <Label className="mb-1.5">Fuente</Label>
-                  <ItcInput
-                    type="select"
-                    value={criterios.dataset}
-                    onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
-                      setCriterios((c) => ({ ...c, dataset: e.target.value }))
-                    }
-                  >
-                    <option value="secop_i">SECOP I</option>
-                    <option value="secop_ii">SECOP II</option>
-                  </ItcInput>
-                </div>
+                <ItcInput
+                  type="select"
+                  className="w-32"
+                  value={criterios.dataset}
+                  onChange={(e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
+                    setCriterios((c) => ({ ...c, dataset: e.target.value }))
+                  }
+                >
+                  <option value="secop_i">SECOP I</option>
+                  <option value="secop_ii">SECOP II</option>
+                </ItcInput>
               </div>
             }
             acciones={
               <ItcButton
                 type="button"
+                className="h-8 px-2.5 text-xs"
                 onClick={() => ejecutarBusqueda(1)}
                 disabled={isPending}
               >
-                {isPending ? <Spinner className="size-3.5" /> : <Search className="h-4 w-4" />}
-                Buscar en SECOP
+                {isPending ? <Spinner className="size-3.5" /> : <Search className="h-3.5 w-3.5" />}
+                Buscar
               </ItcButton>
             }
           />
-        </CardContent>
-      </Card>
 
       {!buscada ? (
         <div className="rounded-2xl border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">
@@ -533,16 +502,17 @@ export function BusquedaEnVivoView({
               </div>
             </div>
 
-            <ItcTable
-              data={rows}
-              columns={columns}
-              rowKey={(r) => r.secopId}
-              pagination={false}
-              tableLayout="fixed"
-              striped
-              hoverable
-              stickyHeader
-            />
+            <div className="process-table">
+              <ItcTable
+                data={rows}
+                columns={columns}
+                rowKey={(r) => r.secopId}
+                pagination={false}
+                tableLayout="fixed"
+                hoverable
+                stickyHeader
+              />
+            </div>
             <div className="flex items-center justify-between">
               <ItcButton
                 type="button"

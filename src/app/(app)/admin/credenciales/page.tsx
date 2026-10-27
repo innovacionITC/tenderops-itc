@@ -13,7 +13,7 @@ export default async function CredencialesPage() {
         title="Credenciales de integración"
         description="Claves y parámetros usados por integraciones externas."
       />
-      <div className="p-4 sm:p-6 lg:p-8">
+      <div className="page-body">
         <CredentialsTable rows={rows} />
       </div>
     </>

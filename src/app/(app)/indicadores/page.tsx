@@ -44,7 +44,7 @@ export default async function IndicadoresPage({
         title="Indicadores financieros"
         description="Consulta y gestión de indicadores financieros por organización y suborganización."
       />
-      <div className="space-y-4 p-4 sm:p-6 lg:p-8">
+      <div className="page-body space-y-3">
         {error || !resultado ? (
           <IndicadoresErrorBanner />
         ) : (

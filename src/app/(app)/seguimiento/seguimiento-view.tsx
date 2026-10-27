@@ -15,14 +15,19 @@ import { StatusBadge } from "@/components/layout/status-badge";
 import { RowActionButton } from "@/components/layout/row-action-button";
 import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  MoneyCell,
+  ProcessTitleCell,
+  SecondaryCell,
+  StageCell,
+} from "@/components/layout/process-cells";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { formatCOP, formatDate, formatMilesInput, parseMilesInput } from "@/lib/format";
+import { formatDate, formatMilesInput, parseMilesInput } from "@/lib/format";
 import {
   RESULTADO_OPCIONES,
   opcionesMarcarDisponibles,
@@ -40,12 +45,6 @@ const ESTADO_LABEL: Record<ProcesoSeguimientoRow["estado"], string> = {
   en_seguimiento: "En seguimiento",
   presentado: "Presentado",
   cerrado: "Cerrado",
-};
-
-const ESTADO_TONE: Record<ProcesoSeguimientoRow["estado"], "info" | "success" | "muted"> = {
-  en_seguimiento: "info",
-  presentado: "success",
-  cerrado: "muted",
 };
 
 const ESTADO_FILTRO_OPCIONES = [
@@ -297,50 +296,33 @@ export function SeguimientoView({
       key: "entidad",
       title: "Entidad",
       width: "13%",
-      render: (r) => (
-        <span className="block truncate text-sm text-muted-foreground" title={r.entidad ?? undefined}>
-          {r.entidad ?? "—"}
-        </span>
-      ),
+      render: (r) => <SecondaryCell title={r.entidad ?? undefined}>{r.entidad ?? "—"}</SecondaryCell>,
     },
     {
       key: "objeto",
       title: "Objeto",
       width: "18%",
-      render: (r) => (
-        <span className="block truncate text-sm text-muted-foreground" title={r.objeto ?? undefined}>
-          {r.objeto ?? "—"}
-        </span>
-      ),
+      render: (r) => <ProcessTitleCell title={r.objeto} />,
     },
     {
       key: "modalidad",
       title: "Modalidad",
       width: "10%",
-      render: (r) => (
-        <span className="block truncate text-sm text-muted-foreground" title={r.modalidad ?? undefined}>
-          {r.modalidad ?? "—"}
-        </span>
-      ),
+      render: (r) => <SecondaryCell title={r.modalidad ?? undefined}>{r.modalidad ?? "—"}</SecondaryCell>,
     },
     {
       key: "titulo",
       title: "Proceso",
       width: "16%",
       render: (r) => (
-        <span className="block truncate font-medium" title={r.titulo ?? r.secopId ?? undefined}>
-          {r.titulo ?? r.secopId}
-        </span>
+        <ProcessTitleCell caption={r.secopId} title={r.titulo ?? r.secopId} />
       ),
     },
     {
       key: "valor",
       title: "Cuantía",
       width: "9%",
-      align: "right",
-      render: (r) => (
-        <span className="text-sm tabular-nums">{formatCOP(r.valor)}</span>
-      ),
+      render: (r) => <MoneyCell value={r.valor} />,
     },
     {
       key: "fechaPresentacionOferta",
@@ -358,9 +340,7 @@ export function SeguimientoView({
       title: "Estado",
       width: "11%",
       align: "center",
-      render: (r) => (
-        <StatusBadge tone={ESTADO_TONE[r.estado]}>{ESTADO_LABEL[r.estado]}</StatusBadge>
-      ),
+      render: (r) => <StageCell label={ESTADO_LABEL[r.estado]} />,
     },
     {
       key: "resultado",
@@ -431,68 +411,53 @@ export function SeguimientoView({
   ];
 
   return (
-    <div className="space-y-6">
-      <Card className="overflow-visible">
-        <CardHeader className="flex flex-row items-center justify-between gap-4">
-          <CardTitle>Filtros</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <FiltrosPanel
-            campos={campos}
-            valores={valoresFiltro}
-            onAplicar={aplicarFiltros}
-            onLimpiar={limpiarFiltros}
-            deshabilitado={isBuscando}
-            buscador={
-              <>
-                <Label className="mb-1.5">Buscar</Label>
-                <div className="flex gap-1.5">
-                  <ItcInput
-                    value={buscar}
-                    placeholder="Entidad u objeto…"
-                    onChange={(
-                      e: ChangeEvent<
-                        HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-                      >,
-                    ) => setBuscar(e.target.value)}
-                    onKeyDown={(e: React.KeyboardEvent) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        aplicar({ buscar });
-                      }
-                    }}
-                  />
-                  <ItcButton
-                    type="button"
-                    variant="secondary"
-                    onClick={() => aplicar({ buscar })}
-                  >
-                    <Search className="h-4 w-4" />
-                  </ItcButton>
-                </div>
-              </>
-            }
-          />
-        </CardContent>
-      </Card>
+    <div className="space-y-3">
+      <FiltrosPanel
+        campos={campos}
+        valores={valoresFiltro}
+        onAplicar={aplicarFiltros}
+        onLimpiar={limpiarFiltros}
+        deshabilitado={isBuscando}
+        buscador={
+          <div className="flex gap-1.5">
+            <ItcInput
+              value={buscar}
+              placeholder="Entidad u objeto…"
+              onChange={(
+                e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>,
+              ) => setBuscar(e.target.value)}
+              onKeyDown={(e: React.KeyboardEvent) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  aplicar({ buscar });
+                }
+              }}
+            />
+            <ItcButton type="button" variant="secondary" onClick={() => aplicar({ buscar })}>
+              <Search className="h-4 w-4" />
+            </ItcButton>
+          </div>
+        }
+      />
 
       {procesos.length === 0 ? (
         <div className="rounded-2xl border border-dashed bg-muted/30 p-6 text-center text-sm text-muted-foreground">
           No hay procesos en seguimiento. Promueve procesos desde Consulta SECOP.
         </div>
       ) : (
-        <ItcTable
-          data={procesos}
-          columns={columns}
-          rowKey={(r) => r.id}
-          pagination={false}
-          tableLayout="fixed"
-          responsiveStrategy="cards"
-          striped
-          hoverable
-          stickyHeader
-          ariaLabel="Tabla de procesos en seguimiento"
-        />
+        <div className="process-table">
+          <ItcTable
+            data={procesos}
+            columns={columns}
+            rowKey={(r) => r.id}
+            pagination={false}
+            tableLayout="fixed"
+            responsiveStrategy="cards"
+            hoverable
+            stickyHeader
+            ariaLabel="Tabla de procesos en seguimiento"
+          />
+        </div>
       )}
 
       <ItcModal
