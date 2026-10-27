@@ -21,7 +21,7 @@ export function StatCard({
   tone?: Tone;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border bg-card p-4 shadow-sm transition-shadow hover:shadow-md">
+    <div className="crystal-surface relative overflow-hidden rounded-3xl p-4 transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5">
       <span
         className={`absolute top-3 bottom-3 left-0 w-1 rounded-r-full ${ACCENT_CLASSES[tone]}`}
       />
