@@ -15,7 +15,7 @@ export default async function LoginPage({
   const { error } = await searchParams;
 
   return (
-    <div className="flex min-h-screen flex-1 items-center justify-center bg-muted/30 px-4 py-12">
+    <div className="flex min-h-screen flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <Card>
           <CardHeader className="items-center text-center">
