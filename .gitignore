@@ -43,4 +43,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 plan-backend-dotnet.md
-/docs
+/docs/*
+!/docs/architecture/
