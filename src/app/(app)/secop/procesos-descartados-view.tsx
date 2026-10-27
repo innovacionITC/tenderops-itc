@@ -14,9 +14,8 @@ import {
 import { DetalleProcesoModal } from "./detalle-proceso-modal";
 import { Label } from "@/components/ui/label";
 import {
-  EntityCell,
   MoneyCell,
-  ProcessTitleCell,
+  ProcessIdentityCell,
   SecondaryCell,
 } from "@/components/layout/process-cells";
 import { Spinner } from "@/components/ui/spinner";
@@ -25,7 +24,7 @@ import { LoadingOverlay } from "@/components/layout/loading-overlay";
 import { RowActionButton } from "@/components/layout/row-action-button";
 import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
 import { formatFechaCorta } from "@/lib/format";
-import type { Paginado, ProcesoRow, SecopFiltros } from "@/lib/secop-shared";
+import { datasetLabels, type Paginado, type ProcesoRow, type SecopFiltros } from "@/lib/secop-shared";
 import { retomarProceso } from "./actions";
 
 const PAGE_SIZES = [10, 25, 50, 100] as const;
@@ -231,26 +230,18 @@ export function ProcesosDescartadosView({
 
   const columns: TableColumn<ProcesoRow>[] = [
     {
-      key: "secopId",
-      title: "N° proceso",
-      width: "11%",
+      key: "proceso",
+      title: "Proceso",
+      width: "36%",
       render: (r) => (
-        <span className="block truncate font-mono text-sm" title={r.secopId}>
-          {r.secopId}
-        </span>
+        <ProcessIdentityCell
+          identifier={r.secopId}
+          source={datasetLabels[r.dataset] ?? r.dataset}
+          title={r.objeto || r.titulo}
+          entity={r.entidad}
+          starred={r.entidadRegistrada}
+        />
       ),
-    },
-    {
-      key: "entidad",
-      title: "Entidad",
-      width: "15%",
-      render: (r) => <EntityCell name={r.entidad} starred={r.entidadRegistrada} />,
-    },
-    {
-      key: "objeto",
-      title: "Objeto",
-      width: "17%",
-      render: (r) => <ProcessTitleCell title={r.objeto} />,
     },
     {
       key: "modalidad",
