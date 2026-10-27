@@ -27,9 +27,8 @@ import { LoadingOverlay } from "@/components/layout/loading-overlay";
 import { RowActionButton } from "@/components/layout/row-action-button";
 import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
 import {
-  EntityCell,
   MoneyCell,
-  ProcessTitleCell,
+  ProcessIdentityCell,
   SecondaryCell,
   SemaforoMeter,
   StageCell,
@@ -37,6 +36,7 @@ import {
 import { formatFechaCorta } from "@/lib/format";
 import {
   SEMAFOROS,
+  datasetLabels,
   semaforoLabels,
   type Paginado,
   type ProcesoRow,
@@ -341,16 +341,18 @@ export function ProcesosSecopView({
       ),
     },
     {
-      key: "entidad",
-      title: "Entidad",
-      width: "17%",
-      render: (r) => <EntityCell name={r.entidad} starred={r.entidadRegistrada} />,
-    },
-    {
-      key: "objeto",
-      title: "Objeto",
-      width: "18%",
-      render: (r) => <ProcessTitleCell title={r.objeto} />,
+      key: "proceso",
+      title: "Proceso",
+      width: "34%",
+      render: (r) => (
+        <ProcessIdentityCell
+          identifier={r.secopId}
+          source={datasetLabels[r.dataset] ?? r.dataset}
+          title={r.objeto || r.titulo}
+          entity={r.entidad}
+          starred={r.entidadRegistrada}
+        />
+      ),
     },
     {
       key: "modalidad",

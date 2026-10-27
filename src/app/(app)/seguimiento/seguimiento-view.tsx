@@ -17,7 +17,7 @@ import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components
 import { Label } from "@/components/ui/label";
 import {
   MoneyCell,
-  ProcessTitleCell,
+  ProcessIdentityCell,
   SecondaryCell,
   StageCell,
 } from "@/components/layout/process-cells";
@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDate, formatMilesInput, parseMilesInput } from "@/lib/format";
+import { datasetLabels } from "@/lib/secop-shared";
 import {
   RESULTADO_OPCIONES,
   opcionesMarcarDisponibles,
@@ -293,30 +294,23 @@ export function SeguimientoView({
 
   const columns: TableColumn<ProcesoSeguimientoRow>[] = [
     {
-      key: "entidad",
-      title: "Entidad",
-      width: "13%",
-      render: (r) => <SecondaryCell title={r.entidad ?? undefined}>{r.entidad ?? "—"}</SecondaryCell>,
-    },
-    {
-      key: "objeto",
-      title: "Objeto",
-      width: "18%",
-      render: (r) => <ProcessTitleCell title={r.objeto} />,
+      key: "proceso",
+      title: "Proceso",
+      width: "36%",
+      render: (r) => (
+        <ProcessIdentityCell
+          identifier={r.secopId}
+          source={r.dataset ? (datasetLabels[r.dataset] ?? r.dataset) : null}
+          title={r.objeto || r.titulo}
+          entity={r.entidad}
+        />
+      ),
     },
     {
       key: "modalidad",
       title: "Modalidad",
-      width: "10%",
+      width: "12%",
       render: (r) => <SecondaryCell title={r.modalidad ?? undefined}>{r.modalidad ?? "—"}</SecondaryCell>,
-    },
-    {
-      key: "titulo",
-      title: "Proceso",
-      width: "16%",
-      render: (r) => (
-        <ProcessTitleCell caption={r.secopId} title={r.titulo ?? r.secopId} />
-      ),
     },
     {
       key: "valor",

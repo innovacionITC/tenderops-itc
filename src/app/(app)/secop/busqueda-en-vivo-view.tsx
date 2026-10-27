@@ -18,13 +18,13 @@ import {
 } from "@/components/itc";
 import { DetalleProcesoModal } from "./detalle-proceso-modal";
 import { Label } from "@/components/ui/label";
-import { MoneyCell, ProcessTitleCell, SecondaryCell, StageCell } from "@/components/layout/process-cells";
+import { MoneyCell, ProcessIdentityCell, SecondaryCell, StageCell } from "@/components/layout/process-cells";
 import { Spinner } from "@/components/ui/spinner";
 import { LoadingOverlay } from "@/components/layout/loading-overlay";
 import { RowActionButton } from "@/components/layout/row-action-button";
 import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
 import { formatDate } from "@/lib/format";
-import type { BuscarEnVivoRow, SecopFiltros } from "@/lib/secop-shared";
+import { datasetLabels, type BuscarEnVivoRow, type SecopFiltros } from "@/lib/secop-shared";
 import {
   buscarEnVivoAction,
   promoverProcesoEnVivo,
@@ -308,26 +308,17 @@ export function BusquedaEnVivoView({
 
   const columns: TableColumn<BuscarEnVivoRow>[] = [
     {
-      key: "entidad",
-      title: "Entidad",
-      width: "18%",
-      render: (r) => <SecondaryCell title={r.entidad ?? undefined}>{r.entidad ?? "—"}</SecondaryCell>,
-    },
-    {
-      key: "secopId",
-      title: "N. proceso",
-      width: "10%",
+      key: "proceso",
+      title: "Proceso",
+      width: "40%",
       render: (r) => (
-        <span className="block truncate font-mono text-xs text-muted-foreground" title={r.secopId}>
-          {r.secopId}
-        </span>
+        <ProcessIdentityCell
+          identifier={r.secopId}
+          source={datasetLabels[criterios.dataset] ?? criterios.dataset}
+          title={r.objeto || r.titulo}
+          entity={r.entidad}
+        />
       ),
-    },
-    {
-      key: "objeto",
-      title: "Objeto",
-      width: "22%",
-      render: (r) => <ProcessTitleCell title={r.objeto} />,
     },
     {
       key: "modalidad",

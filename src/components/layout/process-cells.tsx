@@ -6,6 +6,44 @@ import { SemaforoBadge, esColorSemaforo, semaforoEstilos } from "@/app/(app)/sec
 import { semaforoLabels } from "@/lib/secop-shared";
 import { cn } from "@/lib/utils";
 
+export function ProcessIdentityCell({
+  identifier,
+  source,
+  title,
+  entity,
+  starred,
+}: {
+  identifier?: string | null;
+  source?: string | null;
+  title: string | null | undefined;
+  entity?: string | null;
+  starred?: boolean;
+}) {
+  const caption = [identifier, source].filter(Boolean).join(" · ");
+  return (
+    <div className="min-w-0 py-0.5">
+      {caption && (
+        <div className="truncate text-[11px] font-medium tracking-wide text-sky-700/80" title={caption}>
+          {caption}
+        </div>
+      )}
+      <div className="line-clamp-2 text-sm leading-snug font-semibold text-foreground" title={title ?? undefined}>
+        {title || "—"}
+      </div>
+      <div className="mt-0.5 flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+        {starred && (
+          <span title="Entidad registrada en Administración" className="shrink-0">
+            <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+          </span>
+        )}
+        <span className="truncate" title={entity ?? undefined}>
+          {entity || "—"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function ProcessTitleCell({
   caption,
   title,
