@@ -15,6 +15,8 @@ export async function getDashboard() {
       followed: Number(data.counts.followed),
       upcoming7: Number(data.counts.upcoming7),
       marketStudies: Number(data.counts.marketStudies),
+      pendingTasks: Number(data.counts.pendingTasks),
+      overdueTasks: Number(data.counts.overdueTasks),
     },
     upcoming: data.upcoming.map((p) => ({
       id: p.id,

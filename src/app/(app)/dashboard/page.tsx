@@ -7,39 +7,59 @@ import { formatCOP, formatDate } from "@/lib/format";
 
 export default async function DashboardPage() {
   const [data, powerBiUrl] = await Promise.all([getDashboard(), getPowerBiEmbedUrl()]);
+  const presentedValue = data.presented.reduce((sum, process) => {
+    const value = Number(process.estimatedValue);
+    return sum + (Number.isFinite(value) ? value : 0);
+  }, 0);
+  const followRate =
+    data.counts.total > 0 ? Math.round((data.counts.followed / data.counts.total) * 100) : null;
 
   return (
     <>
       <PageHeader
-        title="Dashboard ejecutivo"
-        description="Resumen general de la operación licitatoria de Intelecto y xRM"
+        title="Dashboard"
+        description="Operación licitatoria de Intelecto y xRM"
       />
-      <div className="space-y-6 p-4 sm:p-6 lg:p-8">
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+      <div className="space-y-4 p-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
           <StatCard label="Procesos detectados" value={data.counts.total} tone="info" />
-          <StatCard label="En seguimiento" value={data.counts.followed} tone="info" />
+          <StatCard
+            label="En seguimiento"
+            value={data.counts.followed}
+            hint={followRate == null ? undefined : `${followRate}% de los detectados`}
+            tone="info"
+          />
           <StatCard
             label="Próximos a presentarse (7 días)"
             value={data.counts.upcoming7}
             tone="warning"
           />
           <StatCard label="Estudios de mercado" value={data.counts.marketStudies} tone="warning" />
+          <StatCard label="Tareas pendientes" value={data.counts.pendingTasks} tone="default" />
+          <StatCard
+            label="Tareas vencidas"
+            value={data.counts.overdueTasks}
+            tone={data.counts.overdueTasks > 0 ? "danger" : "success"}
+          />
+          <StatCard
+            label="Presentados en el tablero"
+            value={data.presented.length}
+            hint="Procesos del listado inferior"
+          />
+          <StatCard
+            label="Valor estimado presentado"
+            value={formatCOP(presentedValue)}
+            hint="Suma del listado de presentados"
+          />
         </div>
 
-        <section className="rounded-2xl border bg-card p-5 shadow-sm">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl border text-sky-600">
-                <BarChart3 className="h-4 w-4" />
+        {powerBiUrl && (
+          <section className="rounded-2xl border bg-card p-4 shadow-sm">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4 text-sky-600" />
+                <h2 className="text-sm font-semibold">Reporte Power BI</h2>
               </div>
-              <div>
-                <h2 className="text-base leading-tight font-semibold">Reporte Power BI</h2>
-                <p className="text-xs text-muted-foreground">
-                  Indicadores en vivo del área comercial
-                </p>
-              </div>
-            </div>
-            {powerBiUrl && (
               <a
                 href={powerBiUrl}
                 target="_blank"
@@ -48,10 +68,7 @@ export default async function DashboardPage() {
               >
                 Abrir en pantalla completa <ExternalLink className="h-3.5 w-3.5" />
               </a>
-            )}
-          </div>
-
-          {powerBiUrl ? (
+            </div>
             <div className="overflow-hidden rounded-xl border bg-background">
               <iframe
                 title="Reporte Power BI"
@@ -60,17 +77,8 @@ export default async function DashboardPage() {
                 allowFullScreen
               />
             </div>
-          ) : (
-            <div className="rounded-xl border border-dashed bg-muted/30 p-8 text-center text-sm text-muted-foreground">
-              <BarChart3 className="mx-auto mb-2 h-8 w-8 opacity-50" />
-              <p className="font-medium text-foreground">Reporte aún no configurado</p>
-              <p className="mt-1">
-                El administrador puede definir la URL del reporte Power BI en{" "}
-                <span className="font-mono text-xs">Administración → POWERBI_EMBED_URL</span>.
-              </p>
-            </div>
-          )}
-        </section>
+          </section>
+        )}
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
