@@ -24,7 +24,7 @@ export function AdminNav({ role }: { role: AppRole | null }) {
             <Link
               key={tab.href}
               href={tab.href}
-              className={`border-b-2 px-3 py-3 text-sm whitespace-nowrap transition-colors ${
+              className={`border-b-2 px-3 py-2 text-sm whitespace-nowrap transition-colors ${
                 active
                   ? "border-primary font-medium text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground"
