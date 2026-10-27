@@ -215,7 +215,7 @@ export function CiudadesTable({
                 value={departamentoId}
                 onChange={(e) => { setDepartamentoId(e.target.value); clearFieldError("departamentoId"); }}
                 aria-invalid={!!fieldErrors.departamentoId}
-                className="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm transition-colors outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 aria-invalid:border-destructive dark:bg-input/30"
+                className="crystal-field h-9 w-full min-w-0 px-3 py-1 text-sm outline-none aria-invalid:border-destructive"
               >
                 <option value="" disabled>
                   Selecciona un departamento
