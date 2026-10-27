@@ -11,15 +11,13 @@ import {
   ItcInput,
   ItcButton,
 } from "@/components/itc";
-import { StatusBadge } from "@/components/layout/status-badge";
 import { RowActionButton } from "@/components/layout/row-action-button";
 import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
 import { Label } from "@/components/ui/label";
 import {
   MoneyCell,
+  ProcessFactsCell,
   ProcessIdentityCell,
-  SecondaryCell,
-  StageCell,
 } from "@/components/layout/process-cells";
 import {
   DropdownMenu,
@@ -27,7 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { formatDate, formatMilesInput, parseMilesInput } from "@/lib/format";
+import { formatMilesInput, parseMilesInput } from "@/lib/format";
 import { datasetLabels } from "@/lib/secop-shared";
 import {
   RESULTADO_OPCIONES,
@@ -296,61 +294,36 @@ export function SeguimientoView({
     {
       key: "proceso",
       title: "Proceso",
-      width: "36%",
+      width: "48%",
       render: (r) => (
-        <ProcessIdentityCell
-          identifier={r.secopId}
-          source={r.dataset ? (datasetLabels[r.dataset] ?? r.dataset) : null}
-          title={r.objeto || r.titulo}
-          entity={r.entidad}
+        <div className="flex items-start justify-between gap-4">
+          <ProcessIdentityCell
+            identifier={r.secopId}
+            source={r.dataset ? (datasetLabels[r.dataset] ?? r.dataset) : null}
+            title={r.objeto || r.titulo}
+            entity={r.entidad}
+          />
+          <div className="shrink-0">
+            <MoneyCell value={r.valor} />
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "detalle",
+      title: "Detalle",
+      width: "34%",
+      render: (r) => (
+        <ProcessFactsCell
+          modalidad={r.modalidad}
+          estado={
+            r.resultado
+              ? `${ESTADO_LABEL[r.estado]} · ${RESULTADO_LABELS[r.resultado] ?? r.resultado}`
+              : ESTADO_LABEL[r.estado]
+          }
+          fase={r.fase}
         />
       ),
-    },
-    {
-      key: "modalidad",
-      title: "Modalidad",
-      width: "12%",
-      render: (r) => <SecondaryCell title={r.modalidad ?? undefined}>{r.modalidad ?? "—"}</SecondaryCell>,
-    },
-    {
-      key: "valor",
-      title: "Cuantía",
-      width: "9%",
-      render: (r) => <MoneyCell value={r.valor} />,
-    },
-    {
-      key: "fechaPresentacionOferta",
-      title: "Presentación",
-      width: "9%",
-      align: "center",
-      render: (r) => (
-        <span className="block truncate text-sm text-muted-foreground" title={r.fechaPresentacionOferta ?? undefined}>
-          {formatDate(r.fechaPresentacionOferta)}
-        </span>
-      ),
-    },
-    {
-      key: "estado",
-      title: "Estado",
-      width: "11%",
-      align: "center",
-      render: (r) => <StageCell label={ESTADO_LABEL[r.estado]} />,
-    },
-    {
-      key: "resultado",
-      title: "Resultado",
-      width: "11%",
-      align: "center",
-      render: (r) => {
-        if (!r.resultado) return <span className="text-muted-foreground">—</span>;
-        const tone =
-          r.resultado === "presentado" || r.resultado === "adjudicado"
-            ? "success"
-            : r.resultado === "no_adjudicado"
-              ? "danger"
-              : "muted";
-        return <StatusBadge tone={tone}>{RESULTADO_LABELS[r.resultado] ?? r.resultado}</StatusBadge>;
-      },
     },
     {
       key: "acciones",

@@ -93,6 +93,40 @@ export function EntityCell({
   );
 }
 
+export function ProcessFactsCell({
+  modalidad,
+  estado,
+  fase,
+  detectado,
+}: {
+  modalidad?: string | null;
+  estado?: ReactNode;
+  fase?: string | null;
+  detectado?: string | null;
+}) {
+  const rows: { label: string; value: ReactNode }[] = [
+    { label: "Modalidad", value: modalidad || "—" },
+    { label: "Estado", value: estado || "—" },
+    { label: "Fase", value: fase || "—" },
+  ];
+  if (detectado !== undefined) {
+    rows.push({ label: "Detectado", value: detectado || "—" });
+  }
+
+  return (
+    <dl className="space-y-0.5 text-xs leading-snug">
+      {rows.map((row) => (
+        <div key={row.label} className="flex min-w-0 gap-1.5">
+          <dt className="w-16 shrink-0 text-muted-foreground">{row.label}</dt>
+          <dd className="min-w-0 truncate font-medium text-foreground" title={typeof row.value === "string" ? row.value : undefined}>
+            {row.value}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
+
 export function MoneyCell({
   value,
   hint,

@@ -15,15 +15,15 @@ import { DetalleProcesoModal } from "./detalle-proceso-modal";
 import { Label } from "@/components/ui/label";
 import {
   MoneyCell,
+  ProcessFactsCell,
   ProcessIdentityCell,
-  SecondaryCell,
 } from "@/components/layout/process-cells";
 import { Spinner } from "@/components/ui/spinner";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { LoadingOverlay } from "@/components/layout/loading-overlay";
 import { RowActionButton } from "@/components/layout/row-action-button";
 import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
-import { formatFechaCorta } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import { datasetLabels, type Paginado, type ProcesoRow, type SecopFiltros } from "@/lib/secop-shared";
 import { retomarProceso } from "./actions";
 
@@ -232,54 +232,42 @@ export function ProcesosDescartadosView({
     {
       key: "proceso",
       title: "Proceso",
-      width: "36%",
+      width: "48%",
       render: (r) => (
-        <ProcessIdentityCell
-          identifier={r.secopId}
-          source={datasetLabels[r.dataset] ?? r.dataset}
-          title={r.objeto || r.titulo}
-          entity={r.entidad}
-          starred={r.entidadRegistrada}
+        <div className="flex items-start justify-between gap-4">
+          <ProcessIdentityCell
+            identifier={r.secopId}
+            source={datasetLabels[r.dataset] ?? r.dataset}
+            title={r.objeto || r.titulo}
+            entity={r.entidad}
+            starred={r.entidadRegistrada}
+          />
+          <div className="shrink-0">
+            <MoneyCell value={r.valor} />
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "detalle",
+      title: "Detalle",
+      width: "32%",
+      render: (r) => (
+        <ProcessFactsCell
+          modalidad={r.modalidad}
+          estado={<StatusBadge tone="muted">Descartado</StatusBadge>}
+          fase={r.fase}
+          detectado={formatDateTime(r.detectadoEl)}
         />
       ),
     },
     {
-      key: "modalidad",
-      title: "Modalidad",
-      width: "11%",
-      render: (r) => <SecondaryCell title={r.modalidad ?? undefined}>{r.modalidad ?? "—"}</SecondaryCell>,
-    },
-    {
-      key: "estado",
-      title: "Estado",
-      width: "9%",
-      align: "center",
-      render: () => <StatusBadge tone="muted">Descartado</StatusBadge>,
-    },
-    {
       key: "motivoDescarte",
-      title: "Motivo del descarte",
-      width: "13%",
+      title: "Motivo",
+      width: "14%",
       render: (r) => (
         <span className="block truncate text-sm text-muted-foreground" title={r.motivoDescarte ?? undefined}>
           {r.motivoDescarte ?? "—"}
-        </span>
-      ),
-    },
-    {
-      key: "valor",
-      title: "Cuantía",
-      width: "10%",
-      align: "right",
-      render: (r) => <MoneyCell value={r.valor} />,
-    },
-    {
-      key: "descartadoEl",
-      title: "Descartado",
-      width: "9%",
-      render: (r) => (
-        <span className="whitespace-nowrap text-sm text-muted-foreground">
-          {r.descartadoEl ? formatFechaCorta(r.descartadoEl) : "—"}
         </span>
       ),
     },
