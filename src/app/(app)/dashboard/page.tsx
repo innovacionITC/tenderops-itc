@@ -35,12 +35,6 @@ export default async function DashboardPage() {
             tone="warning"
           />
           <StatCard label="Estudios de mercado" value={data.counts.marketStudies} tone="warning" />
-          <StatCard label="Tareas pendientes" value={data.counts.pendingTasks} tone="default" />
-          <StatCard
-            label="Tareas vencidas"
-            value={data.counts.overdueTasks}
-            tone={data.counts.overdueTasks > 0 ? "danger" : "success"}
-          />
           <StatCard
             label="Presentados en el tablero"
             value={data.presented.length}

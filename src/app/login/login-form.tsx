@@ -2,10 +2,14 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
-import { Building2, Lock, Mail } from "lucide-react";
+import { Building2, Lock, Mail, ShieldCheck } from "lucide-react";
 import { ItcButton, ItcInput } from "@/components/itc";
 import { Label } from "@/components/ui/label";
 import { login, signInWithAzure, type LoginState } from "./actions";
+
+export function LoginMark() {
+  return <ShieldCheck className="h-4 w-4 text-primary" />;
+}
 
 export function LoginForm({ initialError }: { initialError?: string }) {
   const initialState: LoginState = { error: initialError };

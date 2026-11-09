@@ -1,6 +1,5 @@
-import { ShieldCheck } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoginForm } from "./login-form";
+import { LoginForm, LoginMark } from "./login-form";
 
 export default async function LoginPage({
   searchParams,
@@ -20,7 +19,7 @@ export default async function LoginPage({
         <Card>
           <CardHeader className="items-center text-center">
             <div className="mb-2 inline-flex h-10 w-10 items-center justify-center rounded-full border bg-background">
-              <ShieldCheck className="h-4 w-4 text-primary" />
+              <LoginMark />
             </div>
             <CardTitle>Acceso privado</CardTitle>
             <CardDescription>Intelecto · xRM — sistema de uso interno</CardDescription>
