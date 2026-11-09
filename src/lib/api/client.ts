@@ -152,16 +152,27 @@ async function fetchWithAuth(path: string, options: ApiFetchOptions): Promise<Re
 
   const isFormData = body instanceof FormData;
 
-  const doFetch = (accessToken: string | null) =>
-    fetch(url, {
-      method,
-      headers: {
-        ...(body !== undefined && !isFormData ? { "Content-Type": "application/json" } : {}),
-        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
-      },
-      body: body !== undefined ? (isFormData ? body : JSON.stringify(body)) : undefined,
-      cache: "no-store",
-    });
+  const doFetch = async (accessToken: string | null) => {
+    try {
+      return await fetch(url, {
+        method,
+        headers: {
+          ...(body !== undefined && !isFormData ? { "Content-Type": "application/json" } : {}),
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+        },
+        body: body !== undefined ? (isFormData ? body : JSON.stringify(body)) : undefined,
+        cache: "no-store",
+      });
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : "error de red";
+      const cause =
+        error instanceof Error && error.cause instanceof Error ? ` (${error.cause.message})` : "";
+      throw new ApiError(503, {
+        status: 503,
+        detail: `No se pudo conectar con la API (${serverEnv.TENDEROPS_API_URL}). ${reason}${cause}`,
+      });
+    }
+  };
 
   const { accessToken, refreshToken } = await currentTokens();
   let res = await doFetch(accessToken);
