@@ -137,7 +137,7 @@ export function CrystalRail({
                 >
                   <span className="crystal-rail-label">
                     {item.label}
-                    {item.comingSoon && <span className="crystal-rail-soon">Pronto</span>}
+                    {item.comingSoon && <span className="crystal-rail-soon">Pronto...</span>}
                   </span>
                   <Icon className="size-[1.15rem] shrink-0" aria-hidden />
                 </button>
