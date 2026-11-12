@@ -76,7 +76,7 @@ export default async function PerfilesPage({
     <>
       <PageHeader
         title="Banco de perfiles"
-        description="Talento de la organización activa, persistido en Supabase. La hoja de vida se arma con estudios, experiencias y certificaciones seleccionados."
+        description="Talento de la organización activa, persistido por el API en Supabase. La hoja de vida se arma con estudios, experiencias y certificaciones seleccionados."
       />
       <div className="page-body">
         <PerfilesView

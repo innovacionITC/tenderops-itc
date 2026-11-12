@@ -260,7 +260,7 @@ export function PerfilesView({
             <ItcInput
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Buscar en Supabase: nombre, profesión, tecnología o certificación"
+              placeholder="Buscar: nombre, profesión, tecnología o certificación"
               className="pl-9"
               aria-label="Buscar profesionales"
             />

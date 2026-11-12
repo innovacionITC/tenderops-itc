@@ -1,25 +1,22 @@
 import { requireAuth } from "@/lib/auth/session";
-import { PerfilesError } from "@/lib/perfiles/errors";
-import { professionalService } from "@/lib/perfiles/server";
+import { apiFetchRaw } from "@/lib/api/client";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ professionalId: string; resumeId: string }> },
 ) {
-  const auth = await requireAuth();
+  await requireAuth();
   const { professionalId, resumeId } = await params;
-  try {
-    const file = await professionalService().downloadResume(auth, professionalId, resumeId);
-    return new Response(Uint8Array.from(file.bytes), {
-      status: 200,
-      headers: {
-        "content-type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "content-disposition": `attachment; filename="${file.fileName}"`,
-      },
+  const upstream = await apiFetchRaw(`/perfiles/${professionalId}/hv/${resumeId}/archivo`);
+  if (!upstream.ok) {
+    return new Response(upstream.status === 404 ? "Hoja de vida no encontrada" : "No se pudo descargar", {
+      status: upstream.status,
     });
-  } catch (error) {
-    const status = error instanceof PerfilesError ? error.status : 500;
-    const message = error instanceof Error ? error.message : "No se pudo descargar";
-    return new Response(message, { status });
   }
+  const headers = new Headers();
+  const contentType = upstream.headers.get("content-type");
+  if (contentType) headers.set("content-type", contentType);
+  const contentDisposition = upstream.headers.get("content-disposition");
+  if (contentDisposition) headers.set("content-disposition", contentDisposition);
+  return new Response(upstream.body, { status: 200, headers });
 }

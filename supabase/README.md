@@ -1,16 +1,14 @@
 # Migraciones de Supabase
 
-## Banco de perfiles
+La tabla `professional_profiles` y el bucket `professional-documents` los consume el **API .NET**, no Next.js.
 
-1. Abra el **SQL Editor** del proyecto Supabase de TenderOps.
-2. Pegue y ejecute `migrations/20261112_professional_profiles.sql`.
-3. Verifique:
+1. SQL Editor: ejecutar `migrations/20261112_professional_profiles.sql` (si aún no está).
+2. Verificar:
 
 ```sql
 SELECT to_regclass('public.professional_profiles');
 SELECT id, name, public FROM storage.buckets WHERE id = 'professional-documents';
 ```
 
-Hasta que `to_regclass` devuelva `public.professional_profiles`, el módulo `/perfiles` mostrará el error de tabla inexistente. No se afirma que la tabla exista en un proyecto concreto si no se ha comprobado.
-
-Variables del BFF (solo servidor): `DATABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `NEXT_PUBLIC_SUPABASE_URL`. Documentación: `docs/BANCO_PERFILES.md`.
+3. Confirmar que tenderops-api ya tiene `DATABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY`. No las copie al frontend.
+4. Implementar `/perfiles` en el API. Contrato: `docs/architecture/perfiles-api-contract.md`.

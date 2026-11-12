@@ -340,7 +340,7 @@ export function createProfessionalService(
       requireWrite(auth);
       const row = await load(auth, id);
       if (!storage.configured()) {
-        throw new PerfilesError(503, "storage_unconfigured", "Storage no está configurado para guardar soportes.");
+        throw new PerfilesError(503, "storage_unconfigured", "El API no pudo guardar el soporte en Storage.");
       }
       const attachmentId = newId();
       const path = `${auth.activeOrganizationId}/${id}/soportes/${attachmentId}-${file.name}`;
@@ -521,7 +521,7 @@ export function createProfessionalService(
         throw new PerfilesError(
           503,
           "storage_unconfigured",
-          "No se puede guardar el DOCX: configure SUPABASE_SERVICE_ROLE_KEY y el bucket professional-documents.",
+          "El API no pudo guardar el DOCX. Compruebe que tenderops-api tenga Storage y el bucket professional-documents.",
         );
       }
       const path = `${auth.activeOrganizationId}/${row.id}/hv/${resumeId}-v${version}.docx`;
@@ -644,7 +644,7 @@ export function createProfessionalService(
     async saveEntityTemplate(auth, bytes) {
       requireWrite(auth);
       if (!storage.configured()) {
-        throw new PerfilesError(503, "storage_unconfigured", "Storage no está configurado.");
+        throw new PerfilesError(503, "storage_unconfigured", "El API no pudo guardar la plantilla de entidad.");
       }
       const path = `${auth.activeOrganizationId}/_templates/entidad.docx`;
       await storage.upload(

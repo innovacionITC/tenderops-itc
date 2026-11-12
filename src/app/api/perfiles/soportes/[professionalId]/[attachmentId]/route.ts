@@ -1,31 +1,22 @@
 import { requireAuth } from "@/lib/auth/session";
-import { PerfilesError } from "@/lib/perfiles/errors";
-import { professionalService } from "@/lib/perfiles/server";
-import { createSupabaseStorage } from "@/lib/perfiles/supabase-storage";
+import { apiFetchRaw } from "@/lib/api/client";
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ professionalId: string; attachmentId: string }> },
 ) {
-  const auth = await requireAuth();
+  await requireAuth();
   const { professionalId, attachmentId } = await params;
-  try {
-    const record = await professionalService().get(auth, professionalId);
-    const attachment = record.attachments.find((item) => item.id === attachmentId);
-    if (!attachment?.storagePath) {
-      return new Response("Soporte no encontrado", { status: 404 });
-    }
-    const bytes = await createSupabaseStorage().download(attachment.storagePath);
-    return new Response(Uint8Array.from(bytes), {
-      status: 200,
-      headers: {
-        "content-type": "application/octet-stream",
-        "content-disposition": `attachment; filename="${attachment.name}"`,
-      },
+  const upstream = await apiFetchRaw(`/perfiles/${professionalId}/soportes/${attachmentId}`);
+  if (!upstream.ok) {
+    return new Response(upstream.status === 404 ? "Soporte no encontrado" : "No se pudo descargar", {
+      status: upstream.status,
     });
-  } catch (error) {
-    const status = error instanceof PerfilesError ? error.status : 500;
-    const message = error instanceof Error ? error.message : "No se pudo descargar";
-    return new Response(message, { status });
   }
+  const headers = new Headers();
+  const contentType = upstream.headers.get("content-type");
+  if (contentType) headers.set("content-type", contentType);
+  const contentDisposition = upstream.headers.get("content-disposition");
+  if (contentDisposition) headers.set("content-disposition", contentDisposition);
+  return new Response(upstream.body, { status: 200, headers });
 }

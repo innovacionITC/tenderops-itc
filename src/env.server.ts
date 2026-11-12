@@ -10,7 +10,8 @@ const serverEnvSchema = z.object({
   MICROSOFT_TENANT_ID: z.string().min(1).optional(),
   MICROSOFT_CLIENT_ID: z.string().min(1).optional(),
   MICROSOFT_CLIENT_SECRET: z.string().min(1).optional(),
-  // Banco de Perfiles: Postgres (pooler) y Storage. El resto de módulos no las usa.
+  // Legado (drizzle-kit / introspección). El runtime de perfiles no las usa:
+  // persistencia y Storage van por el API .NET (TENDEROPS_API_URL).
   DATABASE_URL: z.string().min(1).optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
 });
