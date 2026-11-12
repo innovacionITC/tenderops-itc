@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["exceljs", "postgres"],
   // Necesario para exponer `next dev` por ngrok: sin esto, Next bloquea el
   // websocket de HMR (/_next/webpack-hmr) por venir de un origin distinto al
   // host con el que arrancó el server (ver allowedDevOrigins).

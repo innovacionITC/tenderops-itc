@@ -7,6 +7,7 @@ import {
   Settings,
   ShieldCheck,
   TrendingUp,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 import { canAdmin, canApprove, canConsult, type AppRole } from "@/lib/auth/roles";
@@ -26,6 +27,7 @@ export const menuItems: MenuItem[] = [
   { href: "/secop", icon: Search, label: "Consulta SECOP" },
   { href: "/seguimiento", icon: Eye, label: "Procesos en seguimiento" },
   { href: "/plantillas", icon: FileStack, label: "Plantillas" },
+  { href: "/perfiles", icon: Users, label: "Banco de Perfiles" },
   { href: "/indicadores", icon: TrendingUp, label: "Indicadores", consultOnly: true },
   { href: "/calendario", icon: Calendar, label: "Calendario" },
   { href: "/auditoria", icon: ShieldCheck, label: "Auditoría", privilegedOnly: true },

@@ -10,7 +10,7 @@ const serverEnvSchema = z.object({
   MICROSOFT_TENANT_ID: z.string().min(1).optional(),
   MICROSOFT_CLIENT_ID: z.string().min(1).optional(),
   MICROSOFT_CLIENT_SECRET: z.string().min(1).optional(),
-  // Legado (Fase 10 los retira del todo): solo drizzle-kit los usa ya.
+  // Banco de Perfiles: Postgres (pooler) y Storage. El resto de módulos no las usa.
   DATABASE_URL: z.string().min(1).optional(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
 });

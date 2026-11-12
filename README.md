@@ -16,7 +16,8 @@ Navegador
 - El navegador no habla con Supabase ni recibe tokens.
 - Next.js pinta la UI, guarda cookies HttpOnly, llama a `requireAuth()` y habla con el API mediante `apiFetch`.
 - El API .NET autentica, autoriza, valida, audita, persiste e integra SECOP, Dynamics, Graph, Power BI, Entra y Copilot.
-- PostgreSQL vive detrás del API. Este frontend no debe consultar ni modificar la base.
+- PostgreSQL vive detrás del API para SECOP, seguimiento, plantillas y administración.
+- **Excepción:** el Banco de Perfiles persiste en `public.professional_profiles` y el bucket `professional-documents` desde este BFF (`DATABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`, solo servidor). El resto de módulos no consulta Postgres. Ver [`docs/BANCO_PERFILES.md`](./docs/BANCO_PERFILES.md).
 
 ## Stack
 
@@ -99,7 +100,7 @@ export async function miAccion(input: unknown) {
 }
 ```
 
-No importar `@/db`, `drizzle-orm`, `postgres` ni clientes de Supabase. Si el endpoint no está en OpenAPI, el cambio va primero en el API .NET y después se regenera el contrato.
+No importar `@/db` ni Drizzle para módulos que ya viven en el API .NET. El Banco de Perfiles es la excepción documentada: usa `postgres` y `@supabase/supabase-js` solo en `src/lib/perfiles/` (servidor). Si el endpoint no está en OpenAPI y no es de este módulo, el cambio va primero en el API .NET.
 
 ## Contrato OpenAPI
 
@@ -121,13 +122,13 @@ Ver `.env.local.example`. Las que usa el runtime:
 | `MICROSOFT_CLIENT_SECRET` | servidor, opcional | SSO Entra |
 | `NEXT_PUBLIC_DIRECTLINE_BASE_URL` | opcional | Cliente Direct Line del asistente IA |
 
-`DATABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `NEXT_PUBLIC_SUPABASE_*` aparecen en el ejemplo por restos de una fase anterior. **La aplicación no las usa en runtime.** `src/db` y `npm run db:pull` / `db:studio` quedan solo como introspección local, no como camino de datos.
+`DATABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` y `NEXT_PUBLIC_SUPABASE_URL` las usa el **Banco de Perfiles** en el servidor (nunca el navegador). El resto de módulos no consulta Postgres. `src/db` y `npm run db:pull` / `db:studio` siguen siendo introspección, no el camino de datos de SECOP ni seguimiento.
 
 Las credenciales de Dynamics, Graph, SECOP y Copilot se administran en el API (pantalla Administración → Credenciales). El frontend solo ve si hay valor configurado, no el secreto.
 
 ## Módulos
 
-Dashboard, Consulta SECOP, Procesos en seguimiento, Plantillas, Indicadores, Calendario, Auditoría y Administración están en el menú y hablan con el API. Ninguno está marcado como `comingSoon`.
+Dashboard, Consulta SECOP, Procesos en seguimiento, Plantillas, Banco de Perfiles, Indicadores, Calendario, Auditoría y Administración están en el menú. El Banco de Perfiles persiste en Supabase (ver [`docs/BANCO_PERFILES.md`](./docs/BANCO_PERFILES.md)); el resto habla con el API .NET. Ninguno está marcado como `comingSoon`.
 
 ## Desarrollo local
 
