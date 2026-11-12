@@ -71,7 +71,7 @@ export function ProfessionalFormSheet({
               startTransition(async () => {
                 try {
                   await savePerfilAction(form);
-                  toast.success("Profesional guardado en Supabase");
+                  toast.success("Profesional guardado");
                   onOpenChange(false);
                   setForm({
                     givenName: "",

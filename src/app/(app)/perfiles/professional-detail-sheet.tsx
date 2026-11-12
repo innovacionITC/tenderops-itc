@@ -82,7 +82,7 @@ export function ProfessionalDetailSheet({
       <SheetContent className="sm:max-w-3xl">
         <SheetTitle>{record?.professional.fullName ?? "Ficha del profesional"}</SheetTitle>
         <SheetDescription>
-          Los cambios se guardan en Supabase de la organización activa. El documento de identidad permanece enmascarado.
+          Los cambios se guardan en la organización activa a través del API. El documento de identidad permanece enmascarado.
         </SheetDescription>
         {loading && <p className="mt-4 text-sm text-muted-foreground">Cargando ficha…</p>}
         {record && (
