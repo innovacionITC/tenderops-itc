@@ -45,3 +45,4 @@ next-env.d.ts
 plan-backend-dotnet.md
 /docs/*
 !/docs/architecture/
+!/docs/BANCO_PERFILES.md

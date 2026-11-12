@@ -14,9 +14,10 @@ import { AnalisisIaTab } from "./analisis-ia-tab";
 import { MatrizCumplimientoTab } from "./matriz-cumplimiento-tab";
 import { AsistenteIaTab } from "./asistente-ia-tab";
 import { CrmTab } from "./crm-tab";
+import { EquipoTab } from "./equipo-tab";
 import { type OportunidadDocumentoRow } from "./crm-actions";
 
-type TabKey = "analisis-ia" | "asistente-ia" | "matriz-cumplimiento" | "tareas" | "crm";
+type TabKey = "analisis-ia" | "asistente-ia" | "matriz-cumplimiento" | "tareas" | "crm" | "equipo";
 
 // "presentado" no es un cierre: el proceso sigue activo mientras se conoce el
 // resultado real, por eso tiene su propio estado en vez de cerrado/en_seguimiento.
@@ -38,6 +39,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "matriz-cumplimiento", label: "Matriz de cumplimiento" },
   { key: "tareas", label: "Tareas" },
   { key: "crm", label: "CRM" },
+  { key: "equipo", label: "Equipo y HV" },
 ];
 
 type AnalisisIa = {
@@ -164,6 +166,7 @@ export function WorkspaceView({
               {t.key === "crm" && (
                 <CrmTab proceso={proceso} documentosCrm={documentosCrm} />
               )}
+              {t.key === "equipo" && <EquipoTab proceso={proceso} />}
             </div>
           ),
         }))}

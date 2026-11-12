@@ -8,11 +8,13 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
+    "test": "vitest run",
     "db:pull": "drizzle-kit pull",
     "db:studio": "drizzle-kit studio",
     "api:types": "openapi-typescript src/lib/api/openapi.json -o src/lib/api/schema.d.ts"
   },
   "dependencies": {
+    "exceljs": "^4.4.0",
     "@supabase/ssr": "^0.12.2",
     "@supabase/supabase-js": "^2.110.5",
     "class-variance-authority": "^0.7.1",
@@ -51,6 +53,7 @@
     "playwright-core": "^1.62.0",
     "prettier": "^3.9.5",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.4"
   }
 }
