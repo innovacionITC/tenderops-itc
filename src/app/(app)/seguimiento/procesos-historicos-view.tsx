@@ -3,8 +3,9 @@
 import { useState, useTransition, type ChangeEvent } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
-import { Search, ChevronRight, ArrowUpDown, ChevronLeft, ChevronRight as ChevronRightIcon, Info, RotateCcw } from "lucide-react";
+import { Search, ChevronRight, ArrowUpDown, Info, RotateCcw } from "lucide-react";
 import { ItcTable, type TableColumn, ItcInput, ItcButton, ItcModal } from "@/components/itc";
+import { TablePagination } from "@/components/layout/table-pagination";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { RowActionButton } from "@/components/layout/row-action-button";
 import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
@@ -318,8 +319,6 @@ export function ProcesosHistoricosView({
     },
   ];
 
-  const totalPaginas = Math.max(Math.ceil(procesos.total / procesos.pageSize), 1);
-
   return (
     <div className="space-y-3">
       <FiltrosPanel
@@ -389,29 +388,13 @@ export function ProcesosHistoricosView({
           </div>
         )}
 
-        {totalPaginas > 1 && (
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
-              Página {procesos.page} de {totalPaginas}
-            </span>
-            <div className="flex gap-1">
-              <ItcButton
-                size="sm"
-                disabled={procesos.page <= 1 || isPending}
-                onClick={() => aplicar({ page: procesos.page - 1 } as Partial<FiltrosState & { page: number }>)}
-              >
-                <ChevronLeft className="h-4 w-4" /> Anterior
-              </ItcButton>
-              <ItcButton
-                size="sm"
-                disabled={procesos.page >= totalPaginas || isPending}
-                onClick={() => aplicar({ page: procesos.page + 1 } as Partial<FiltrosState & { page: number }>)}
-              >
-                Siguiente <ChevronRightIcon className="h-4 w-4" />
-              </ItcButton>
-            </div>
-          </div>
-        )}
+        <TablePagination
+          page={procesos.page}
+          pageSize={procesos.pageSize}
+          totalItems={procesos.total}
+          disabled={isPending}
+          onPageChange={(next) => aplicar({ page: next })}
+        />
       </div>
 
       <DetalleProcesoHistoricoModal

@@ -2,8 +2,9 @@
 
 import { useState, useTransition, type ChangeEvent } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { ArrowUpDown, ChevronLeft, ChevronRight, Info } from "lucide-react";
-import { ItcTable, type TableColumn, ItcInput, ItcButton } from "@/components/itc";
+import { ArrowUpDown, Info } from "lucide-react";
+import { ItcTable, type TableColumn, ItcInput } from "@/components/itc";
+import { TablePagination } from "@/components/layout/table-pagination";
 import { StatusBadge } from "@/components/layout/status-badge";
 import { RowActionButton } from "@/components/layout/row-action-button";
 import { FiltrosPanel, type CampoFiltro, type ValoresFiltro } from "@/components/layout/filtros-panel";
@@ -278,8 +279,6 @@ export function AuditoriaView({
     },
   ];
 
-  const totalPaginas = Math.max(Math.ceil(eventos.total / eventos.pageSize), 1);
-
   return (
     <div className="space-y-3">
       <FiltrosPanel
@@ -331,29 +330,13 @@ export function AuditoriaView({
           />
         )}
 
-        {totalPaginas > 1 && (
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-muted-foreground">
-              Página {eventos.page} de {totalPaginas}
-            </span>
-            <div className="flex gap-1">
-              <ItcButton
-                size="sm"
-                disabled={eventos.page <= 1 || isPending}
-                onClick={() => aplicar({ page: eventos.page - 1 } as Partial<FiltrosState & { page: number }>)}
-              >
-                <ChevronLeft className="h-4 w-4" /> Anterior
-              </ItcButton>
-              <ItcButton
-                size="sm"
-                disabled={eventos.page >= totalPaginas || isPending}
-                onClick={() => aplicar({ page: eventos.page + 1 } as Partial<FiltrosState & { page: number }>)}
-              >
-                Siguiente <ChevronRight className="h-4 w-4" />
-              </ItcButton>
-            </div>
-          </div>
-        )}
+        <TablePagination
+          page={eventos.page}
+          pageSize={eventos.pageSize}
+          totalItems={eventos.total}
+          disabled={isPending}
+          onPageChange={(next) => aplicar({ page: next })}
+        />
       </div>
 
       <DetalleAuditoriaModal

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { FileSpreadsheet, Plus, Search, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { ItcButton, ItcInput, ItcTable, type TableColumn } from "@/components/itc";
+import { TablePagination } from "@/components/layout/table-pagination";
 import { FiltrosPanel, type CampoFiltro } from "@/components/layout/filtros-panel";
 import { StatCard } from "@/components/layout/stat-card";
 import { StatusBadge } from "@/components/layout/status-badge";
@@ -227,8 +228,6 @@ export function PerfilesView({
     [canEdit, selectedIds],
   );
 
-  const pages = Math.max(1, Math.ceil(total / pageSize));
-
   return (
     <div className="space-y-4">
       {loadError && (
@@ -368,22 +367,25 @@ export function PerfilesView({
             : "No hay profesionales en la organización activa. Cree uno o importe un Excel."}
         </div>
       ) : (
-        <ItcTable data={rows} columns={columns} rowKey={(row) => row.id} striped hoverable stickyHeader />
+        <ItcTable
+          data={rows}
+          columns={columns}
+          rowKey={(row) => row.id}
+          pagination={false}
+          striped
+          hoverable
+          stickyHeader
+        />
       )}
 
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
-        <span>
-          {total} profesionales · página {page} de {pages}
-        </span>
-        <div className="flex gap-2">
-          <ItcButton disabled={page <= 1} onClick={() => setParams({ page: String(page - 1) })}>
-            Anterior
-          </ItcButton>
-          <ItcButton disabled={page >= pages} onClick={() => setParams({ page: String(page + 1) })}>
-            Siguiente
-          </ItcButton>
-        </div>
-      </div>
+      <TablePagination
+        page={page}
+        pageSize={pageSize}
+        totalItems={total}
+        itemLabel="profesionales"
+        disabled={isPending}
+        onPageChange={(next) => setParams({ page: String(next) })}
+      />
 
       <ProfessionalDetailSheet
         professionalId={selectedId}
