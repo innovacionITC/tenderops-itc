@@ -16,6 +16,7 @@ import {
   ItcInput,
   ItcModal,
 } from "@/components/itc";
+import { TablePagination } from "@/components/layout/table-pagination";
 import { DetalleProcesoModal } from "./detalle-proceso-modal";
 import { Label } from "@/components/ui/label";
 import { MoneyCell, ProcessIdentityCell, SecondaryCell, StageCell } from "@/components/layout/process-cells";
@@ -504,25 +505,13 @@ export function BusquedaEnVivoView({
                 stickyHeader
               />
             </div>
-            <div className="flex items-center justify-between">
-              <ItcButton
-                type="button"
-                variant="secondary"
-                disabled={page <= 1 || isPending}
-                onClick={() => ejecutarBusqueda(page - 1)}
-              >
-                Anterior
-              </ItcButton>
-              <span className="text-sm text-muted-foreground">Página {page}</span>
-              <ItcButton
-                type="button"
-                variant="secondary"
-                disabled={rows.length < pageSize || isPending}
-                onClick={() => ejecutarBusqueda(page + 1)}
-              >
-                Siguiente
-              </ItcButton>
-            </div>
+            <TablePagination
+              page={page}
+              hasNext={rows.length >= pageSize}
+              disabled={isPending}
+              showSummary={false}
+              onPageChange={(next) => ejecutarBusqueda(next)}
+            />
           </div>
         )
       )}

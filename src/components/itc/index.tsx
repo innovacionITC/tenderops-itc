@@ -10,7 +10,6 @@ export {
   ItcButton,
   ItcButtonCard,
   ItcModal,
-  ItcTable,
   ItcTabs,
   ItcInput,
   ItcForm,
@@ -19,6 +18,10 @@ export {
   ItcMenu,
   ItcDateRangePicker,
 } from "itc-frontend-base";
+
+// ItcTable envuelve la tabla de la librería para reemplazar su paginación
+// (solo anterior/siguiente) por una barra con números de página.
+export { ItcTable } from "./paged-table";
 
 export type {
   ButtonProps,

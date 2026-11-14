@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { ItcButton, ItcTable, type TableColumn } from "@/components/itc";
+import { TablePagination } from "@/components/layout/table-pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { StatusBadge, type Tone } from "@/components/layout/status-badge";
@@ -44,11 +45,6 @@ export function SincronizacionesView({
   const pathname = usePathname();
   const [isSyncing, startSync] = useTransition();
   const [isNavegando, startNavegar] = useTransition();
-
-  const totalPaginas = Math.max(
-    Math.ceil(sincronizaciones.total / sincronizaciones.pageSize),
-    1,
-  );
 
   const irAPagina = (page: number) => {
     startNavegar(() => {
@@ -180,29 +176,13 @@ export function SincronizacionesView({
               hoverable
             />
 
-            {totalPaginas > 1 && (
-              <div className="flex items-center justify-between">
-                <ItcButton
-                  type="button"
-                  variant="secondary"
-                  disabled={sincronizaciones.page <= 1 || isNavegando}
-                  onClick={() => irAPagina(sincronizaciones.page - 1)}
-                >
-                  Anterior
-                </ItcButton>
-                <span className="text-sm text-muted-foreground">
-                  Página {sincronizaciones.page} de {totalPaginas}
-                </span>
-                <ItcButton
-                  type="button"
-                  variant="secondary"
-                  disabled={sincronizaciones.page >= totalPaginas || isNavegando}
-                  onClick={() => irAPagina(sincronizaciones.page + 1)}
-                >
-                  Siguiente
-                </ItcButton>
-              </div>
-            )}
+            <TablePagination
+              page={sincronizaciones.page}
+              pageSize={sincronizaciones.pageSize}
+              totalItems={sincronizaciones.total}
+              disabled={isNavegando}
+              onPageChange={irAPagina}
+            />
           </>
         )}
       </CardContent>

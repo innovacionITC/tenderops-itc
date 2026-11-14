@@ -19,6 +19,7 @@ import {
   ItcInput,
   ItcModal,
 } from "@/components/itc";
+import { TablePagination } from "@/components/layout/table-pagination";
 import { DetalleProcesoModal } from "./detalle-proceso-modal";
 import { Label } from "@/components/ui/label";
 import { Spinner } from "@/components/ui/spinner";
@@ -424,10 +425,6 @@ export function ProcesosSecopView({
     },
   ];
 
-  const totalPaginas = Math.max(
-    Math.ceil(procesos.total / procesos.pageSize),
-    1,
-  );
   const totalSinFiltrar = filtrosDisponibles.totalSinFiltrar;
 
   return (
@@ -514,29 +511,13 @@ export function ProcesosSecopView({
               />
             </div>
 
-            {totalPaginas > 1 && (
-              <div className="flex items-center justify-between">
-                <ItcButton
-                  type="button"
-                  variant="secondary"
-                  disabled={procesos.page <= 1 || isBuscando}
-                  onClick={() => aplicar({ page: procesos.page - 1 })}
-                >
-                  Anterior
-                </ItcButton>
-                <span className="text-sm text-muted-foreground">
-                  Página {procesos.page} de {totalPaginas}
-                </span>
-                <ItcButton
-                  type="button"
-                  variant="secondary"
-                  disabled={procesos.page >= totalPaginas || isBuscando}
-                  onClick={() => aplicar({ page: procesos.page + 1 })}
-                >
-                  Siguiente
-                </ItcButton>
-              </div>
-            )}
+            <TablePagination
+              page={procesos.page}
+              pageSize={procesos.pageSize}
+              totalItems={procesos.total}
+              disabled={isBuscando}
+              onPageChange={(next) => aplicar({ page: next })}
+            />
           </>
         )}
       </div>
