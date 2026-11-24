@@ -337,7 +337,9 @@ export function SeguimientoView({
             <RowActionButton
               icon={<ChevronRight className="h-3.5 w-3.5" />}
               title="Abrir"
-              onClick={() => router.push(`/seguimiento/${r.id}`)}
+              onClick={() => {
+                window.location.assign(`/seguimiento/${r.id}`);
+              }}
             />
             {r.url && (
               <RowActionButton
