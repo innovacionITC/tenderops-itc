@@ -17,7 +17,7 @@ export type OportunidadDocumentoRow = {
   nombreArchivo: string;
   extension: string;
   tamannoBytes: number;
-  estado: "pendiente" | "descargado" | "error";
+  estado: "pendiente" | "extrayendo" | "descargado" | "error";
   errorMensaje: string | null;
   creadoEn: string;
 };

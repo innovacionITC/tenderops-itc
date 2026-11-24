@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition, useState } from "react";
+import { useEffect, useTransition, useState } from "react";
 import { ExternalLink, RefreshCw, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -11,18 +11,21 @@ import { StatusBadge, type Tone } from "@/components/layout/status-badge";
 import { type ProcesoSeguimientoRow } from "@/lib/seguimiento-shared";
 import {
   crearOportunidadCrm,
+  listDocumentosCrm,
   reintentarDescargaDocumentosCrm,
   type OportunidadDocumentoRow,
 } from "./crm-actions";
 
 const DOCUMENTO_ESTADO_LABEL: Record<OportunidadDocumentoRow["estado"], string> = {
   pendiente: "Pendiente",
+  extrayendo: "Extrayendo",
   descargado: "Copiado",
   error: "Error",
 };
 
 const DOCUMENTO_ESTADO_TONE: Record<OportunidadDocumentoRow["estado"], Tone> = {
   pendiente: "muted",
+  extrayendo: "info",
   descargado: "success",
   error: "danger",
 };
@@ -37,16 +40,45 @@ function DocumentosSecopStatus({
   const router = useRouter();
   const [isRefreshing, startRefresh] = useTransition();
   const [isRetrying, startRetry] = useTransition();
+  const [siguiendo, setSiguiendo] = useState(false);
+  const [docs, setDocs] = useState(documentosCrm);
 
-  const descargados = documentosCrm.filter((d) => d.estado === "descargado").length;
-  const errores = documentosCrm.filter((d) => d.estado === "error").length;
-  const pendientes = documentosCrm.filter((d) => d.estado === "pendiente").length;
+  useEffect(() => {
+    setDocs(documentosCrm);
+  }, [documentosCrm]);
+
+  const hayActivos = docs.some((d) => d.estado === "pendiente" || d.estado === "extrayendo");
+
+  useEffect(() => {
+    if (!siguiendo) return;
+    const started = Date.now();
+    const id = window.setInterval(() => {
+      void listDocumentosCrm(procesoId)
+        .then((rows) => {
+          setDocs(rows);
+          const activos = rows.some((d) => d.estado === "pendiente" || d.estado === "extrayendo");
+          const elapsed = Date.now() - started;
+          if ((!activos && elapsed > 20000) || elapsed > 15 * 60 * 1000) {
+            setSiguiendo(false);
+          }
+        })
+        .catch(() => {
+          // Un fallo de red no debe sacar al usuario del proceso.
+        });
+    }, 5000);
+    return () => window.clearInterval(id);
+  }, [siguiendo, procesoId]);
+
+  const descargados = docs.filter((d) => d.estado === "descargado").length;
+  const errores = docs.filter((d) => d.estado === "error").length;
+  const pendientes = docs.filter((d) => d.estado === "pendiente").length;
 
   const handleReintentar = () => {
     startRetry(async () => {
       try {
         await reintentarDescargaDocumentosCrm(procesoId);
-        toast.success("Sincronización programada — puede tardar unos minutos");
+        setSiguiendo(true);
+        toast.success("Sincronización en curso. Los archivos se van actualizando de a uno.");
       } catch (e) {
         toast.error(
           e instanceof Error ? e.message : "No se pudo programar la sincronización",
@@ -81,7 +113,7 @@ function DocumentosSecopStatus({
         </div>
       </div>
 
-      {documentosCrm.length === 0 ? (
+      {docs.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           Aún no hay documentos copiados a la Oportunidad. La copia se hace en
           segundo plano y puede tardar unos minutos — usa &ldquo;Actualizar&rdquo;
@@ -95,7 +127,7 @@ function DocumentosSecopStatus({
             {errores > 0 && `, ${errores} con error`}
           </p>
           <ul className="space-y-1.5">
-            {documentosCrm.map((doc) => (
+            {docs.map((doc) => (
               <li
                 key={doc.documentoId}
                 className="flex items-center justify-between gap-3 text-sm"
