@@ -21,6 +21,12 @@ type ChatMessage = {
 };
 
 const TOKEN_REFRESH_MARGIN_MS = 60_000;
+const DIRECT_LINE_BASE_URL = "https://directline.botframework.com";
+
+function directLineBase(configured: string) {
+  const trimmed = configured.trim().replace(/\/$/, "");
+  return trimmed || DIRECT_LINE_BASE_URL;
+}
 
 export function AsistenteIaTab({
   procesoId,
@@ -82,7 +88,7 @@ export function AsistenteIaTab({
       try {
         const token = tokenRef.current;
         if (!token) return;
-        const url = `${directLineBaseUrl}/v3/directline/conversations/${sesion.conversationId}/activities${watermarkRef.current ? `?watermark=${watermarkRef.current}` : ""}`;
+        const url = `${directLineBase(directLineBaseUrl)}/v3/directline/conversations/${sesion.conversationId}/activities${watermarkRef.current ? `?watermark=${watermarkRef.current}` : ""}`;
         const res = await fetch(url, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -158,7 +164,7 @@ export function AsistenteIaTab({
       const token = tokenRef.current;
       if (!token) throw new Error("Sesión expirada");
       await fetch(
-        `${directLineBaseUrl}/v3/directline/conversations/${sesion.conversationId}/activities`,
+        `${directLineBase(directLineBaseUrl)}/v3/directline/conversations/${sesion.conversationId}/activities`,
         {
           method: "POST",
           headers: {
