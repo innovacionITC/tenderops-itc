@@ -62,7 +62,8 @@ export async function loadSeguimientoWorkspaceData(id: string) {
       : Promise.resolve<CitasCrmData>({ equipo: [], prioridades: [], citas: [], error: null }),
   ]);
 
-  const directLineBaseUrl = process.env.NEXT_PUBLIC_DIRECTLINE_BASE_URL ?? "";
+  const configuredDirectLine = process.env.NEXT_PUBLIC_DIRECTLINE_BASE_URL?.trim().replace(/\/$/, "");
+  const directLineBaseUrl = configuredDirectLine || "https://directline.botframework.com";
 
   return {
     proceso,

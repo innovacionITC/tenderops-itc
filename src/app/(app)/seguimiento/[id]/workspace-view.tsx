@@ -34,12 +34,12 @@ const ESTADO_TONE: Record<ProcesoSeguimientoRow["estado"], "info" | "success" | 
 };
 
 const TABS: { key: TabKey; label: string }[] = [
+  { key: "crm", label: "CRM" },
   { key: "analisis-ia", label: "Análisis IA" },
-  { key: "asistente-ia", label: "Asistente IA" },
   { key: "matriz-cumplimiento", label: "Matriz de cumplimiento" },
   { key: "tareas", label: "Tareas" },
-  { key: "crm", label: "CRM" },
   { key: "equipo", label: "Equipo y HV" },
+  { key: "asistente-ia", label: "Asistente IA" },
 ];
 
 type AnalisisIa = {
